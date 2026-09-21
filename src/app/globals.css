@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/* Design tokens only. All component styles live in Tailwind utility classes. */
+@theme {
+  --font-sans: "Noto Sans Thai Variable", Tahoma, Arial, sans-serif;
+  --font-thai: "Noto Sans Thai Variable", Tahoma, Arial, sans-serif;
+  --font-numeric: Arial, sans-serif;
+  --color-brand: #713cd1;
+  --color-brand-soft: #f1ebfc;
+  --color-ink: #252137;
+  --color-muted: #858094;
+  --color-secondary: #756a83;
+  --color-line: #eeebf3;
+  --color-canvas: #f8f9fc;
+  --color-status-green: #16866d;
+  --color-status-amber: #b8801a;
+  --color-status-blue: #397cc5;
+  --breakpoint-desk: 45.0625rem;
+  --breakpoint-wide: 60.0625rem;
+  --breakpoint-roomy: 75.0625rem;
+  --breakpoint-large: 96.875rem;
+}

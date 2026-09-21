@@ -1,0 +1,548 @@
+{"kind":"deck","id":"pr/njvxuc","name":"Deck"}
+{"kind":"layout","layoutId":"aa1d1920-55ca-4f92-afa6-e8eef8cc1c84","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"f104034d-03f0-4323-8f43-a12d862cbffb","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/crbug1","slide":1,"title":"MST","textShapes":8}
+{"kind":"shape","id":"sh/a1k7a1gr","slide":1,"bbox":[0,0,1280,18]}
+{"kind":"textbox","id":"sh/x4vq5gfi","slide":1,"text":"MST","textPreview":"MST","textChars":3,"textLines":1,"bbox":[72,58,180,66]}
+{"kind":"textbox","id":"sh/c3mpcbex","slide":1,"text":"GRADE RECOVERY SYSTEM","textPreview":"GRADE RECOVERY SYSTEM","textChars":21,"textLines":1,"bbox":[72,122,520,34]}
+{"kind":"textbox","id":"sh/zqd87qx8","slide":1,"text":"ระบบแก้ไขผลการเรียนคงค้าง","textPreview":"ระบบแก้ไขผลการเรียนคงค้าง","textChars":25,"textLines":1,"bbox":[72,230,900,82]}
+{"kind":"textbox","id":"sh/yp47elw3","slide":1,"text":"โรงเรียนเมืองสุราษฎร์ธานี","textPreview":"โรงเรียนเมืองสุราษฎร์ธานี","textChars":25,"textLines":1,"bbox":[72,326,760,52]}
+{"kind":"shape","id":"sh/lsvq90fe","slide":1,"bbox":[72,416,1040,1]}
+{"kind":"textbox","id":"sh/krmpgvet","slide":1,"text":"นักเรียน    ครู    ฝ่ายวิชาการ    ผู้ดูแลระบบ","textPreview":"นักเรียน    ครู    ฝ่ายวิชาการ    ผู้ดูแลระบบ","textChars":45,"textLines":1,"bbox":[72,450,930,46]}
+{"kind":"textbox","id":"sh/7ud8bqxk","slide":1,"text":"การนำเสนอ 60 นาที","textPreview":"การนำเสนอ 60 นาที","textChars":17,"textLines":1,"bbox":[72,572,350,40]}
+{"kind":"textbox","id":"sh/mt4rilwz","slide":1,"text":"ที่มา: README.md:1-3; src/lib/domain.ts:58-63","textPreview":"ที่มา: README.md:1-3; src/lib/domain.ts:58-63","textChars":45,"textLines":1,"bbox":[72,667,1050,20]}
+{"kind":"textbox","id":"sh/0r690buh","slide":1,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[1140,665,76,22]}
+{"kind":"notes","id":"nt/crbug1","slide":1,"text":"เปิดด้วยขอบเขตของระบบตามเอกสารโครงการ ยังไม่กล่าวถึงผลลัพธ์เชิงประสิทธิภาพ เพราะเอกสารไม่มีข้อมูลการใช้งานจริงรองรับ\n\nCitation: README.md:1-3; src/lib/domain.ts:58-63"}
+{"kind":"slide","id":"sl/v86bnw","slide":2,"title":"THE CORE PROBLEM","textShapes":15}
+{"kind":"shape","id":"sh/1wvadsnu","slide":2,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/e9kb2do3","slide":2,"text":"THE CORE PROBLEM","textPreview":"THE CORE PROBLEM","textChars":16,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/zadsbi5o","slide":2,"text":"2 นาที","textPreview":"2 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/ozmt8n6l","slide":2,"text":"เส้นทางการนำเสนอ","textPreview":"เส้นทางการนำเสนอ","textChars":16,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/90vahsnq","slide":2,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/mx4b6xof","slide":2,"text":"เริ่มจากโจทย์ของระบบ แล้วเชื่อมไปยังขั้นตอน บทบาท ตัวอย่าง และความพร้อมใช้งาน","textPreview":"เริ่มจากโจทย์ของระบบ แล้วเชื่อมไปยังขั้นตอน บทบาท ตัวอย่าง และความพร้อมใช้งาน","textChars":77,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/nydsfi50","slide":2,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/w36tc76h","slide":2,"text":"ที่มา: README.md:17-71; VERIFICATION.md:18-24","textPreview":"ที่มา: README.md:17-71; VERIFICATION.md:18-24","textChars":45,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/x4fu5cn2","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/pcrqp036","slide":2,"bbox":[178.5,292,48,48]}
+{"kind":"textbox","id":"sh/obipgvml","slide":2,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[182.5,300,40,30]}
+{"kind":"shape","id":"sh/3a98nql0","slide":2,"bbox":[226.5,316,235,1]}
+{"kind":"textbox","id":"sh/2907el4f","slide":2,"text":"โจทย์และขอบเขต","textPreview":"โจทย์และขอบเขต","textChars":14,"textLines":1,"bbox":[72,358,261,72]}
+{"kind":"shape","id":"sh/dgbqt032","slide":2,"bbox":[461.5,292,48,48]}
+{"kind":"textbox","id":"sh/cfipkvmx","slide":2,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[465.5,300,40,30]}
+{"kind":"shape","id":"sh/be98rqlc","slide":2,"bbox":[509.5,316,235,1]}
+{"kind":"textbox","id":"sh/qd07i54r","slide":2,"text":"วิธีใช้งาน","textPreview":"วิธีใช้งาน","textChars":10,"textLines":1,"bbox":[355,358,261,72]}
+{"kind":"shape","id":"sh/tk76hg3y","slide":2,"bbox":[744.5,292,48,48]}
+{"kind":"textbox","id":"sh/sjyp8bmd","slide":2,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[748.5,300,40,30]}
+{"kind":"shape","id":"sh/kzmhkvyl","slide":2,"bbox":[792.5,316,235,1]}
+{"kind":"textbox","id":"sh/50vyd0f6","slide":2,"text":"ตัวอย่าง","textPreview":"ตัวอย่าง","textChars":8,"textLines":1,"bbox":[638,358,261,72]}
+{"kind":"shape","id":"sh/ixkzi5gf","slide":2,"bbox":[1027.5,292,48,48]}
+{"kind":"textbox","id":"sh/jytgbax0","slide":2,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[1031.5,300,40,30]}
+{"kind":"textbox","id":"sh/s3mhofyh","slide":2,"text":"ความพร้อม","textPreview":"ความพร้อม","textChars":9,"textLines":1,"bbox":[921,358,261,72]}
+{"kind":"textbox","id":"sh/t4vyhkf2","slide":2,"text":"การนำเสนอแยกข้อมูลที่มีหลักฐานออกจากข้อมูลที่ยังไม่มี","textPreview":"การนำเสนอแยกข้อมูลที่มีหลักฐานออกจากข้อมูลที่ยังไม่มี","textChars":53,"textLines":1,"bbox":[188,526,900,42]}
+{"kind":"notes","id":"nt/v86bnw","slide":2,"text":"อธิบายว่าการนำเสนอแยกข้อเท็จจริงในเอกสารออกจากข้อมูลที่ยังไม่มีอย่างชัดเจน\n\nCitation: README.md:17-71; VERIFICATION.md:18-24"}
+{"kind":"slide","id":"sl/n4o5p3","slide":3,"title":"THE CORE PROBLEM","textShapes":12}
+{"kind":"shape","id":"sh/7mdkv6ts","slide":3,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/8nmlobud","slide":3,"text":"THE CORE PROBLEM","textPreview":"THE CORE PROBLEM","textChars":16,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/9ov2hgby","slide":3,"text":"3 นาที","textPreview":"3 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/yxk3i1cv","slide":3,"text":"โจทย์หลักของระบบ","textPreview":"โจทย์หลักของระบบ","textChars":16,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/zytkr6tg","slide":3,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/kj2lkru1","slide":3,"text":"ผลการเรียนคงค้างแต่ละรายการต้องผ่านผู้รับผิดชอบตามลำดับก่อนปิดงาน","textPreview":"ผลการเรียนคงค้างแต่ละรายการต้องผ่านผู้รับผิดชอบตามลำดับก่อนปิดงาน","textChars":65,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/lkb2twbm","slide":3,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/ito3ulsf","slide":3,"text":"ที่มา: src/lib/domain.ts:16-40,64-89; supabase/migrations/001_initial.sql:16-29","textPreview":"ที่มา: src/lib/domain.ts:16-40,64-89; supabase/migrations/001_initial.sql:16-29","textChars":79,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/3ux4nqt0","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/7e94bix8","slide":3,"bbox":[478,278,324,212]}
+{"kind":"textbox","id":"sh/6t0n2xgn","slide":3,"text":"หนึ่งรายการผลการเรียนคงค้าง","textPreview":"หนึ่งรายการผลการเรียนคงค้าง","textChars":27,"textLines":1,"bbox":[512,306,256,66]}
+{"kind":"textbox","id":"sh/tgrmdsfe","slide":3,"text":"นักเรียน  •  รายวิชา\nครู  •  ปีการศึกษา  •  ภาคเรียน","textPreview":"นักเรียน  •  รายวิชา | ครู  •  ปีการศึกษา  •  ภาคเรียน","textChars":52,"textLines":2,"bbox":[512,390,256,70]}
+{"kind":"shape","id":"sh/8fi54nyt","slide":3,"bbox":[82,280,270,58]}
+{"kind":"textbox","id":"sh/vi94f2x4","slide":3,"text":"นักเรียนเริ่มคำร้อง","textPreview":"นักเรียนเริ่มคำร้อง","textChars":19,"textLines":1,"bbox":[92,290,250,36]}
+{"kind":"shape","id":"sh/uh0n6xgj","slide":3,"bbox":[82,428,270,58]}
+{"kind":"textbox","id":"sh/hkbmhcfa","slide":3,"text":"ครูมอบหมายและอนุมัติ","textPreview":"ครูมอบหมายและอนุมัติ","textChars":20,"textLines":1,"bbox":[92,438,250,36]}
+{"kind":"shape","id":"sh/gji587yp","slide":3,"bbox":[928,280,270,58]}
+{"kind":"textbox","id":"sh/3mt4j2xg","slide":3,"text":"ฝ่ายวิชาการปิดรายการ","textPreview":"ฝ่ายวิชาการปิดรายการ","textChars":20,"textLines":1,"bbox":[938,290,250,36]}
+{"kind":"shape","id":"sh/ilknahgv","slide":3,"bbox":[928,428,270,58]}
+{"kind":"textbox","id":"sh/eh47i103","slide":3,"text":"ผู้ดูแลกำหนดเวลา","textPreview":"ผู้ดูแลกำหนดเวลา","textChars":16,"textLines":1,"bbox":[938,438,250,36]}
+{"kind":"notes","id":"nt/n4o5p3","slide":3,"text":"เน้นการควบคุมลำดับสถานะและผู้รับผิดชอบ ไม่กล่าวอ้างว่างานเดิมล่าช้าหรือผิดพลาดเพียงใด เพราะไม่มีตัวเลขรองรับ\n\nCitation: src/lib/domain.ts:16-40,64-89; supabase/migrations/001_initial.sql:16-29"}
+{"kind":"slide","id":"sl/vlx6n0","slide":4,"title":"THE CORE PROBLEM","textShapes":10}
+{"kind":"shape","id":"sh/szyhs7ed","slide":4,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/7yp0z2xs","slide":4,"text":"THE CORE PROBLEM","textPreview":"THE CORE PROBLEM","textChars":16,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/6xgzqxg7","slide":4,"text":"2 นาที","textPreview":"2 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/hori5wfu","slide":4,"text":"ขอบเขตหลักฐานที่ยังไม่มี","textPreview":"ขอบเขตหลักฐานที่ยังไม่มี","textChars":24,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/g3ihwre9","slide":4,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/f2903mx4","slide":4,"text":"เอกสารยังไม่รองรับการกล่าวอ้างผลลัพธ์เชิงปริมาณหรือผลจากการใช้งานจริง","textPreview":"เอกสารยังไม่รองรับการกล่าวอ้างผลลัพธ์เชิงปริมาณหรือผลจากการใช้งานจริง","textChars":69,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/u10zuhwj","slide":4,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/psri9wf6","slide":4,"text":"ที่มา: VERIFICATION.md:18-24; README.md:70-71","textPreview":"ที่มา: VERIFICATION.md:18-24; README.md:70-71","textChars":45,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/4rih0rel","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"textbox","id":"sh/i50j6lg7","slide":4,"text":"มีข้อมูลในเอกสาร","textPreview":"มีข้อมูลในเอกสาร","textChars":16,"textLines":1,"bbox":[94,252,430,44]}
+{"kind":"textbox","id":"sh/j69kzqhs","slide":4,"text":"ขั้นตอนการทำงาน\nสถานะและหน้าที่ของแต่ละบทบาท\nตัวอย่างข้อมูลสมมติ","textPreview":"ขั้นตอนการทำงาน | สถานะและหน้าที่ของแต่ละบทบาท | ตัวอย่างข้อมูลสมมติ","textChars":64,"textLines":3,"bbox":[94,314,430,180]}
+{"kind":"shape","id":"sh/k7i1svyx","slide":4,"bbox":[624,246,1,330]}
+{"kind":"textbox","id":"sh/58r210zi","slide":4,"text":"ไม่มีข้อมูลในเอกสาร","textPreview":"ไม่มีข้อมูลในเอกสาร","textChars":19,"textLines":1,"bbox":[694,252,450,44]}
+{"kind":"textbox","id":"sh/6t0ju5g3","slide":4,"text":"จำนวนรายการก่อนใช้ระบบ\nระยะเวลาก่อนและหลังใช้ระบบ\nภาระงานเดิมและความพึงพอใจ\nผลจากผู้ใช้จริง","textPreview":"จำนวนรายการก่อนใช้ระบบ | ระยะเวลาก่อนและหลังใช้ระบบ | ภาระงานเดิมและความพึงพอใจ | ผลจากผู้ใช้จริง","textChars":91,"textLines":4,"bbox":[694,314,450,220]}
+{"kind":"notes","id":"nt/vlx6n0","slide":4,"text":"ใช้สไลด์นี้กำหนดความคาดหวังร่วมกัน ตัวอย่างในสไลด์ต่อไปไม่ใช่หลักฐานผลลัพธ์หลังใช้งานจริง\n\nCitation: VERIFICATION.md:18-24; README.md:70-71"}
+{"kind":"slide","id":"sl/j65y4z","slide":5,"title":"THE CORE PROBLEM","textShapes":12}
+{"kind":"shape","id":"sh/2tk7a9or","slide":5,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/pwb6lo7i","slide":5,"text":"THE CORE PROBLEM","textPreview":"THE CORE PROBLEM","textChars":16,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/ov2pcj6x","slide":5,"text":"2 นาที","textPreview":"2 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/bydonep8","slide":5,"text":"ขอบเขตของ MST GRS","textPreview":"ขอบเขตของ MST GRS","textChars":17,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/axk7eton","slide":5,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/xkv6po7e","slide":5,"text":"ระบบครอบคลุมงานตั้งแต่เข้าสู่ระบบจนถึงการอนุมัติและรายงาน","textPreview":"ระบบครอบคลุมงานตั้งแต่เข้าสู่ระบบจนถึงการอนุมัติและรายงาน","textChars":57,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/cjmpgj6t","slide":5,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/zmdorypk","slide":5,"text":"ที่มา: README.md:3,43-59; src/lib/domain.ts:58-63","textPreview":"ที่มา: README.md:3,43-59; src/lib/domain.ts:58-63","textChars":49,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/yl47itoz","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/wnuxgf6t","slide":5,"bbox":[470,266,340,240]}
+{"kind":"textbox","id":"sh/xo3e9kne","slide":5,"text":"MST GRS","textPreview":"MST GRS","textChars":7,"textLines":1,"bbox":[530,330,220,48]}
+{"kind":"textbox","id":"sh/alcfe5on","slide":5,"text":"ระบบกลางของ 4 บทบาท","textPreview":"ระบบกลางของ 4 บทบาท","textChars":19,"textLines":1,"bbox":[520,394,240,40]}
+{"kind":"shape","id":"sh/vmlw7a58","slide":5,"bbox":[100,270,280,58]}
+{"kind":"textbox","id":"sh/krexkf6p","slide":5,"text":"เข้าสู่ระบบ","textPreview":"เข้าสู่ระบบ","textChars":11,"textLines":1,"bbox":[110,280,260,36]}
+{"kind":"shape","id":"sh/5cnedkna","slide":5,"bbox":[100,455,280,58]}
+{"kind":"textbox","id":"sh/ipcfipoj","slide":5,"text":"ติดตามสถานะ","textPreview":"ติดตามสถานะ","textChars":11,"textLines":1,"bbox":[110,465,260,36]}
+{"kind":"shape","id":"sh/jq5wba54","slide":5,"bbox":[900,270,280,58]}
+{"kind":"textbox","id":"sh/sfexoz61","slide":5,"text":"มอบหมายและอนุมัติ","textPreview":"มอบหมายและอนุมัติ","textChars":17,"textLines":1,"bbox":[910,280,260,36]}
+{"kind":"shape","id":"sh/tgnyh4n6","slide":5,"bbox":[900,455,280,58]}
+{"kind":"textbox","id":"sh/1w3e1kfq","slide":5,"text":"นำเข้าและส่งออก","textPreview":"นำเข้าและส่งออก","textChars":15,"textLines":1,"bbox":[910,465,260,36]}
+{"kind":"notes","id":"nt/j65y4z","slide":5,"text":"เชื่อมจากโจทย์ไปยังขอบเขตของระบบ ก่อนอธิบายวิธีใช้งานรายบทบาท\n\nCitation: README.md:3,43-59; src/lib/domain.ts:58-63"}
+{"kind":"slide","id":"sl/xirrp7","slide":6,"title":"MAIN CONTENT","textShapes":16}
+{"kind":"shape","id":"sh/k76l0325","slide":6,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/j6x47y1k","slide":6,"text":"MAIN CONTENT","textPreview":"MAIN CONTENT","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/y5o3ytkz","slide":6,"text":"2 นาที","textPreview":"2 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/x4vm5oje","slide":6,"text":"ภาพรวมการใช้งานระบบ","textPreview":"ภาพรวมการใช้งานระบบ","textChars":19,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/wjmlwj2t","slide":6,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/bid43e18","slide":6,"text":"ผู้ใช้เริ่มจากหน้าเข้าสู่ระบบ แล้วทำงานต่อในหน้าที่ซึ่งตรงกับความรับผิดชอบของตน","textPreview":"ผู้ใช้เริ่มจากหน้าเข้าสู่ระบบ แล้วทำงานต่อในหน้าที่ซึ่งตรงกับความรับผิดชอบของตน","textChars":79,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/ah43utk3","slide":6,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/pgv21oji","slide":6,"text":"ที่มา: README.md:17-59; src/components/workspace.tsx:1-310","textPreview":"ที่มา: README.md:17-59; src/components/workspace.tsx:1-310","textChars":58,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/ofmlsj2x","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/mhc32xc7","slide":6,"bbox":[150.2,302,48,48]}
+{"kind":"textbox","id":"sh/nilkv2ts","slide":6,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[154.2,310,40,30]}
+{"kind":"shape","id":"sh/ojul47ud","slide":6,"bbox":[198.2,326,178.4,1]}
+{"kind":"textbox","id":"sh/9432xcby","slide":6,"text":"เข้าสู่ระบบ","textPreview":"เข้าสู่ระบบ","textChars":11,"textLines":1,"bbox":[72,368,204.4,72]}
+{"kind":"shape","id":"sh/eds3yxcb","slide":6,"bbox":[376.6,302,48,48]}
+{"kind":"textbox","id":"sh/ze1kr2tw","slide":6,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[380.6,310,40,30]}
+{"kind":"shape","id":"sh/0fal0nuh","slide":6,"bbox":[424.6,326,178.4,1]}
+{"kind":"textbox","id":"sh/1gj2tsbm","slide":6,"text":"เห็นรายการ","textPreview":"เห็นรายการ","textChars":10,"textLines":1,"bbox":[298.4,368,204.4,72]}
+{"kind":"shape","id":"sh/q983udcz","slide":6,"bbox":[603,302,48,48]}
+{"kind":"textbox","id":"sh/ra1knitk","slide":6,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[607,310,40,30]}
+{"kind":"shape","id":"sh/vid8fu50","slide":6,"bbox":[651,326,178.4,1]}
+{"kind":"textbox","id":"sh/uh4r6pov","slide":6,"text":"ดำเนินการ","textPreview":"ดำเนินการ","textChars":9,"textLines":1,"bbox":[524.8,368,204.4,72]}
+{"kind":"shape","id":"sh/h4vqhkn6","slide":6,"bbox":[829.4,302,48,48]}
+{"kind":"textbox","id":"sh/wjm98f6l","slide":6,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[833.4,310,40,30]}
+{"kind":"shape","id":"sh/j6x8ju5c","slide":6,"bbox":[877.4,326,178.4,1]}
+{"kind":"textbox","id":"sh/i5orapor","slide":6,"text":"ส่งต่องาน","textPreview":"ส่งต่องาน","textChars":9,"textLines":1,"bbox":[751.2,368,204.4,72]}
+{"kind":"shape","id":"sh/58fal4ni","slide":6,"bbox":[1055.8,302,48,48]}
+{"kind":"textbox","id":"sh/4769cz6x","slide":6,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[1059.8,310,40,30]}
+{"kind":"textbox","id":"sh/zat87a58","slide":6,"text":"ตรวจประวัติ","textPreview":"ตรวจประวัติ","textChars":11,"textLines":1,"bbox":[977.6,368,204.4,72]}
+{"kind":"notes","id":"nt/xirrp7","slide":6,"text":"ใช้สไลด์นี้เป็นแผนที่ก่อนเข้าสู่วิธีใช้งานรายบทบาท เน้นสิ่งที่ผู้ใช้พบและการส่งต่องาน\n\nCitation: README.md:17-59; src/components/workspace.tsx:1-310"}
+{"kind":"slide","id":"sl/6nbs4y","slide":7,"title":"MAIN CONTENT","textShapes":14}
+{"kind":"shape","id":"sh/6p4vytgf","slide":7,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/tsvutofq","slide":7,"text":"MAIN CONTENT","textPreview":"MAIN CONTENT","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/srmd0jyl","slide":7,"text":"2 นาที","textPreview":"2 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/j2dc3exo","slide":7,"text":"วิธีเข้าสู่ระบบตามบทบาท","textPreview":"วิธีเข้าสู่ระบบตามบทบาท","textChars":23,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/i1kvu9g3","slide":7,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/54vupofu","slide":7,"text":"ผู้ใช้เลือกบทบาทก่อนเข้าสู่ระบบ และแต่ละบทบาทใช้ข้อมูลยืนยันตัวตนต่างกัน","textPreview":"ผู้ใช้เลือกบทบาทก่อนเข้าสู่ระบบ และแต่ละบทบาทใช้ข้อมูลยืนยันตัวตนต่างกัน","textChars":72,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/43mdwjy9","slide":7,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/vytczuxs","slide":7,"text":"ที่มา: README.md:17-28; src/components/login.tsx:25-58; src/app/page.tsx:7-17","textPreview":"ที่มา: README.md:17-28; src/components/login.tsx:25-58; src/app/page.tsx:7-17","textChars":77,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/uxkbq9g7","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"textbox","id":"sh/ormxk7m1","slide":7,"text":"นักเรียน","textPreview":"นักเรียน","textChars":8,"textLines":1,"bbox":[90,252,250,44]}
+{"kind":"shape","id":"sh/psfytsnm","slide":7,"bbox":[352,268,72,1]}
+{"kind":"textbox","id":"sh/2p4fix4v","slide":7,"text":"เลขประจำตัวนักเรียน + เลขบัตรประชาชน","textPreview":"เลขประจำตัวนักเรียน + เลขบัตรประชาชน","textChars":36,"textLines":1,"bbox":[454,250,650,48]}
+{"kind":"textbox","id":"sh/3qdgr25g","slide":7,"text":"ครู","textPreview":"ครู","textChars":3,"textLines":1,"bbox":[90,338,250,44]}
+{"kind":"shape","id":"sh/g3mxgnm5","slide":7,"bbox":[352,354,72,1]}
+{"kind":"textbox","id":"sh/14vypsnq","slide":7,"text":"เลขบัตรประชาชน 13 หลัก","textPreview":"เลขบัตรประชาชน 13 หลัก","textChars":22,"textLines":1,"bbox":[454,336,650,48]}
+{"kind":"textbox","id":"sh/e14fed4z","slide":7,"text":"ฝ่ายวิชาการ","textPreview":"ฝ่ายวิชาการ","textChars":11,"textLines":1,"bbox":[90,424,250,44]}
+{"kind":"shape","id":"sh/f2dgni5k","slide":7,"bbox":[352,440,72,1]}
+{"kind":"textbox","id":"sh/0zqhsrm9","slide":7,"text":"เลขบัตรประชาชน 13 หลัก","textPreview":"เลขบัตรประชาชน 13 หลัก","textChars":22,"textLines":1,"bbox":[454,422,650,48]}
+{"kind":"textbox","id":"sh/l0zy1cnu","slide":7,"text":"ผู้ดูแลระบบ","textPreview":"ผู้ดูแลระบบ","textChars":11,"textLines":1,"bbox":[90,510,250,44]}
+{"kind":"shape","id":"sh/9gvy5cfy","slide":7,"bbox":[352,526,72,1]}
+{"kind":"textbox","id":"sh/8fmxc7ed","slide":7,"text":"Username + Password","textPreview":"Username + Password","textChars":19,"textLines":1,"bbox":[454,508,650,48]}
+{"kind":"notes","id":"nt/6nbs4y","slide":7,"text":"เลขบัตรประชาชนเป็นข้อมูลส่วนบุคคล โรงเรียนควรกำหนดวิธีตรวจสอบตัวตนและแนวทางดูแลข้อมูลก่อนใช้จริง\n\nCitation: README.md:17-28; src/components/login.tsx:25-58; src/app/page.tsx:7-17"}
+{"kind":"slide","id":"sl/s01rsd","slide":8,"title":"MAIN CONTENT","textShapes":17}
+{"kind":"shape","id":"sh/7yh07yl4","slide":8,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/8zq103mp","slide":8,"text":"MAIN CONTENT","textPreview":"MAIN CONTENT","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/t0zi983u","slide":8,"text":"3 นาที","textPreview":"3 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/y9ozut47","slide":8,"text":"วงจรสถานะของหนึ่งรายการ","textPreview":"วงจรสถานะของหนึ่งรายการ","textChars":23,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/jax03els","slide":8,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/kv6hwjmd","slide":8,"text":"แถบความคืบหน้าบอกตำแหน่งของรายการและผู้ที่ต้องดำเนินการต่อ","textPreview":"แถบความคืบหน้าบอกตำแหน่งของรายการและผู้ที่ต้องดำเนินการต่อ","textChars":58,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/lwfi5o3y","slide":8,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/i5sj6d4r","slide":8,"text":"ที่มา: src/lib/domain.ts:2-8,64-89; tests/domain.test.ts:6-16","textPreview":"ที่มา: src/lib/domain.ts:2-8,64-89; tests/domain.test.ts:6-16","textChars":61,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/3q10filc","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/nix0zep8","slide":8,"bbox":[168,342,128,1]}
+{"kind":"shape","id":"sh/2hozqt8n","slide":8,"bbox":[118,292,100,100]}
+{"kind":"textbox","id":"sh/pkfi1o7y","slide":8,"text":"0%","textPreview":"0%","textChars":2,"textLines":1,"bbox":[128,322,80,36]}
+{"kind":"textbox","id":"sh/oj6hsjqt","slide":8,"text":"ยังไม่ยื่นคำร้อง","textPreview":"ยังไม่ยื่นคำร้อง","textChars":16,"textLines":1,"bbox":[72,414,192,76]}
+{"kind":"shape","id":"sh/b6h03yp4","slide":8,"bbox":[392,342,128,1]}
+{"kind":"shape","id":"sh/a5ojut8j","slide":8,"bbox":[342,292,100,100]}
+{"kind":"textbox","id":"sh/x8zi587a","slide":8,"text":"25%","textPreview":"25%","textChars":3,"textLines":1,"bbox":[352,322,80,36]}
+{"kind":"textbox","id":"sh/c7q1w3qp","slide":8,"text":"รอมอบหมายงาน","textPreview":"รอมอบหมายงาน","textChars":12,"textLines":1,"bbox":[296,414,192,76]}
+{"kind":"shape","id":"sh/zah07ypg","slide":8,"bbox":[616,342,128,1]}
+{"kind":"shape","id":"sh/y98jydov","slide":8,"bbox":[566,292,100,100]}
+{"kind":"textbox","id":"sh/u5c36xs3","slide":8,"text":"50%","textPreview":"50%","textChars":3,"textLines":1,"bbox":[576,322,80,36]}
+{"kind":"textbox","id":"sh/v6lkz29o","slide":8,"text":"อยู่ระหว่างดำเนินการ","textPreview":"อยู่ระหว่างดำเนินการ","textChars":20,"textLines":1,"bbox":[520,414,192,76]}
+{"kind":"shape","id":"sh/g7ul87qt","slide":8,"bbox":[840,342,128,1]}
+{"kind":"shape","id":"sh/h83m1cre","slide":8,"bbox":[790,292,100,100]}
+{"kind":"textbox","id":"sh/m1s32xsr","slide":8,"text":"75%","textPreview":"75%","textChars":3,"textLines":1,"bbox":[800,322,80,36]}
+{"kind":"textbox","id":"sh/721kv29c","slide":8,"text":"ส่งงานแล้ว / รออนุมัติ","textPreview":"ส่งงานแล้ว / รออนุมัติ","textChars":22,"textLines":1,"bbox":[744,414,192,76]}
+{"kind":"shape","id":"sh/83al47ax","slide":8,"bbox":[1014,292,100,100]}
+{"kind":"textbox","id":"sh/t4j2xcri","slide":8,"text":"100%","textPreview":"100%","textChars":4,"textLines":1,"bbox":[1024,322,80,36]}
+{"kind":"textbox","id":"sh/qxw3eh8b","slide":8,"text":"แก้ไขสำเร็จ","textPreview":"แก้ไขสำเร็จ","textChars":11,"textLines":1,"bbox":[968,414,192,76]}
+{"kind":"textbox","id":"sh/ry547m9g","slide":8,"text":"ที่ 75% ต้องอ่านชื่อสถานะร่วมด้วย เพราะมีสองช่วงงาน","textPreview":"ที่ 75% ต้องอ่านชื่อสถานะร่วมด้วย เพราะมีสองช่วงงาน","textChars":51,"textLines":1,"bbox":[250,542,780,38]}
+{"kind":"notes","id":"nt/s01rsd","slide":8,"text":"ชี้ให้เห็นว่า 75% ครอบคลุมสองสถานะ จึงต้องดูข้อความสถานะร่วมกับเปอร์เซ็นต์\n\nCitation: src/lib/domain.ts:2-8,64-89; tests/domain.test.ts:6-16"}
+{"kind":"slide","id":"sl/hkfhfd","slide":9,"title":"MAIN CONTENT","textShapes":14}
+{"kind":"shape","id":"sh/lkrepwba","slide":9,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/yhgfu1cj","slide":9,"text":"MAIN CONTENT","textPreview":"MAIN CONTENT","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/zipwn6t4","slide":9,"text":"3 นาที","textPreview":"3 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/87ix0bul","slide":9,"text":"ความสัมพันธ์ของ 4 บทบาท","textPreview":"ความสัมพันธ์ของ 4 บทบาท","textChars":23,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/98rytgb6","slide":9,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/ml0fy1cf","slide":9,"text":"แต่ละบทบาทรับผิดชอบคนละจุดและส่งต่อรายการตามสถานะที่กำหนด","textPreview":"แต่ละบทบาทรับผิดชอบคนละจุดและส่งต่อรายการตามสถานะที่กำหนด","textChars":57,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/nm9wr6t0","slide":9,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/wb2x4bux","slide":9,"text":"ที่มา: README.md:45-51; src/lib/domain.ts:79-89; supabase/migrations/001_initial.sql:45-50","textPreview":"ที่มา: README.md:45-51; src/lib/domain.ts:79-89; supabase/migrations/001_initial.sql:45-50","textChars":90,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/hcbyxgbi","slide":9,"text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/tgfuhgfa","slide":9,"bbox":[80,238,210,58]}
+{"kind":"textbox","id":"sh/sf6dobyp","slide":9,"text":"นักเรียน","textPreview":"นักเรียน","textChars":8,"textLines":1,"bbox":[90,248,190,36]}
+{"kind":"shape","id":"sh/rexcf6x4","slide":9,"bbox":[314,267,100,1]}
+{"kind":"textbox","id":"sh/6dovm1gj","slide":9,"text":"ยื่นคำร้อง","textPreview":"ยื่นคำร้อง","textChars":10,"textLines":1,"bbox":[448,249,650,44]}
+{"kind":"shape","id":"sh/1kzulgf6","slide":9,"bbox":[80,330,210,58]}
+{"kind":"textbox","id":"sh/gjqdsvyl","slide":9,"text":"ครู","textPreview":"ครู","textChars":3,"textLines":1,"bbox":[90,340,190,36]}
+{"kind":"shape","id":"sh/fihcjqx0","slide":9,"bbox":[314,359,100,1]}
+{"kind":"textbox","id":"sh/ehovqlgv","slide":9,"text":"มอบหมาย  รับงาน  อนุมัติ","textPreview":"มอบหมาย  รับงาน  อนุมัติ","textChars":24,"textLines":1,"bbox":[448,341,650,44]}
+{"kind":"shape","id":"sh/hovu9wf2","slide":9,"bbox":[80,422,210,58]}
+{"kind":"textbox","id":"sh/wnmtgryh","slide":9,"text":"ฝ่ายวิชาการ","textPreview":"ฝ่ายวิชาการ","textChars":11,"textLines":1,"bbox":[90,432,190,36]}
+{"kind":"shape","id":"sh/87qdwr6d","slide":9,"bbox":[314,451,100,1]}
+{"kind":"textbox","id":"sh/98zu5wny","slide":9,"text":"ตรวจและอนุมัติขั้นสุดท้าย","textPreview":"ตรวจและอนุมัติขั้นสุดท้าย","textChars":25,"textLines":1,"bbox":[448,433,650,44]}
+{"kind":"shape","id":"sh/m58vuho7","slide":9,"bbox":[80,514,210,58]}
+{"kind":"textbox","id":"sh/n6hc3mps","slide":9,"text":"ผู้ดูแล","textPreview":"ผู้ดูแล","textChars":7,"textLines":1,"bbox":[90,524,190,36]}
+{"kind":"shape","id":"sh/wvad0b69","slide":9,"bbox":[314,543,100,1]}
+{"kind":"textbox","id":"sh/xwju9gnu","slide":9,"text":"กำหนดช่วงเวลา","textPreview":"กำหนดช่วงเวลา","textChars":13,"textLines":1,"bbox":[448,525,650,44]}
+{"kind":"notes","id":"nt/hkfhfd","slide":9,"text":"เดินตามลูกศรทีละบทบาทและย้ำจุดส่งต่องานที่ต้องเกิดตามลำดับ\n\nCitation: README.md:45-51; src/lib/domain.ts:79-89; supabase/migrations/001_initial.sql:45-50"}
+{"kind":"slide","id":"sl/euz9ha","slide":10,"title":"MAIN CONTENT","textShapes":18}
+{"kind":"shape","id":"sh/258j21gr","slide":10,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/p8zixgzi","slide":10,"text":"MAIN CONTENT","textPreview":"MAIN CONTENT","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/47q14byx","slide":10,"text":"3 นาที","textPreview":"3 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/f2x0r6hg","slide":10,"text":"วิธีใช้งานของนักเรียน","textPreview":"วิธีใช้งานของนักเรียน","textChars":21,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/u1ozy10v","slide":10,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/h4fitgz6","slide":10,"text":"นักเรียนเห็นรายการของตนและดำเนินการตามปุ่มที่สอดคล้องกับสถานะ","textPreview":"นักเรียนเห็นรายการของตนและดำเนินการตามปุ่มที่สอดคล้องกับสถานะ","textChars":61,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/g3610bi1","slide":10,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/7ex0nmh4","slide":10,"text":"ที่มา: README.md:19-20,45-46; src/components/workspace.tsx:118-145; src/components/assignment-detail.tsx:1-130","textPreview":"ที่มา: README.md:19-20,45-46; src/components/workspace.tsx:118-145; src/components/assignment-detail.tsx:1-130","textChars":110,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/6dozuh0j","slide":10,"text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/oredkv6p","slide":10,"bbox":[82,236,52,52]}
+{"kind":"textbox","id":"sh/psnud07a","slide":10,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[90,247,36,26]}
+{"kind":"textbox","id":"sh/25wvi5oz","slide":10,"text":"เข้าสู่ระบบด้วยเลขนักเรียนและเลขบัตรประชาชน","textPreview":"เข้าสู่ระบบด้วยเลขนักเรียนและเลขบัตรประชาชน","textChars":43,"textLines":1,"bbox":[158,235,430,70]}
+{"kind":"shape","id":"sh/3q5cbap4","slide":10,"bbox":[642,236,52,52]}
+{"kind":"textbox","id":"sh/g3edgv6t","slide":10,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[650,247,36,26]}
+{"kind":"textbox","id":"sh/14nu907e","slide":10,"text":"ดูรายการคงค้างและแถบความคืบหน้า","textPreview":"ดูรายการคงค้างและแถบความคืบหน้า","textChars":31,"textLines":1,"bbox":[718,235,430,70]}
+{"kind":"shape","id":"sh/e1wvelon","slide":10,"bbox":[82,354,52,52]}
+{"kind":"textbox","id":"sh/f25c7qp8","slide":10,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[90,365,36,26]}
+{"kind":"textbox","id":"sh/0zydsf6x","slide":10,"text":"กด ยื่นคำร้อง เมื่อสถานะ 0%","textPreview":"กด ยื่นคำร้อง เมื่อสถานะ 0%","textChars":27,"textLines":1,"bbox":[158,353,430,70]}
+{"kind":"shape","id":"sh/l0relk7i","slide":10,"bbox":[642,354,52,52]}
+{"kind":"textbox","id":"sh/9gnu5kzm","slide":10,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[650,365,36,26]}
+{"kind":"textbox","id":"sh/8fedcfy1","slide":10,"text":"เปิดหน้ารายละเอียดเมื่อครูมอบหมายแล้ว","textPreview":"เปิดหน้ารายละเอียดเมื่อครูมอบหมายแล้ว","textChars":37,"textLines":1,"bbox":[718,353,430,70]}
+{"kind":"shape","id":"sh/7elc3ahg","slide":10,"bbox":[82,472,52,52]}
+{"kind":"textbox","id":"sh/mdcva5gb","slide":10,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[90,483,36,26]}
+{"kind":"textbox","id":"sh/lc3u1kzq","slide":10,"text":"อ่านคำสั่ง กำหนดส่ง และดาวน์โหลดไฟล์","textPreview":"อ่านคำสั่ง กำหนดส่ง และดาวน์โหลดไฟล์","textChars":36,"textLines":1,"bbox":[158,471,430,70]}
+{"kind":"shape","id":"sh/kbud8fy5","slide":10,"bbox":[642,472,52,52]}
+{"kind":"textbox","id":"sh/zqlczahk","slide":10,"text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[650,483,36,26]}
+{"kind":"textbox","id":"sh/ypcb65gz","slide":10,"text":"รายการ 100% อยู่ในหน้าประวัติ","textPreview":"รายการ 100% อยู่ในหน้าประวัติ","textChars":29,"textLines":1,"bbox":[718,471,430,70]}
+{"kind":"notes","id":"nt/euz9ha","slide":10,"text":"สาธิตจากรายการหนึ่งรายการ ตั้งแต่ปุ่มยื่นคำร้องจนย้ายไปอยู่ในประวัติ\n\nCitation: README.md:19-20,45-46; src/components/workspace.tsx:118-145; src/components/assignment-detail.tsx:1-130"}
+{"kind":"slide","id":"sl/9qocp1","slide":11,"title":"MAIN CONTENT","textShapes":18}
+{"kind":"shape","id":"sh/bedgbmd8","slide":11,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/cfmx47ut","slide":11,"text":"MAIN CONTENT","textPreview":"MAIN CONTENT","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/dgfydcve","slide":11,"text":"3 นาที","textPreview":"3 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/2p4fyxcr","slide":11,"text":"วิธีใช้งานของครูประจำวิชา","textPreview":"วิธีใช้งานของครูประจำวิชา","textChars":25,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/3qdg72dc","slide":11,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/ormx07uh","slide":11,"text":"ครูรับช่วงจากคำร้องและส่งรายการต่อฝ่ายวิชาการหลังตรวจงาน","textPreview":"ครูรับช่วงจากคำร้องและส่งรายการต่อฝ่ายวิชาการหลังตรวจงาน","textChars":56,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/psvy9cv2","slide":11,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/mloza1cv","slide":11,"text":"ที่มา: README.md:47-48; src/components/workspace.tsx:146-159,247-255; supabase/migrations/001_initial.sql:61-70","textPreview":"ที่มา: README.md:47-48; src/components/workspace.tsx:146-159,247-255; supabase/migrations/001_initial.sql:61-70","textChars":111,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/nmxgj6tg","slide":11,"text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/jytgfmlk","slide":11,"bbox":[82,236,52,52]}
+{"kind":"textbox","id":"sh/ixkzm14f","slide":11,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[90,247,36,26]}
+{"kind":"textbox","id":"sh/5kbihw3q","slide":11,"text":"หน้าแรกแสดงคำร้องที่นักเรียนยื่นแล้ว","textPreview":"หน้าแรกแสดงคำร้องที่นักเรียนยื่นแล้ว","textChars":36,"textLines":1,"bbox":[158,235,430,70]}
+{"kind":"shape","id":"sh/kz2horm5","slide":11,"bbox":[642,236,52,52]}
+{"kind":"textbox","id":"sh/7mt0j6lw","slide":11,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[650,247,36,26]}
+{"kind":"textbox","id":"sh/6lkzq14b","slide":11,"text":"กด มอบหมายงาน เพื่อเปิดหน้าแยก","textPreview":"กด มอบหมายงาน เพื่อเปิดหน้าแยก","textChars":30,"textLines":1,"bbox":[718,235,430,70]}
+{"kind":"shape","id":"sh/tovilg32","slide":11,"bbox":[82,354,52,52]}
+{"kind":"textbox","id":"sh/snmhsbmh","slide":11,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[90,365,36,26]}
+{"kind":"textbox","id":"sh/fqd0nqls","slide":11,"text":"ระบุรายละเอียด กำหนดส่ง และไฟล์แนบ","textPreview":"ระบุรายละเอียด กำหนดส่ง และไฟล์แนบ","textChars":34,"textLines":1,"bbox":[158,353,430,70]}
+{"kind":"shape","id":"sh/up4zul47","slide":11,"bbox":[642,354,52,52]}
+{"kind":"textbox","id":"sh/ax8b29sr","slide":11,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[650,365,36,26]}
+{"kind":"textbox","id":"sh/byhcbe9c","slide":11,"text":"ยืนยันเมื่อนักเรียนนำงานมาส่ง","textPreview":"ยืนยันเมื่อนักเรียนนำงานมาส่ง","textChars":29,"textLines":1,"bbox":[718,353,430,70]}
+{"kind":"shape","id":"sh/czat4jax","slide":11,"bbox":[82,472,52,52]}
+{"kind":"textbox","id":"sh/x0judori","slide":11,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[90,483,36,26]}
+{"kind":"textbox","id":"sh/2t8by9sv","slide":11,"text":"ระบุผลการเรียนใหม่และกดอนุมัติ","textPreview":"ระบุผลการเรียนใหม่และกดอนุมัติ","textChars":30,"textLines":1,"bbox":[158,471,430,70]}
+{"kind":"shape","id":"sh/nuhs7u9g","slide":11,"bbox":[642,472,52,52]}
+{"kind":"textbox","id":"sh/ovqt0zal","slide":11,"text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[650,483,36,26]}
+{"kind":"textbox","id":"sh/pwza94r6","slide":11,"text":"ส่งออกรายการคงค้างในรายวิชาของตน","textPreview":"ส่งออกรายการคงค้างในรายวิชาของตน","textChars":32,"textLines":1,"bbox":[718,471,430,70]}
+{"kind":"notes","id":"nt/9qocp1","slide":11,"text":"ย้ำว่าปุ่มเปลี่ยนตามขั้นตอน และครูดำเนินการเฉพาะรายการในรายวิชาที่รับผิดชอบ\n\nCitation: README.md:47-48; src/components/workspace.tsx:146-159,247-255; supabase/migrations/001_initial.sql:61-70"}
+{"kind":"slide","id":"sl/wckoex","slide":12,"title":"MAIN CONTENT","textShapes":10}
+{"kind":"shape","id":"sh/h0zydgfi","slide":12,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/ux8filgr","slide":12,"text":"MAIN CONTENT","textPreview":"MAIN CONTENT","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/vyhgbqxc","slide":12,"text":"3 นาที","textPreview":"3 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/8vqxgby1","slide":12,"text":"วิธีใช้งานของฝ่ายวิชาการ","textPreview":"วิธีใช้งานของฝ่ายวิชาการ","textChars":24,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/9wzy9gfm","slide":12,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/mtofe1gv","slide":12,"text":"ฝ่ายวิชาการยืนยันผลขั้นสุดท้ายและดูแลข้อมูลเข้าออกของระบบ","textPreview":"ฝ่ายวิชาการยืนยันผลขั้นสุดท้ายและดูแลข้อมูลเข้าออกของระบบ","textChars":57,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/7uxg76xg","slide":12,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/srahsfy5","slide":12,"text":"ที่มา: README.md:49,53-59; src/lib/domain.ts:88-89; supabase/migrations/001_initial.sql:66-79","textPreview":"ที่มา: README.md:49,53-59; src/lib/domain.ts:88-89; supabase/migrations/001_initial.sql:66-79","textChars":93,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/tsjyl0fq","slide":12,"text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/1wfqd0j6","slide":12,"bbox":[486,288,308,190]}
+{"kind":"textbox","id":"sh/0v6p4v2l","slide":12,"text":"ฝ่ายวิชาการ","textPreview":"ฝ่ายวิชาการ","textChars":11,"textLines":1,"bbox":[526,346,228,44]}
+{"kind":"shape","id":"sh/fuxoba10","slide":12,"bbox":[92,300,300,58]}
+{"kind":"textbox","id":"sh/eto725kv","slide":12,"text":"อนุมัติขั้นสุดท้าย","textPreview":"อนุมัติขั้นสุดท้าย","textChars":18,"textLines":1,"bbox":[102,310,280,36]}
+{"kind":"shape","id":"sh/dsf690ja","slide":12,"bbox":[860,242,300,58]}
+{"kind":"textbox","id":"sh/sr6p0v2p","slide":12,"text":"นำเข้ารายการคงค้าง","textPreview":"นำเข้ารายการคงค้าง","textChars":18,"textLines":1,"bbox":[870,252,280,36]}
+{"kind":"shape","id":"sh/r6xo7q14","slide":12,"bbox":[860,450,300,58]}
+{"kind":"textbox","id":"sh/6547ylkj","slide":12,"text":"ส่งออกรายการสำเร็จ","textPreview":"ส่งออกรายการสำเร็จ","textChars":18,"textLines":1,"bbox":[870,460,280,36]}
+{"kind":"notes","id":"nt/wckoex","slide":12,"text":"อธิบายว่างานของฝ่ายวิชาการมีทั้งการอนุมัติรายรายการและงานข้อมูลเข้าออก\n\nCitation: README.md:49,53-59; src/lib/domain.ts:88-89; supabase/migrations/001_initial.sql:66-79"}
+{"kind":"slide","id":"sl/tps737","slide":13,"title":"MAIN CONTENT","textShapes":10}
+{"kind":"shape","id":"sh/ahwfqpgr","slide":13,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/xk7yl4z2","slide":13,"text":"MAIN CONTENT","textPreview":"MAIN CONTENT","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/wjyxszyx","slide":13,"text":"2 นาที","textPreview":"2 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/jmpgneh8","slide":13,"text":"วิธีใช้งานของผู้ดูแลระบบ","textPreview":"วิธีใช้งานของผู้ดูแลระบบ","textChars":24,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/ilgfu9gn","slide":13,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/5o7yp4ze","slide":13,"text":"ผู้ดูแลกำหนดช่วงเวลาให้บริการ แต่ไม่มีหน้าที่อนุมัติผลการเรียน","textPreview":"ผู้ดูแลกำหนดช่วงเวลาให้บริการ แต่ไม่มีหน้าที่อนุมัติผลการเรียน","textChars":62,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/knyhwzyt","slide":13,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/zqlgbah4","slide":13,"text":"ที่มา: README.md:24,50-51; src/lib/domain.ts:79-89; supabase/migrations/001_initial.sql:49,83-90","textPreview":"ที่มา: README.md:24,50-51; src/lib/domain.ts:79-89; supabase/migrations/001_initial.sql:49,83-90","textChars":96,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/ypcfi5gj","slide":13,"text":"13","textPreview":"13","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/gn6pgvu5","slide":13,"bbox":[108,266,430,250]}
+{"kind":"textbox","id":"sh/hofq90vq","slide":13,"text":"หน้าที่ของผู้ดูแล","textPreview":"หน้าที่ของผู้ดูแล","textChars":17,"textLines":1,"bbox":[148,298,350,42]}
+{"kind":"textbox","id":"sh/ulo7e5cf","slide":13,"text":"กำหนดช่วงเวลาเปิดและปิด\nเพิ่มข้อความประกาศสำหรับผู้ใช้","textPreview":"กำหนดช่วงเวลาเปิดและปิด | เพิ่มข้อความประกาศสำหรับผู้ใช้","textChars":54,"textLines":2,"bbox":[148,370,350,100]}
+{"kind":"shape","id":"sh/vmx87ad0","slide":13,"bbox":[742,266,430,250]}
+{"kind":"textbox","id":"sh/4bq9kfuh","slide":13,"text":"ไม่ใช่หน้าที่ของผู้ดูแล","textPreview":"ไม่ใช่หน้าที่ของผู้ดูแล","textChars":23,"textLines":1,"bbox":[782,298,350,42]}
+{"kind":"textbox","id":"sh/5czqdkv2","slide":13,"text":"ดูหรือเปลี่ยนผลการเรียน\nอนุมัติรายการแทนฝ่ายวิชาการ","textPreview":"ดูหรือเปลี่ยนผลการเรียน | อนุมัติรายการแทนฝ่ายวิชาการ","textChars":51,"textLines":2,"bbox":[782,370,350,100]}
+{"kind":"notes","id":"nt/tps737","slide":13,"text":"แยกหน้าที่ควบคุมช่วงเวลาออกจากหน้าที่ทางวิชาการให้ชัดเจน\n\nCitation: README.md:24,50-51; src/lib/domain.ts:79-89; supabase/migrations/001_initial.sql:49,83-90"}
+{"kind":"slide","id":"sl/qsaw05","slide":14,"title":"MAIN CONTENT","textShapes":13}
+{"kind":"shape","id":"sh/fe5gry5o","slide":14,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/gfeh036t","slide":14,"text":"MAIN CONTENT","textPreview":"MAIN CONTENT","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/hgnyt8ne","slide":14,"text":"3 นาที","textPreview":"3 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/6pczu9or","slide":14,"text":"การนำเข้าข้อมูล","textPreview":"การนำเข้าข้อมูล","textChars":15,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/7alg3e5c","slide":14,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/sbuhwj6x","slide":14,"text":"ฝ่ายวิชาการนำเข้าข้อมูลที่จำเป็น 11 คอลัมน์ พร้อมตรวจความครบถ้วนก่อนยืนยัน","textPreview":"ฝ่ายวิชาการนำเข้าข้อมูลที่จำเป็น 11 คอลัมน์ พร้อมตรวจความครบถ้วนก่อนยืนยัน","textChars":74,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/tcnyponi","slide":14,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/ilcfq9ov","slide":14,"text":"ที่มา: README.md:53-57; src/lib/import.ts:2-81; src/lib/import-excel.ts:4-26","textPreview":"ที่มา: README.md:53-57; src/lib/import.ts:2-81; src/lib/import-excel.ts:4-26","textChars":76,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/jmlgze5g","slide":14,"text":"14","textPreview":"14","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/natwz6x0","slide":14,"bbox":[225.67,282,48,48]}
+{"kind":"textbox","id":"sh/m9kfq1wf","slide":14,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[229.67,290,40,30]}
+{"kind":"shape","id":"sh/9cby1gf6","slide":14,"bbox":[273.67,306,329.33,1]}
+{"kind":"textbox","id":"sh/8b2xsbel","slide":14,"text":"เตรียมไฟล์\n11 คอลัมน์","textPreview":"เตรียมไฟล์ | 11 คอลัมน์","textChars":21,"textLines":2,"bbox":[72,348,355.33,72]}
+{"kind":"shape","id":"sh/vedg36xw","slide":14,"bbox":[603,282,48,48]}
+{"kind":"textbox","id":"sh/ad4fu1wb","slide":14,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[607,290,40,30]}
+{"kind":"shape","id":"sh/xgvy5gf2","slide":14,"bbox":[651,306,329.33,1]}
+{"kind":"textbox","id":"sh/wfmxwbeh","slide":14,"text":"ตรวจข้อมูล\nทุกแถว","textPreview":"ตรวจข้อมูล | ทุกแถว","textChars":17,"textLines":2,"bbox":[449.33,348,355.33,72]}
+{"kind":"shape","id":"sh/ri9wrmxs","slide":14,"bbox":[980.33,282,48,48]}
+{"kind":"textbox","id":"sh/qh0fihw7","slide":14,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[984.33,290,40,30]}
+{"kind":"textbox","id":"sh/ux8zqpgv","slide":14,"text":"ยืนยันผล\nการนำเข้า","textPreview":"ยืนยันผล | การนำเข้า","textChars":18,"textLines":2,"bbox":[826.67,348,355.33,72]}
+{"kind":"textbox","id":"sh/fyh0zuhg","slide":14,"text":"รองรับ XLSX, CSV และ TSV  •  สูงสุด 5 MB  •  2,000 แถว","textPreview":"รองรับ XLSX, CSV และ TSV  •  สูงสุด 5 MB  •  2,000 แถว","textChars":54,"textLines":1,"bbox":[200,526,880,40]}
+{"kind":"notes","id":"nt/qsaw05","slide":14,"text":"อธิบายขั้นตอน เตรียมไฟล์ ตรวจผล และยืนยันการนำเข้า โดยไม่ลงรายละเอียดทางเทคนิค\n\nCitation: README.md:53-57; src/lib/import.ts:2-81; src/lib/import-excel.ts:4-26"}
+{"kind":"slide","id":"sl/05sava","slide":15,"title":"MAIN CONTENT","textShapes":12}
+{"kind":"shape","id":"sh/obex47ml","slide":15,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/na5gb25g","slide":15,"text":"MAIN CONTENT","textPreview":"MAIN CONTENT","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/m9cf2x4v","slide":15,"text":"2 นาที","textPreview":"2 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/x0nyhwni","slide":15,"text":"การส่งออกและประวัติ","textPreview":"การส่งออกและประวัติ","textChars":19,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/wzex8rmx","slide":15,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/be5gfm5c","slide":15,"text":"ครูและฝ่ายวิชาการส่งออกรายงานคนละขอบเขตตามหน้าที่ของตน","textPreview":"ครูและฝ่ายวิชาการส่งออกรายงานคนละขอบเขตตามหน้าที่ของตน","textChars":54,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/adwf6h4r","slide":15,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/547ylwne","slide":15,"text":"ที่มา: README.md:48-49,59; src/lib/domain.ts:98-101; tests/domain.test.ts:29-33","textPreview":"ที่มา: README.md:48-49,59; src/lib/domain.ts:98-101; tests/domain.test.ts:29-33","textChars":79,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/k3yxcrmt","slide":15,"text":"15","textPreview":"15","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/upojyt0n","slide":15,"bbox":[110,268,220,58]}
+{"kind":"textbox","id":"sh/fqx0ry18","slide":15,"text":"ครู","textPreview":"ครู","textChars":3,"textLines":1,"bbox":[120,278,200,36]}
+{"kind":"textbox","id":"sh/gb6103it","slide":15,"text":"รายการคงค้าง\nในรายวิชาที่รับผิดชอบ","textPreview":"รายการคงค้าง | ในรายวิชาที่รับผิดชอบ","textChars":34,"textLines":2,"bbox":[110,354,220,100]}
+{"kind":"shape","id":"sh/hczitoze","slide":15,"bbox":[530,268,220,58]}
+{"kind":"textbox","id":"sh/2d8j2t0z","slide":15,"text":"ฝ่ายวิชาการ","textPreview":"ฝ่ายวิชาการ","textChars":11,"textLines":1,"bbox":[540,278,200,36]}
+{"kind":"textbox","id":"sh/3eh0vyhk","slide":15,"text":"รายการที่แก้ไข\nสำเร็จแล้ว","textPreview":"รายการที่แก้ไข | สำเร็จแล้ว","textChars":25,"textLines":2,"bbox":[530,354,220,100]}
+{"kind":"shape","id":"sh/4fq143ip","slide":15,"bbox":[950,268,220,58]}
+{"kind":"textbox","id":"sh/pgz2x8za","slide":15,"text":"นักเรียน","textPreview":"นักเรียน","textChars":8,"textLines":1,"bbox":[960,278,200,36]}
+{"kind":"textbox","id":"sh/ih4jq90f","slide":15,"text":"ประวัติรายการ\nของตนเอง","textPreview":"ประวัติรายการ | ของตนเอง","textChars":22,"textLines":2,"bbox":[950,354,220,100]}
+{"kind":"shape","id":"sh/jid0je10","slide":15,"bbox":[330,297,200,1]}
+{"kind":"shape","id":"sh/nmtgrahs","slide":15,"bbox":[750,297,200,1]}
+{"kind":"notes","id":"nt/05sava","slide":15,"text":"เชื่อมหน้าประวัติของนักเรียนกับรายงานสำเร็จของฝ่ายวิชาการ โดยไม่กล่าวว่าระบบแทนระบบทะเบียนหลัก\n\nCitation: README.md:48-49,59; src/lib/domain.ts:98-101; tests/domain.test.ts:29-33"}
+{"kind":"slide","id":"sl/yemvn7","slide":16,"title":"MAIN CONTENT","textShapes":15}
+{"kind":"shape","id":"sh/snetozil","slide":16,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/rm5sfu10","slide":16,"text":"MAIN CONTENT","textPreview":"MAIN CONTENT","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/61wbmp0f","slide":16,"text":"2 นาที","textPreview":"2 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/1s7al4j2","slide":16,"text":"ไฟล์แนบในงานที่ครูมอบหมาย","textPreview":"ไฟล์แนบในงานที่ครูมอบหมาย","textChars":25,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/grytszih","slide":16,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/fqpsju1w","slide":16,"text":"ครูแนบเอกสารประกอบกับงาน และนักเรียนเปิดดูจากหน้ารายละเอียดงาน","textPreview":"ครูแนบเอกสารประกอบกับงาน และนักเรียนเปิดดูจากหน้ารายละเอียดงาน","textChars":62,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/epwbq90b","slide":16,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/pw7upojy","slide":16,"text":"ที่มา: src/components/assignment-actions.tsx:76-105; src/app/actions.ts:106-176; src/app/dashboard/assignments/[id]/page.tsx:34-48","textPreview":"ที่มา: src/components/assignment-actions.tsx:76-105; src/app/actions.ts:106-176; src/app/dashboard/assignments/[id]/page.tsx:34-48","textChars":130,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/ovytwjid","slide":16,"text":"16","textPreview":"16","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/ix4rulof","slide":16,"bbox":[178.5,290,48,48]}
+{"kind":"textbox","id":"sh/3yds3q50","slide":16,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[182.5,298,40,30]}
+{"kind":"shape","id":"sh/4z6twb6l","slide":16,"bbox":[226.5,314,235,1]}
+{"kind":"textbox","id":"sh/p0fa5gn6","slide":16,"text":"ครูเตรียมงาน","textPreview":"ครูเตรียมงาน","textChars":12,"textLines":1,"bbox":[72,356,261,72]}
+{"kind":"shape","id":"sh/q1obyl4b","slide":16,"bbox":[461.5,290,48,48]}
+{"kind":"textbox","id":"sh/r2xs7q5w","slide":16,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[465.5,298,40,30]}
+{"kind":"shape","id":"sh/c36t0vmh","slide":16,"bbox":[509.5,314,235,1]}
+{"kind":"textbox","id":"sh/d4fa90n2","slide":16,"text":"แนบเอกสาร","textPreview":"แนบเอกสาร","textChars":9,"textLines":1,"bbox":[355,356,261,72]}
+{"kind":"shape","id":"sh/65krm1o7","slide":16,"bbox":[744.5,290,48,48]}
+{"kind":"textbox","id":"sh/76tsvm5s","slide":16,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[748.5,298,40,30]}
+{"kind":"shape","id":"sh/ba9on2lk","slide":16,"bbox":[792.5,314,235,1]}
+{"kind":"textbox","id":"sh/a907ux4z","slide":16,"text":"นักเรียนเปิดรายละเอียด","textPreview":"นักเรียนเปิดรายละเอียด","textChars":22,"textLines":1,"bbox":[638,356,261,72]}
+{"kind":"shape","id":"sh/xcrqps3q","slide":16,"bbox":[1027.5,290,48,48]}
+{"kind":"textbox","id":"sh/wbipwnm5","slide":16,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[1031.5,298,40,30]}
+{"kind":"textbox","id":"sh/nmpojil8","slide":16,"text":"ดาวน์โหลดไฟล์","textPreview":"ดาวน์โหลดไฟล์","textChars":13,"textLines":1,"bbox":[921,356,261,72]}
+{"kind":"textbox","id":"sh/mlg7qd43","slide":16,"text":"สูงสุด 5 ไฟล์  •  รวมไม่เกิน 4 MB  •  PDF, Office, JPG, PNG, TXT","textPreview":"สูงสุด 5 ไฟล์  •  รวมไม่เกิน 4 MB  •  PDF, Office, JPG, PNG, TXT","textChars":64,"textLines":1,"bbox":[170,538,940,40]}
+{"kind":"notes","id":"nt/yemvn7","slide":16,"text":"สาธิตตำแหน่งแนบไฟล์ของครูและปุ่มดาวน์โหลดของนักเรียน โดยไม่อธิบายกลไกเบื้องหลัง\n\nCitation: src/components/assignment-actions.tsx:76-105; src/app/actions.ts:106-176; src/app/dashboard/assignments/[id]/page.tsx:34-48"}
+{"kind":"slide","id":"sl/ooffbl","slide":17,"title":"MAIN CONTENT","textShapes":11}
+{"kind":"shape","id":"sh/ilsrup8r","slide":17,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/58jap4r2","slide":17,"text":"MAIN CONTENT","textPreview":"MAIN CONTENT","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/4na9wzqh","slide":17,"text":"3 นาที","textPreview":"3 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/vih8ju90","slide":17,"text":"กติกาการทำงานร่วมกัน","textPreview":"กติกาการทำงานร่วมกัน","textChars":20,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/uh8rqp8f","slide":17,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/hkzalkr6","slide":17,"text":"แต่ละบทบาทเห็นและดำเนินการเฉพาะส่วนที่รับผิดชอบ พร้อมส่งต่องานตามลำดับ","textPreview":"แต่ละบทบาทเห็นและดำเนินการเฉพาะส่วนที่รับผิดชอบ พร้อมส่งต่องานตามลำดับ","textChars":70,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/gjq9sfql","slide":17,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/7eh8fa9o","slide":17,"text":"ที่มา: README.md:26-28,61-69; supabase/migrations/001_initial.sql:40-80; src/proxy.ts:14-33","textPreview":"ที่มา: README.md:26-28,61-69; supabase/migrations/001_initial.sql:40-80; src/proxy.ts:14-33","textChars":91,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/mdorm58j","slide":17,"text":"17","textPreview":"17","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/4be9wry5","slide":17,"bbox":[492,302,296,180]}
+{"kind":"textbox","id":"sh/5c7apwfq","slide":17,"text":"รายการผลการเรียน\nคงค้าง","textPreview":"รายการผลการเรียน | คงค้าง","textChars":23,"textLines":2,"bbox":[552,356,176,70]}
+{"kind":"shape","id":"sh/ipwru1gz","slide":17,"bbox":[92,256,300,58]}
+{"kind":"textbox","id":"sh/ja5snmxk","slide":17,"text":"นักเรียน\nรายการของตน","textPreview":"นักเรียน | รายการของตน","textChars":20,"textLines":2,"bbox":[102,266,280,36]}
+{"kind":"shape","id":"sh/wne9sryt","slide":17,"bbox":[92,458,300,58]}
+{"kind":"textbox","id":"sh/honqlwfe","slide":17,"text":"ครู\nรายวิชาของตน","textPreview":"ครู | รายวิชาของตน","textChars":16,"textLines":2,"bbox":[102,468,280,36]}
+{"kind":"shape","id":"sh/ulwrqhg3","slide":17,"bbox":[888,256,300,58]}
+{"kind":"textbox","id":"sh/vm58jmxo","slide":17,"text":"ฝ่ายวิชาการ\nอนุมัติขั้นสุดท้าย","textPreview":"ฝ่ายวิชาการ | อนุมัติขั้นสุดท้าย","textChars":30,"textLines":2,"bbox":[898,266,280,36]}
+{"kind":"shape","id":"sh/0ji9obed","slide":17,"bbox":[888,458,300,58]}
+{"kind":"textbox","id":"sh/1kraxgfy","slide":17,"text":"ผู้ดูแล\nกำหนดเวลา","textPreview":"ผู้ดูแล | กำหนดเวลา","textChars":17,"textLines":2,"bbox":[898,468,280,36]}
+{"kind":"notes","id":"nt/ooffbl","slide":17,"text":"ใช้สถานการณ์ตัวอย่างถามผู้ฟังว่า ตอนนี้ใครเป็นผู้ดำเนินการต่อ เพื่อทบทวนขอบเขตหน้าที่\n\nCitation: README.md:26-28,61-69; supabase/migrations/001_initial.sql:40-80; src/proxy.ts:14-33"}
+{"kind":"slide","id":"sl/tshbki","slide":18,"title":"MAIN CONTENT","textShapes":14}
+{"kind":"shape","id":"sh/f61c3ipg","slide":18,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/g7adwnq1","slide":18,"text":"MAIN CONTENT","textPreview":"MAIN CONTENT","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/hs3u5s7m","slide":18,"text":"2 นาที","textPreview":"2 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/2tcvyxo7","slide":18,"text":"ความพร้อมสำหรับการทดลองใช้","textPreview":"ความพร้อมสำหรับการทดลองใช้","textChars":26,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/3ulc72ps","slide":18,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/4vud076x","slide":18,"text":"ขั้นตอนหลักมีตัวอย่างให้ทดลองครบ แต่ยังต้องตรวจสอบกับผู้ใช้จริงก่อนเปิดเต็มรูปแบบ","textPreview":"ขั้นตอนหลักมีตัวอย่างให้ทดลองครบ แต่ยังต้องตรวจสอบกับผู้ใช้จริงก่อนเปิดเต็มรูปแบบ","textChars":81,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/pw3u9c7i","slide":18,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/qxcv2ho3","slide":18,"text":"ที่มา: VERIFICATION.md:1-24; README.md:70-71,84-90","textPreview":"ที่มา: VERIFICATION.md:1-24; README.md:70-71,84-90","textChars":50,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/rylcb2po","slide":18,"text":"18","textPreview":"18","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"textbox","id":"sh/vmp0belc","slide":18,"text":"พร้อมสำหรับการทดลอง","textPreview":"พร้อมสำหรับการทดลอง","textChars":19,"textLines":1,"bbox":[86,242,480,42]}
+{"kind":"shape","id":"sh/ulgzi9kr","slide":18,"bbox":[92,304,18,18]}
+{"kind":"textbox","id":"sh/horido32","slide":18,"text":"มีโหมดทดลองตั้งแต่ยื่นคำร้องถึงประวัติ 100%","textPreview":"มีโหมดทดลองตั้งแต่ยื่นคำร้องถึงประวัติ 100%","textChars":43,"textLines":1,"bbox":[128,295,470,40]}
+{"kind":"shape","id":"sh/wnyhkj2h","slide":18,"bbox":[92,365,18,18]}
+{"kind":"textbox","id":"sh/7ip07ul0","slide":18,"text":"มีตัวอย่างรายการครบ 4 บทบาท","textPreview":"มีตัวอย่างรายการครบ 4 บทบาท","textChars":27,"textLines":1,"bbox":[128,356,470,40]}
+{"kind":"shape","id":"sh/mxgzepkf","slide":18,"bbox":[92,426,18,18]}
+{"kind":"textbox","id":"sh/9k7i9436","slide":18,"text":"หน้าจอรองรับโทรศัพท์และคอมพิวเตอร์","textPreview":"หน้าจอรองรับโทรศัพท์และคอมพิวเตอร์","textChars":34,"textLines":1,"bbox":[128,417,470,40]}
+{"kind":"shape","id":"sh/8jyhgz2l","slide":18,"bbox":[92,487,18,18]}
+{"kind":"textbox","id":"sh/re90jy1k","slide":18,"text":"มีการตรวจขั้นตอนนำเข้าและส่งออกรายงาน","textPreview":"มีการตรวจขั้นตอนนำเข้าและส่งออกรายงาน","textChars":37,"textLines":1,"bbox":[128,478,470,40]}
+{"kind":"shape","id":"sh/qt0zqtkz","slide":18,"bbox":[640,240,1,330]}
+{"kind":"textbox","id":"sh/2943ix47","slide":18,"text":"ยังต้องดำเนินการ","textPreview":"ยังต้องดำเนินการ","textChars":16,"textLines":1,"bbox":[706,242,430,42]}
+{"kind":"textbox","id":"sh/nadkr25s","slide":18,"text":"ยังไม่ได้ทดสอบบัญชีจริงของนักเรียน ครู และฝ่ายวิชาการ","textPreview":"ยังไม่ได้ทดสอบบัญชีจริงของนักเรียน ครู และฝ่ายวิชาการ","textChars":53,"textLines":1,"bbox":[706,316,430,120]}
+{"kind":"textbox","id":"sh/obmlk7mx","slide":18,"text":"ควรทดลองกับตัวแทนครบทั้ง 4 บทบาท","textPreview":"ควรทดลองกับตัวแทนครบทั้ง 4 บทบาท","textChars":32,"textLines":1,"bbox":[706,460,430,70]}
+{"kind":"notes","id":"nt/tshbki","slide":18,"text":"โหมดทดลองใช้ข้อมูลสมมติ จึงควรจัดรอบทดลองกับผู้แทนแต่ละบทบาทและบันทึกข้อเสนอแนะก่อนใช้จริง\n\nCitation: VERIFICATION.md:1-24; README.md:70-71,84-90"}
+{"kind":"slide","id":"sl/05okes","slide":19,"title":"CASE STUDIES","textShapes":22}
+{"kind":"shape","id":"sh/5wr2do7i","slide":19,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/it0j2tor","slide":19,"text":"CASE STUDIES","textPreview":"CASE STUDIES","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/ju9kbepc","slide":19,"text":"4 นาที","textPreview":"4 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/sz2l836t","slide":19,"text":"ตัวอย่างรายการที่จบครบ 100%","textPreview":"ตัวอย่างรายการที่จบครบ 100%","textChars":27,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/t0b2h87e","slide":19,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/6xk36to3","slide":19,"text":"ข้อมูลสมมติแสดงการส่งต่องานตั้งแต่คำร้องจนฝ่ายวิชาการอนุมัติ","textPreview":"ข้อมูลสมมติแสดงการส่งต่องานตั้งแต่คำร้องจนฝ่ายวิชาการอนุมัติ","textChars":60,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/rytkfypo","slide":19,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/0n2lc365","slide":19,"text":"ที่มา: src/lib/demo.ts:2-31,38-89; README.md:70","textPreview":"ที่มา: src/lib/demo.ts:2-31,38-89; README.md:70","textChars":47,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/1ov2l87q","slide":19,"text":"19","textPreview":"19","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/18nal832","slide":19,"bbox":[150,358,148,1]}
+{"kind":"shape","id":"sh/07e9c3mh","slide":19,"bbox":[108,316,84,84]}
+{"kind":"textbox","id":"sh/z65sjylw","slide":19,"text":"10 ก.ย.","textPreview":"10 ก.ย.","textChars":7,"textLines":1,"bbox":[102,270,96,34]}
+{"kind":"textbox","id":"sh/e5wrat4b","slide":19,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[128,340,44,24]}
+{"kind":"textbox","id":"sh/9c7ap83y","slide":19,"text":"ยื่นคำร้อง","textPreview":"ยื่นคำร้อง","textChars":10,"textLines":1,"bbox":[74,422,152,54]}
+{"kind":"shape","id":"sh/obe9g3md","slide":19,"bbox":[374,358,148,1]}
+{"kind":"shape","id":"sh/na5snyls","slide":19,"bbox":[332,316,84,84]}
+{"kind":"textbox","id":"sh/m9wret47","slide":19,"text":"12 ก.ย.","textPreview":"12 ก.ย.","textChars":7,"textLines":1,"bbox":[326,270,96,34]}
+{"kind":"textbox","id":"sh/pg3ado3u","slide":19,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[352,340,44,24]}
+{"kind":"textbox","id":"sh/4fu94jm9","slide":19,"text":"มอบหมาย","textPreview":"มอบหมาย","textChars":7,"textLines":1,"bbox":[298,422,152,54]}
+{"kind":"shape","id":"sh/gjy90ju5","slide":19,"bbox":[598,358,148,1]}
+{"kind":"shape","id":"sh/hk7atobq","slide":19,"bbox":[556,316,84,84]}
+{"kind":"textbox","id":"sh/uxwry9cz","slide":19,"text":"14 ก.ย.","textPreview":"14 ก.ย.","textChars":7,"textLines":1,"bbox":[550,270,96,34]}
+{"kind":"textbox","id":"sh/vipsretk","slide":19,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[576,340,44,24]}
+{"kind":"textbox","id":"sh/4ny94ju1","slide":19,"text":"รับงาน","textPreview":"รับงาน","textChars":6,"textLines":1,"bbox":[522,422,152,54]}
+{"kind":"shape","id":"sh/5o7axobm","slide":19,"bbox":[822,358,148,1]}
+{"kind":"shape","id":"sh/ilgr2tcv","slide":19,"bbox":[780,316,84,84]}
+{"kind":"textbox","id":"sh/3mpsvytg","slide":19,"text":"15 ก.ย.","textPreview":"15 ก.ย.","textChars":7,"textLines":1,"bbox":[774,270,96,34]}
+{"kind":"textbox","id":"sh/srit83ud","slide":19,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[800,340,44,24]}
+{"kind":"textbox","id":"sh/dsra18bi","slide":19,"text":"ครูอนุมัติ","textPreview":"ครูอนุมัติ","textChars":10,"textLines":1,"bbox":[746,422,152,54]}
+{"kind":"shape","id":"sh/nmtcr2d0","slide":19,"bbox":[1004,316,84,84]}
+{"kind":"textbox","id":"sh/2lkvyxwf","slide":19,"text":"16 ก.ย.","textPreview":"16 ก.ย.","textChars":7,"textLines":1,"bbox":[998,270,96,34]}
+{"kind":"textbox","id":"sh/p8vutcvq","slide":19,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[1024,340,44,24]}
+{"kind":"textbox","id":"sh/o72d07el","slide":19,"text":"วิชาการอนุมัติ","textPreview":"วิชาการอนุมัติ","textChars":14,"textLines":1,"bbox":[970,422,152,54]}
+{"kind":"textbox","id":"sh/fitcnido","slide":19,"text":"ข้อมูลสมมติ: กิตติพัฒน์ ใจดี  •  พ31101  •  ผลเดิม 0  •  ผลใหม่ 1","textPreview":"ข้อมูลสมมติ: กิตติพัฒน์ ใจดี  •  พ31101  •  ผลเดิม 0  •  ผลใหม่ 1","textChars":65,"textLines":1,"bbox":[170,540,940,36]}
+{"kind":"notes","id":"nt/05okes","slide":19,"text":"ข้อมูลทั้งหมดเป็นข้อมูลสมมติ ใช้สาธิตการส่งต่องานเท่านั้น ไม่ใช่กรณีของนักเรียนจริง\n\nCitation: src/lib/demo.ts:2-31,38-89; README.md:70"}
+{"kind":"slide","id":"sl/5c32di","slide":20,"title":"CASE STUDIES","textShapes":10}
+{"kind":"shape","id":"sh/cv2dwzm5","slide":20,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/rutcnu5k","slide":20,"text":"CASE STUDIES","textPreview":"CASE STUDIES","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/qtkvu94z","slide":20,"text":"3 นาที","textPreview":"3 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/l0vutonm","slide":20,"text":"ตัวอย่างการเตรียมข้อมูลนำเข้า","textPreview":"ตัวอย่างการเตรียมข้อมูลนำเข้า","textChars":29,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/0zmd0jm1","slide":20,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/zydcre5w","slide":20,"text":"ระบบเลือกเฉพาะข้อมูลที่จำเป็นและคงรูปแบบรหัสนักเรียนไว้","textPreview":"ระบบเลือกเฉพาะข้อมูลที่จำเป็นและคงรูปแบบรหัสนักเรียนไว้","textChars":55,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/yxkvy94b","slide":20,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/94vuxony","slide":20,"text":"ที่มา: tests/domain.test.ts:34-56; src/lib/import.ts:2-14; VERIFICATION.md:9-10","textPreview":"ที่มา: tests/domain.test.ts:34-56; src/lib/import.ts:2-14; VERIFICATION.md:9-10","textChars":79,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/83md4jmd","slide":20,"text":"20","textPreview":"20","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"textbox","id":"sh/uxw72dw7","slide":20,"text":"ไฟล์ตัวอย่าง","textPreview":"ไฟล์ตัวอย่าง","textChars":12,"textLines":1,"bbox":[90,246,420,40]}
+{"kind":"textbox","id":"sh/vy58vids","slide":20,"text":"รหัสนักเรียน 00123\nรวม\nQ1\nคอลัมน์อื่นในไฟล์ต้นทาง","textPreview":"รหัสนักเรียน 00123 | รวม | Q1 | คอลัมน์อื่นในไฟล์ต้นทาง","textChars":49,"textLines":4,"bbox":[90,316,420,220]}
+{"kind":"shape","id":"sh/gzep4ned","slide":20,"bbox":[616,248,1,330]}
+{"kind":"textbox","id":"sh/h0nqx8vi","slide":20,"text":"ข้อมูลที่นำเข้า","textPreview":"ข้อมูลที่นำเข้า","textChars":15,"textLines":1,"bbox":[690,246,420,40]}
+{"kind":"textbox","id":"sh/i1w76dw3","slide":20,"text":"รหัสนักเรียน 00123\nเฉพาะ 11 คอลัมน์ที่กำหนด\nคงเลขศูนย์นำหน้า\nไม่รวมคอลัมน์ที่ไม่จำเป็น","textPreview":"รหัสนักเรียน 00123 | เฉพาะ 11 คอลัมน์ที่กำหนด | คงเลขศูนย์นำหน้า | ไม่รวมคอลัมน์ที่ไม่จำเป็น","textChars":86,"textLines":4,"bbox":[690,316,420,220]}
+{"kind":"notes","id":"nt/5c32di","slide":20,"text":"ข้อมูลนี้เป็นตัวอย่าง ไม่ใช่ข้อมูลจริงของโรงเรียน ใช้อธิบายสิ่งที่ฝ่ายวิชาการต้องตรวจในไฟล์ก่อนนำเข้า\n\nCitation: tests/domain.test.ts:34-56; src/lib/import.ts:2-14; VERIFICATION.md:9-10"}
+{"kind":"slide","id":"sl/11xxvq","slide":21,"title":"CASE STUDIES","textShapes":10}
+{"kind":"shape","id":"sh/f2lkvu90","slide":21,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/g3ulozql","slide":21,"text":"CASE STUDIES","textPreview":"CASE STUDIES","textChars":12,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/h432x4r6","slide":21,"text":"2 นาที","textPreview":"2 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/6dsji58j","slide":21,"text":"หลักฐานจากการใช้งานจริง","textPreview":"หลักฐานจากการใช้งานจริง","textChars":23,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/7elkra94","slide":21,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/sfu1kfqp","slide":21,"text":"โปรเจ็กต์มีตัวอย่างขั้นตอน แต่ยังไม่มีกรณีศึกษาจากผู้ใช้จริงให้สรุปผลลัพธ์","textPreview":"โปรเจ็กต์มีตัวอย่างขั้นตอน แต่ยังไม่มีกรณีศึกษาจากผู้ใช้จริงให้สรุปผลลัพธ์","textChars":74,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/tg32tkra","slide":21,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/q9w3u98n","slide":21,"text":"ที่มา: VERIFICATION.md:3-24","textPreview":"ที่มา: VERIFICATION.md:3-24","textChars":27,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/ra5k3ep8","slide":21,"text":"21","textPreview":"21","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"textbox","id":"sh/36lw7yx8","slide":21,"text":"มีข้อมูลในเอกสาร","textPreview":"มีข้อมูลในเอกสาร","textChars":16,"textLines":1,"bbox":[90,246,430,42]}
+{"kind":"textbox","id":"sh/i5cvetwn","slide":21,"text":"ตัวอย่างขั้นตอนครบจนอนุมัติ\nตัวอย่างหน้าจอครบ 4 บทบาท","textPreview":"ตัวอย่างขั้นตอนครบจนอนุมัติ | ตัวอย่างหน้าจอครบ 4 บทบาท","textChars":53,"textLines":2,"bbox":[90,320,430,120]}
+{"kind":"shape","id":"sh/p83e98fe","slide":21,"bbox":[624,246,1,320]}
+{"kind":"textbox","id":"sh/47udg3et","slide":21,"text":"ไม่มีข้อมูลในเอกสาร","textPreview":"ไม่มีข้อมูลในเอกสาร","textChars":19,"textLines":1,"bbox":[690,246,450,42]}
+{"kind":"textbox","id":"sh/ralwbix4","slide":21,"text":"การใช้งานจริงของนักเรียน\nการใช้งานจริงของครูและฝ่ายวิชาการ\nผลต่อเวลา งานค้าง หรือคุณภาพข้อมูล","textPreview":"การใช้งานจริงของนักเรียน | การใช้งานจริงของครูและฝ่ายวิชาการ | ผลต่อเวลา งานค้าง หรือคุณภาพข้อมูล","textChars":93,"textLines":3,"bbox":[690,320,450,180]}
+{"kind":"notes","id":"nt/11xxvq","slide":21,"text":"หลีกเลี่ยงการกล่าวว่าโครงการลดภาระงานจนกว่าจะมีข้อมูลจากการทดลองใช้กับผู้ใช้จริง\n\nCitation: VERIFICATION.md:3-24"}
+{"kind":"slide","id":"sl/ecsanw","slide":22,"title":"SUMMARY","textShapes":15}
+{"kind":"shape","id":"sh/fud8zml4","slide":22,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/0vmp8r2p","slide":22,"text":"SUMMARY","textPreview":"SUMMARY","textChars":7,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/1wvq1w3u","slide":22,"text":"3 นาที","textPreview":"3 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/q5k72hk7","slide":22,"text":"ภาพรวมการทำงานของ 4 บทบาท","textPreview":"ภาพรวมการทำงานของ 4 บทบาท","textChars":25,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/r6t8v2ls","slide":22,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/sr2p472d","slide":22,"text":"สถานะของรายการทำให้ทุกบทบาทรู้ว่าใครต้องทำอะไรต่อ","textPreview":"สถานะของรายการทำให้ทุกบทบาทรู้ว่าใครต้องทำอะไรต่อ","textChars":49,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/dsbqxc3y","slide":22,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/a1ore1kr","slide":22,"text":"ที่มา: README.md:43-69; src/lib/domain.ts:64-89; supabase/migrations/001_initial.sql:45-80","textPreview":"ที่มา: README.md:43-69; src/lib/domain.ts:64-89; supabase/migrations/001_initial.sql:45-80","textChars":90,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/b2x876lc","slide":22,"text":"22","textPreview":"22","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/vedwfyxg","slide":22,"bbox":[68,270,254,58]}
+{"kind":"textbox","id":"sh/ud4fmtgv","slide":22,"text":"นักเรียน","textPreview":"นักเรียน","textChars":8,"textLines":1,"bbox":[78,280,234,36]}
+{"kind":"textbox","id":"sh/hgveh8f6","slide":22,"text":"ยื่นคำร้อง\nติดตามสถานะ","textPreview":"ยื่นคำร้อง | ติดตามสถานะ","textChars":22,"textLines":2,"bbox":[68,362,254,90]}
+{"kind":"shape","id":"sh/gfmxo3yl","slide":22,"bbox":[322,299,42,1]}
+{"kind":"shape","id":"sh/3idwjixc","slide":22,"bbox":[364,270,254,58]}
+{"kind":"textbox","id":"sh/ih4fqdgr","slide":22,"text":"ครู","textPreview":"ครู","textChars":3,"textLines":1,"bbox":[374,280,234,36]}
+{"kind":"textbox","id":"sh/5kfelsfi","slide":22,"text":"มอบหมาย\nรับงาน  อนุมัติ","textPreview":"มอบหมาย | รับงาน  อนุมัติ","textChars":23,"textLines":2,"bbox":[364,362,254,90]}
+{"kind":"shape","id":"sh/4jmxsnyx","slide":22,"bbox":[618,299,42,1]}
+{"kind":"shape","id":"sh/rmxwnix8","slide":22,"bbox":[660,270,254,58]}
+{"kind":"textbox","id":"sh/qlofudg3","slide":22,"text":"ฝ่ายวิชาการ","textPreview":"ฝ่ายวิชาการ","textChars":11,"textLines":1,"bbox":[670,280,234,36]}
+{"kind":"textbox","id":"sh/mdsr2l47","slide":22,"text":"ตรวจผล\nปิดรายการ 100%","textPreview":"ตรวจผล | ปิดรายการ 100%","textChars":21,"textLines":2,"bbox":[660,362,254,90]}
+{"kind":"shape","id":"sh/ne18bqls","slide":22,"bbox":[914,299,42,1]}
+{"kind":"shape","id":"sh/ofa94vmd","slide":22,"bbox":[956,270,254,58]}
+{"kind":"textbox","id":"sh/9g3qd03y","slide":22,"text":"ผู้ดูแล","textPreview":"ผู้ดูแล","textChars":7,"textLines":1,"bbox":[966,280,234,36]}
+{"kind":"textbox","id":"sh/epsry14b","slide":22,"text":"กำหนดช่วงเวลา\nเปิดและปิด","textPreview":"กำหนดช่วงเวลา | เปิดและปิด","textChars":24,"textLines":2,"bbox":[956,362,254,90]}
+{"kind":"textbox","id":"sh/zq1876lw","slide":22,"text":"นำเข้าและส่งออกสนับสนุนงานข้อมูลของฝ่ายวิชาการ","textPreview":"นำเข้าและส่งออกสนับสนุนงานข้อมูลของฝ่ายวิชาการ","textChars":46,"textLines":1,"bbox":[250,528,780,38]}
+{"kind":"notes","id":"nt/ecsanw","slide":22,"text":"ทบทวนเส้นทางหนึ่งรายการตั้งแต่เริ่มต้นถึงเสร็จสมบูรณ์ แล้วเชื่อมกลับไปยังหน้าที่ของแต่ละบทบาท\n\nCitation: README.md:43-69; src/lib/domain.ts:64-89; supabase/migrations/001_initial.sql:45-80"}
+{"kind":"slide","id":"sl/26zpea","slide":23,"title":"SUMMARY","textShapes":18}
+{"kind":"shape","id":"sh/uto7atgj","slide":23,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/hwf6lofu","slide":23,"text":"SUMMARY","textPreview":"SUMMARY","textChars":7,"textLines":1,"bbox":[64,34,360,24]}
+{"kind":"textbox","id":"sh/gv6pcjy9","slide":23,"text":"4 นาที","textPreview":"4 นาที","textChars":6,"textLines":1,"bbox":[1092,34,124,24]}
+{"kind":"textbox","id":"sh/76xofexs","slide":23,"text":"สิ่งที่ต้องทำก่อนเปิดใช้งานจริง","textPreview":"สิ่งที่ต้องทำก่อนเปิดใช้งานจริง","textChars":31,"textLines":1,"bbox":[64,72,1120,58]}
+{"kind":"shape","id":"sh/654n69g7","slide":23,"bbox":[64,143,1120,62]}
+{"kind":"textbox","id":"sh/tsf6hofy","slide":23,"text":"โรงเรียนต้องกำหนดเจ้าของงาน เตรียมข้อมูลผู้ใช้ และทดลองกระบวนงานครบทั้ง 4 บทบาท","textPreview":"โรงเรียนต้องกำหนดเจ้าของงาน เตรียมข้อมูลผู้ใช้ และทดลองกระบวนงานครบทั้ง 4 บทบาท","textChars":79,"textLines":1,"bbox":[86,157,1074,36]}
+{"kind":"shape","id":"sh/s7658jyd","slide":23,"bbox":[64,674,1152,1]}
+{"kind":"textbox","id":"sh/r2horixw","slide":23,"text":"ที่มา: README.md:5-15,26-28,41,70-71; VERIFICATION.md:18-24","textPreview":"ที่มา: README.md:5-15,26-28,41,70-71; VERIFICATION.md:18-24","textChars":59,"textLines":1,"bbox":[64,682,1055,22]}
+{"kind":"textbox","id":"sh/q187idgr","slide":23,"text":"23","textPreview":"23","textChars":2,"textLines":1,"bbox":[1140,680,76,24]}
+{"kind":"shape","id":"sh/cj2xsj2x","slide":23,"bbox":[78,239,6,68]}
+{"kind":"textbox","id":"sh/xkby1oji","slide":23,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[102,236,54,40]}
+{"kind":"textbox","id":"sh/ah0fq9k7","slide":23,"text":"ตรวจรายชื่อนักเรียน ครู และฝ่ายวิชาการ","textPreview":"ตรวจรายชื่อนักเรียน ครู และฝ่ายวิชาการ","textChars":38,"textLines":1,"bbox":[164,236,440,70]}
+{"kind":"shape","id":"sh/bi9gze1c","slide":23,"bbox":[662,239,6,68]}
+{"kind":"textbox","id":"sh/ofixoz21","slide":23,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[686,236,54,40]}
+{"kind":"textbox","id":"sh/pgryx4jm","slide":23,"text":"เตรียมข้อมูลผลคงค้างตาม 11 คอลัมน์","textPreview":"เตรียมข้อมูลผลคงค้างตาม 11 คอลัมน์","textChars":34,"textLines":1,"bbox":[748,236,440,70]}
+{"kind":"shape","id":"sh/2d0fm9kv","slide":23,"bbox":[78,355,6,68]}
+{"kind":"textbox","id":"sh/ne9wve1g","slide":23,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[102,352,54,40]}
+{"kind":"textbox","id":"sh/0ryxkz2p","slide":23,"text":"กำหนดช่วงเวลาเปิดและปิดระบบ","textPreview":"กำหนดช่วงเวลาเปิดและปิดระบบ","textChars":27,"textLines":1,"bbox":[164,352,440,70]}
+{"kind":"shape","id":"sh/1cret43a","slide":23,"bbox":[662,355,6,68]}
+{"kind":"textbox","id":"sh/hwzm1wr2","slide":23,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[686,352,54,40]}
+{"kind":"textbox","id":"sh/gvql8rqh","slide":23,"text":"ทดลองใช้งานด้วยบัญชีจริงครบ 4 บทบาท","textPreview":"ทดลองใช้งานด้วยบัญชีจริงครบ 4 บทบาท","textChars":35,"textLines":1,"bbox":[748,352,440,70]}
+{"kind":"shape","id":"sh/vux4zm9w","slide":23,"bbox":[78,471,6,68]}
+{"kind":"textbox","id":"sh/u9o36h8b","slide":23,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[102,468,54,40]}
+{"kind":"textbox","id":"sh/t8fmxcrq","slide":23,"text":"ตรวจขั้นตอนอนุมัติ รายงาน และกรณีข้อมูลผิดพลาด","textPreview":"ตรวจขั้นตอนอนุมัติ รายงาน และกรณีข้อมูลผิดพลาด","textChars":46,"textLines":1,"bbox":[164,468,440,70]}
+{"kind":"shape","id":"sh/876l4rql","slide":23,"bbox":[662,471,6,68]}
+{"kind":"textbox","id":"sh/76x4vm90","slide":23,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[686,468,54,40]}
+{"kind":"textbox","id":"sh/65o32h8f","slide":23,"text":"กำหนดช่องทางแจ้งปัญหาและผู้ตัดสินใจ","textPreview":"กำหนดช่องทางแจ้งปัญหาและผู้ตัดสินใจ","textChars":35,"textLines":1,"bbox":[748,468,440,70]}
+{"kind":"notes","id":"nt/26zpea","slide":23,"text":"ปิดด้วยการมอบหมายเจ้าของงานในแต่ละข้อ เอกสารไม่มีข้อมูลว่าใครรับผิดชอบ จึงต้องกำหนดร่วมกันหลังการนำเสนอ\n\nCitation: README.md:5-15,26-28,41,70-71; VERIFICATION.md:18-24"}

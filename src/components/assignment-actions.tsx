@@ -1,0 +1,157 @@
+"use client";
+
+import { useActionState, useState } from "react";
+import { ArrowRight, FileUp, Info } from "lucide-react";
+import { assignGrade, type AssignmentActionState } from "@/app/actions";
+import type { GradeRecord, Profile } from "@/lib/domain";
+
+export default function AssignmentActions({
+  profile,
+  record,
+  demo = false,
+}: {
+  profile: Profile;
+  record: GradeRecord;
+  demo?: boolean;
+}) {
+  const submitAssignment = assignGrade.bind(null, record.id);
+  const [state, formAction, pending] = useActionState<
+    AssignmentActionState,
+    FormData
+  >(submitAssignment, { error: "" });
+  const [demoMessage, setDemoMessage] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const canAssign = profile.role === "teacher" && record.status === "requested";
+
+  if (!canAssign) return null;
+
+  return (
+    <section className="rounded-2xl border border-[#e7dcef] bg-white p-6 shadow-[0_12px_45px_#3c24520a] max-md:p-5">
+      <div className="mb-5 flex items-start gap-3">
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">
+          <FileUp size={22} />
+        </span>
+        <div>
+          <h2 className="text-lg font-semibold text-ink">กำหนดภาระงาน</h2>
+          <p className="mt-1 text-sm text-secondary">
+            ระบุรายละเอียด กำหนดส่ง และแนบเอกสารประกอบให้นักเรียน
+          </p>
+        </div>
+      </div>
+
+      <form
+        action={demo ? undefined : formAction}
+        onSubmit={
+          demo
+            ? (event) => {
+                event.preventDefault();
+                setDemoMessage(
+                  "บันทึกตัวอย่างแล้ว (โหมดทดลองไม่อัปโหลดไฟล์จริง)",
+                );
+              }
+            : undefined
+        }
+      >
+        <label className="mb-2 block font-medium" htmlFor="assignment">
+          รายละเอียดภาระงาน
+        </label>
+        <textarea
+          className="min-h-[170px] w-full resize-y rounded-xl border border-[#ded5e8] bg-white px-4 py-3 outline-none placeholder:text-[#a99eb3] focus:border-brand focus:ring-3 focus:ring-[#713cd115]"
+          id="assignment"
+          name="assignment"
+          minLength={10}
+          maxLength={10000}
+          required
+          defaultValue={record.assignment ?? ""}
+          placeholder="ระบุชิ้นงาน วิธีดำเนินการ เกณฑ์การประเมิน และสถานที่ส่งงาน"
+        />
+
+        <label className="mt-5 mb-2 block font-medium" htmlFor="due_at">
+          กำหนดส่งงาน (เวลาไทย)
+        </label>
+        <input
+          className="w-full rounded-xl border border-[#ded5e8] bg-white px-4 py-3 outline-none focus:border-brand focus:ring-3 focus:ring-[#713cd115]"
+          id="due_at"
+          name="due_at"
+          type="datetime-local"
+          required
+        />
+
+        <label className="mt-5 mb-2 block font-medium" htmlFor="attachments">
+          ไฟล์แนบเพิ่มเติม{" "}
+          <span className="font-normal text-muted">(ไม่บังคับ)</span>
+        </label>
+        <label
+          className="flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-[#cbb4e7] bg-[#fcfaff] px-5 py-8 text-center transition hover:bg-[#f8f3fe]"
+          htmlFor="attachments"
+        >
+          <FileUp className="mb-3 text-brand" size={28} />
+          <span className="font-medium text-[#674586]">
+            เลือกไฟล์จากเครื่อง
+          </span>
+          <span className="mt-1 text-xs leading-5 text-muted">
+            สูงสุด 5 ไฟล์ รวมไม่เกิน 4 MB · PDF, Word, Excel, PowerPoint, JPG,
+            PNG หรือ TXT
+          </span>
+        </label>
+        <input
+          className="sr-only"
+          id="attachments"
+          name="attachments"
+          type="file"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
+          multiple
+          onChange={(event) =>
+            setSelectedFiles(
+              Array.from(event.currentTarget.files ?? []).map(
+                (file) => file.name,
+              ),
+            )
+          }
+        />
+        {selectedFiles.length > 0 && (
+          <div className="mt-3 rounded-xl border border-[#e9e1f0] bg-white px-4 py-3 text-sm text-[#675773]">
+            <p className="mb-1 font-medium">
+              ไฟล์ที่เลือก ({selectedFiles.length})
+            </p>
+            <ul className="space-y-1 text-xs text-muted">
+              {selectedFiles.map((name, index) => (
+                <li className="truncate" key={`${name}-${index}`}>
+                  {name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="mt-5 flex items-start gap-2 rounded-xl bg-[#f7f3fd] p-4 text-sm leading-6 text-[#6d5785]">
+          <Info className="mt-0.5 shrink-0" size={18} />
+          เมื่อตกลงมอบหมายงาน
+          นักเรียนจะเห็นรายละเอียดและดาวน์โหลดไฟล์แนบได้ทันที
+        </div>
+
+        {(state.error || demoMessage) && (
+          <p
+            className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
+              state.error
+                ? "border-[#f1d2d6] bg-[#fff3f3] text-[#ad3d49]"
+                : "border-[#d8ebdf] bg-[#f1faf5] text-status-green"
+            }`}
+            role="status"
+          >
+            {state.error || demoMessage}
+          </p>
+        )}
+
+        <button
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 font-semibold text-white shadow-[0_6px_18px_#713cd12c] transition enabled:hover:bg-[#602cbc] disabled:cursor-not-allowed disabled:opacity-60"
+          type="submit"
+          disabled={pending}
+        >
+          {pending ? "กำลังอัปโหลดและบันทึก…" : "ยืนยันมอบหมายงาน"}
+          {!pending && <ArrowRight size={18} />}
+        </button>
+      </form>
+    </section>
+  );
+}
