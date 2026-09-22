@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowLeftRight,
+  Loader2,
   LogOut,
   Menu,
   PieChart as PieChartIcon,
@@ -22,6 +23,7 @@ import {
   Search,
   X,
 } from "lucide-react";
+import LogoutOverlay from "@/components/logout-overlay";
 import { signOut } from "@/app/actions";
 import { loadManagerStudents } from "@/app/manager-actions";
 import {
@@ -109,6 +111,7 @@ export default function ManagerWorkspace({
 }) {
   const [view, setView] = useState<ManagerView>("dashboard");
   const [pending, startTransition] = useTransition();
+  const [loggingOut, setLoggingOut] = useState(false);
   const {
     open: mobileMenuOpen,
     setOpen: setMobileMenuOpen,
@@ -125,12 +128,19 @@ export default function ManagerWorkspace({
   const title = "title" in currentPage ? currentPage.title : currentPage.label;
 
   function logout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
     if (demo) {
       window.location.assign("/");
       return;
     }
     startTransition(async () => {
-      await signOut();
+      try {
+        await signOut();
+      } catch (err) {
+        console.error("Logout failed:", err);
+        setLoggingOut(false);
+      }
     });
   }
 
@@ -232,12 +242,16 @@ export default function ManagerWorkspace({
           </div>
           <button
             type="button"
-            disabled={pending}
+            disabled={pending || loggingOut}
             onClick={logout}
-            className="mt-2 flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#756782] hover:bg-[#faf7fe] disabled:opacity-50"
+            className="mt-2 flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#756782] hover:bg-[#faf7fe] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <LogOut size={17} aria-hidden="true" />
-            ออกจากระบบ
+            {loggingOut ? (
+              <Loader2 size={17} className="animate-spin text-brand" aria-hidden="true" />
+            ) : (
+              <LogOut size={17} aria-hidden="true" />
+            )}
+            {loggingOut ? "กำลังออกจากระบบ..." : "ออกจากระบบ"}
           </button>
         </div>
       </aside>
@@ -290,6 +304,7 @@ export default function ManagerWorkspace({
           )}
         </main>
       </div>
+      {loggingOut && <LogoutOverlay />}
     </div>
   );
 }

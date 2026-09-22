@@ -5,6 +5,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   History,
+  Loader2,
   LogOut,
   ArrowUpRight,
   ArrowRight,
@@ -28,6 +29,7 @@ import {
   FileSpreadsheet,
   ClipboardList,
 } from "lucide-react";
+import LogoutOverlay from "@/components/logout-overlay";
 import { advance, saveSchedule, signOut, importGrades } from "@/app/actions";
 import {
   type GradeRecord,
@@ -120,6 +122,7 @@ export default function Workspace({
   const [selected, setSelected] = useState<GradeRecord | null>(null);
   const [toast, setToast] = useState("");
   const [problem, setProblem] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
   const [busy, startTransition] = useTransition();
   const [assignment, setAssignment] = useState("");
   const [due, setDue] = useState("");
@@ -249,12 +252,19 @@ export default function Workspace({
     setProblem("");
   }
   function logout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
     if (demo) {
       window.location.assign("/");
       return;
     }
     startTransition(async () => {
-      await signOut();
+      try {
+        await signOut();
+      } catch (err) {
+        console.error("Logout failed:", err);
+        setLoggingOut(false);
+      }
     });
   }
   function actionLabel(r: GradeRecord) {
@@ -564,10 +574,15 @@ export default function Workspace({
           </div>
           <button
             className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex size-[34px] shrink-0 items-center justify-center rounded-[7px] border-0 bg-transparent p-1.5 text-muted enabled:hover:bg-brand-soft enabled:hover:text-brand"
-            aria-label="ออกจากระบบ"
+            aria-label={loggingOut ? "กำลังออกจากระบบ..." : "ออกจากระบบ"}
+            disabled={loggingOut}
             onClick={logout}
           >
-            <LogOut size={19} />
+            {loggingOut ? (
+              <Loader2 size={19} className="animate-spin text-brand" />
+            ) : (
+              <LogOut size={19} />
+            )}
           </button>
         </div>
       </aside>
@@ -1714,6 +1729,7 @@ export default function Workspace({
           </button>
         </div>
       )}
+      {loggingOut && <LogoutOverlay />}
     </div>
   );
 }
