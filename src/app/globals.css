@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@import '@fontsource/sarabun';
+
 /* Design tokens only. All component styles live in Tailwind utility classes. */
 @theme {
   --font-sans: "Noto Sans Thai Variable", Tahoma, Arial, sans-serif;

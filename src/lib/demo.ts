@@ -50,7 +50,9 @@ export const demoRecords: GradeRecord[] = samples.map(
     course_name: name,
     credits,
     classroom: "ม.4/2",
-    teacher_name: "สุภาวดี ศรีสุข",
+    teacher_name: i === 0
+      ? ["สุภาวดี ศรีสุข", "ณัฐพงศ์ นาคน้อย"]
+      : ["สุภาวดี ศรีสุข"],
     student_code: "12345",
     student_name: "กิตติพัฒน์ ใจดี",
     roll_number: 12,
@@ -58,7 +60,7 @@ export const demoRecords: GradeRecord[] = samples.map(
     semester: 1,
     original_grade: grade,
     status,
-    teacher_id: "teacher-demo",
+    teacher_id: i === 0 ? ["teacher-demo", "teacher-demo-2"] : ["teacher-demo"],
     student_id: "student-demo",
     assignment: [
       "assigned",

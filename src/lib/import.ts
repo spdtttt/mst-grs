@@ -12,6 +12,14 @@ export const columns = {
   ภาคเรียนที่: "semester",
   ผลการเรียน: "original_grade",
 } as const;
+
+function parseTeacherNames(value: unknown) {
+  if (typeof value !== "string") return value;
+  return value
+    .split(",")
+    .map((name) => name.trim().replace(/^\d+\s*[.)]\s*/, "").trim());
+}
+
 export const importSchema = z.object({
   course_code: z.string().trim().min(1).max(40),
   course_name: z.string().trim().min(1).max(200),
@@ -20,7 +28,17 @@ export const importSchema = z.object({
     z.coerce.number().min(0).max(20),
   ),
   classroom: z.string().trim().min(1).max(40),
-  teacher_name: z.string().trim().min(1).max(150),
+  teacher_name: z.preprocess(
+    parseTeacherNames,
+    z.array(z.string().trim().min(1).max(150))
+      .min(1)
+      .max(20)
+      .refine((names) => new Set(names).size === names.length, "ชื่อครูผู้สอนซ้ำกัน")
+      .refine(
+        (names) => names.every((name) => !/^-[\s]*ครูที่ปรึกษาชุมนุม[\s]*-$/.test(name)),
+        "กรุณาระบุชื่อครูจริงแทน -ครูที่ปรึกษาชุมนุม -",
+      ),
+  ),
   student_code: z
     .string()
     .trim()

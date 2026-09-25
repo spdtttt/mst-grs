@@ -184,7 +184,7 @@ export default function AssignmentDetail({
                     `${record.student_name} (${record.student_code})`,
                   ],
                   ["ชั้น/ห้อง", record.classroom],
-                  ["ครูประจำวิชา", record.teacher_name],
+                  ["ครูประจำวิชา", record.teacher_name.join(", ")],
                   ["ผลการเรียนเดิม", record.original_grade],
                   ...(record.final_grade
                     ? [["ผลการเรียนใหม่", record.final_grade]]

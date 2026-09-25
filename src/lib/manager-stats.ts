@@ -25,7 +25,27 @@ export type ManagerStudentRow = {
 export type ManagerStudentList = {
   total: number;
   items: ManagerStudentRow[];
+  years: number[];
 };
+
+export type ManagerStudentFilters = {
+  level?: number | null;
+  academicYear?: number | null;
+  semester?: number | null;
+};
+
+export type ManagerStudentCourse = Pick<
+  GradeRecord,
+  | "id"
+  | "academic_year"
+  | "semester"
+  | "course_code"
+  | "course_name"
+  | "credits"
+  | "teacher_name"
+  | "original_grade"
+  | "status"
+>;
 
 export const managerStudentPageSize = 20;
 
@@ -59,6 +79,7 @@ export function summarizeManagerStudents(
   completed: boolean,
   query = "",
   page = 1,
+  filters: ManagerStudentFilters = {},
 ): ManagerStudentList {
   const students = new Map<
     string,
@@ -79,6 +100,8 @@ export function summarizeManagerStudents(
     if (laterRecord(record, current.latest) > 0) current.latest = record;
   }
   const needle = query.trim().toLocaleLowerCase("th-TH");
+  const years = [...new Set([...students.values()].map(({ latest }) => latest.academic_year))]
+    .sort((a, b) => b - a);
   const matches = [...students.values()]
     .filter((student) =>
       completed ? student.incomplete === 0 : student.incomplete > 0,
@@ -96,14 +119,20 @@ export function summarizeManagerStudents(
     }))
     .filter(
       (student) =>
-        !needle ||
-        [student.student_code, student.student_name, student.classroom].some(
-          (value) => value.toLocaleLowerCase("th-TH").includes(needle),
-        ),
+        (!filters.level ||
+          Number(student.classroom.match(/^ม[.]?\s*([1-6])(?:\s*\/|$)/)?.[1]) ===
+            filters.level) &&
+        (!filters.academicYear || student.academic_year === filters.academicYear) &&
+        (!filters.semester || student.semester === filters.semester) &&
+        (!needle ||
+          [student.student_code, student.student_name, student.classroom].some(
+            (value) => value.toLocaleLowerCase("th-TH").includes(needle),
+          )),
     )
     .sort((a, b) => a.student_code.localeCompare(b.student_code));
   return {
     total: matches.length,
+    years,
     items: matches.slice(
       (page - 1) * managerStudentPageSize,
       page * managerStudentPageSize,

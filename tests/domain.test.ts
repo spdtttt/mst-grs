@@ -133,6 +133,8 @@ test("manager lists count each student once and paginate completed students", ()
     student_code: String(index).padStart(5, "0"),
     student_name: `นักเรียน ${index}`,
     classroom: "ม.5/1",
+    academic_year: index === 0 ? 2568 : 2569,
+    semester: index === 0 ? 2 : 1,
   }));
   const records = [...demoRecords, ...completed];
   const incompleteList = summarizeManagerStudents(records, false);
@@ -150,6 +152,25 @@ test("manager lists count each student once and paginate completed students", ()
   assert.equal(summarizeManagerStudents(records, true, "", 2).items.length, 1);
   assert.equal(summarizeManagerStudents(records, true, "00020").total, 1);
   assert.equal(summarizeManagerStudents(records, false, "00020").total, 0);
+  assert.deepEqual(incompleteList.years, [2569, 2568]);
+  assert.equal(
+    summarizeManagerStudents(records, false, "", 1, { level: 4, academicYear: 2569, semester: 1 }).total,
+    1,
+  );
+  assert.equal(
+    summarizeManagerStudents(records, false, "", 1, { level: 5 }).total,
+    0,
+  );
+  const olderTerm = summarizeManagerStudents(records, true, "", 1, {
+    level: 5,
+    academicYear: 2568,
+    semester: 2,
+  });
+  assert.deepEqual(olderTerm.items.map((student) => student.student_code), ["00000"]);
+  assert.equal(
+    summarizeManagerStudents(records, true, "", 1, { academicYear: 2568, semester: 1 }).total,
+    0,
+  );
 });
 test("CSV export neutralizes spreadsheet formulas including whitespace", () => {
   for (const c of ["=1+1", "+cmd", "-1", "@SUM(A1)", "\t=1"])
@@ -177,7 +198,28 @@ test("import keeps only the specified 11 columns and leading zero IDs", () => {
   assert.equal(result.errors.length, 0);
   assert.equal(Object.keys(result.rows[0]).length, 11);
   assert.equal(result.rows[0].student_code, "00123");
+  assert.deepEqual(result.rows[0].teacher_name, ["ครู ตัวอย่าง"]);
   assert.equal("Q1" in result.rows[0], false);
+});
+
+test("import parses numbered co-teachers and rejects duplicate names", () => {
+  const twoTeachers = [...row];
+  twoTeachers[4] = "1.นางสาวนวิยา หมื่นหนู, 2.นางสาววรัญรัตน์ เพชรชำนาญ";
+  const parsed = parseRows(Object.keys(columns), [twoTeachers]);
+  assert.deepEqual(parsed.rows[0].teacher_name, [
+    "นางสาวนวิยา หมื่นหนู",
+    "นางสาววรัญรัตน์ เพชรชำนาญ",
+  ]);
+  assert.equal(parsed.errors.length, 0);
+  const csvCell = parseDelimited('ครูผู้สอน\n"1.นางสาวนวิยา หมื่นหนู, 2.นางสาววรัญรัตน์ เพชรชำนาญ"')[1][0];
+  assert.equal(csvCell, twoTeachers[4]);
+  twoTeachers[4] = "1.ครู ตัวอย่าง, 2.ครู ตัวอย่าง";
+  assert.equal(parseRows(Object.keys(columns), [twoTeachers]).errors.length, 1);
+  twoTeachers[4] = "1.-ครูที่ปรึกษาชุมนุม -";
+  assert.match(
+    parseRows(Object.keys(columns), [twoTeachers]).errors[0],
+    /กรุณาระบุชื่อครูจริง/,
+  );
 });
 test("import rejects missing headers, wrong grade, duplicates and malformed numbers", () => {
   assert.throws(() => parseRows(["รหัสวิชา"], [row]));

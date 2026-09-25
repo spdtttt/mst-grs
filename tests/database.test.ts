@@ -69,6 +69,12 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     await db.exec(
       readFileSync("supabase/migrations/009_manager_student_lists.sql", "utf8"),
     );
+    await db.exec(
+      readFileSync("supabase/migrations/010_manager_student_courses.sql", "utf8"),
+    );
+    await db.exec(
+      readFileSync("supabase/migrations/011_manager_student_filters.sql", "utf8"),
+    );
     await db.query(
       "insert into public.profiles(id,role,full_name) values($1,'manager','ผู้บริหาร')",
       [manager],
@@ -117,6 +123,14 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     await as(student);
     await assert.rejects(
       () => db.query("select manager_student_list(false,'',20,0)"),
+      /ไม่มีสิทธิ์ดูรายชื่อนักเรียน/,
+    );
+    await assert.rejects(
+      () => db.query("select manager_student_courses('001')"),
+      /ไม่มีสิทธิ์ดูรายละเอียดนักเรียน/,
+    );
+    await assert.rejects(
+      () => db.query("select manager_student_list_filtered(false,'',20,0,null,null,null)"),
       /ไม่มีสิทธิ์ดูรายชื่อนักเรียน/,
     );
     await assert.rejects(
@@ -297,6 +311,47 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
       ]),
       [["001", 1, 1]],
     );
+    const initialCourses = (
+      await db.query<{ courses: Record<string, unknown>[] }>(
+        "select manager_student_courses('001') courses",
+      )
+    ).rows[0].courses;
+    assert.equal(initialCourses.length, 1);
+    assert.equal(initialCourses[0].status, "pending");
+    assert.deepEqual(Object.keys(initialCourses[0]).sort(), [
+      "academic_year", "course_code", "course_name", "credits", "id",
+      "original_grade", "semester", "status", "teacher_name",
+    ]);
+    await db.exec("reset role");
+    await db.exec(readFileSync("supabase/migrations/012_multi_teachers.sql", "utf8"));
+    const migratedTeacher = (
+      await db.query<{ teacher_name: string[]; teacher_id: string[] }>(
+        "select teacher_name,teacher_id from grade_records where id=$1",
+        [id],
+      )
+    ).rows[0];
+    assert.deepEqual(migratedTeacher.teacher_name, ["ครู หนึ่ง"]);
+    assert.deepEqual(migratedTeacher.teacher_id, [teacher]);
+    await assert.rejects(
+      () => db.query("delete from public.profiles where id=$1", [teacher]),
+      /ไม่สามารถลบบัญชีครูที่มีรายการผลการเรียนอยู่/,
+    );
+    await as(academic);
+    await assert.rejects(
+      () => importRows([{ ...input, course_code: "ช31101", teacher_name: ["-ครูที่ปรึกษาชุมนุม -"] }]),
+      /กรุณาระบุชื่อครูจริง/,
+    );
+    await assert.rejects(
+      () => importRows([{ ...input, course_code: "ช31101", teacher_name: ["ครู ที่ไม่มีบัญชี"] }]),
+      /ชื่อครูไม่พบหรือซ้ำ/,
+    );
+    await as(manager);
+    const migratedCourses = (
+      await db.query<{ courses: { teacher_name: string[] }[] }>(
+        "select manager_student_courses('001') courses",
+      )
+    ).rows[0].courses;
+    assert.deepEqual(migratedCourses[0].teacher_name, ["ครู หนึ่ง"]);
     assert.deepEqual(
       (
         initialStats.by_level as {
@@ -432,7 +487,7 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
       1,
     );
     await importRows([
-      { ...input, course_code: "ว31101", course_name: "วิทยาศาสตร์" },
+      { ...input, course_code: "ว31101", course_name: "วิทยาศาสตร์", teacher_name: ["ครู หนึ่ง", "ครู สอง"], academic_year: 2568, semester: 2 },
       {
         ...input,
         course_code: "อ32101",
@@ -440,8 +495,49 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
         classroom: "ม.5/1",
         student_code: "002",
         student_name: "นักเรียน สอง",
+        teacher_name: ["ครู หนึ่ง"],
+        academic_year: 2568,
+        semester: 2,
       },
     ]);
+    await as(otherTeacher);
+    const sharedRecords = await db.query<{
+      id: string;
+      teacher_name: string[];
+      teacher_id: string[];
+    }>("select id,teacher_name,teacher_id from grade_records");
+    assert.equal(sharedRecords.rows.length, 1);
+    assert.deepEqual(sharedRecords.rows[0].teacher_name, ["ครู หนึ่ง", "ครู สอง"]);
+    assert.deepEqual(sharedRecords.rows[0].teacher_id, [teacher, otherTeacher]);
+    const sharedId = sharedRecords.rows[0].id;
+    await as(teacher);
+    assert.equal((await db.query("select id from grade_records")).rows.length, 3);
+    await as(student);
+    await db.query("select advance_grade($1,'pending',null,null,null)", [sharedId]);
+    await as(otherTeacher);
+    const sharedAttachmentPath = `${sharedId}/00000000-0000-4000-8000-000000000098.pdf`;
+    await db.query("insert into storage.objects(bucket_id,name) values('assignment-files',$1)", [sharedAttachmentPath]);
+    await db.query("select assign_grade($1,$2,$3,$4::jsonb)", [
+      sharedId,
+      "Shared teacher assignment",
+      new Date(Date.now() + 86400000).toISOString(),
+      JSON.stringify([{
+        storage_path: sharedAttachmentPath,
+        original_name: "shared.pdf",
+        mime_type: "application/pdf",
+        size_bytes: 1024,
+      }]),
+    ]);
+    await as(teacher);
+    assert.equal((await db.query("select id from assignment_files where record_id=$1", [sharedId])).rows.length, 1);
+    assert.equal((await db.query("select id from storage.objects where name=$1", [sharedAttachmentPath])).rows.length, 1);
+    await db.query("select advance_grade($1,'assigned',null,null,null)", [sharedId]);
+    await as(otherTeacher);
+    await db.query("select advance_grade($1,'submitted',null,null,'1')", [sharedId]);
+    assert.equal(
+      (await db.query<{ status: string }>("select status from grade_records where id=$1", [sharedId])).rows[0].status,
+      "teacher_approved",
+    );
     await db.exec("reset role");
     await db.query(
       "update public.grade_records set status='completed',final_grade='1',completed_at=now() where student_id=$1",
@@ -524,6 +620,38 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
       )
     ).rows[0].list;
     assert.deepEqual(unmatchedList, { total: 0, items: [] });
+    const filteredList = (
+      await db.query<{
+        list: { total: number; years: number[]; items: { student_code: string }[] };
+      }>("select manager_student_list_filtered(false,'',20,0,4,2569,1) list")
+    ).rows[0].list;
+    assert.deepEqual(filteredList.years, [2569, 2568]);
+    assert.deepEqual(filteredList.items.map((row) => row.student_code), ["001"]);
+    assert.equal(filteredList.total, 1);
+    const olderIncomplete = (
+      await db.query<{ list: { total: number } }>(
+        "select manager_student_list_filtered(false,'',20,0,null,2568,2) list",
+      )
+    ).rows[0].list;
+    assert.equal(olderIncomplete.total, 0, "filter uses the student's latest term");
+    const filteredCompleted = (
+      await db.query<{ list: { total: number; items: { student_code: string }[] } }>(
+        "select manager_student_list_filtered(true,'002',20,0,5,2568,2) list",
+      )
+    ).rows[0].list;
+    assert.deepEqual(filteredCompleted.items.map((row) => row.student_code), ["002"]);
+    assert.equal(filteredCompleted.total, 1);
+    await assert.rejects(
+      () => db.query("select manager_student_list_filtered(false,'',20,0,7,null,null)"),
+      /ข้อมูลตัวกรองหรือการแบ่งหน้าไม่ถูกต้อง/,
+    );
+    const completedCourses = (
+      await db.query<{ courses: { status: string }[] }>(
+        "select manager_student_courses('002') courses",
+      )
+    ).rows[0].courses;
+    assert.ok(completedCourses.length > 0);
+    assert.ok(completedCourses.every((course) => course.status === "completed"));
     await db.exec("begin; reset role");
     await db.query(
       "update public.grade_records set classroom='ไม่ระบุ' where student_id=$1",

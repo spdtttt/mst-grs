@@ -27,7 +27,7 @@ export type GradeRecord = {
   course_name: string;
   credits: number;
   classroom: string;
-  teacher_name: string;
+  teacher_name: string[];
   student_code: string;
   student_name: string;
   roll_number: number;
@@ -35,7 +35,7 @@ export type GradeRecord = {
   semester: number;
   original_grade: string;
   status: Status;
-  teacher_id: string;
+  teacher_id: string[];
   student_id: string;
   assignment: string | null;
   due_at: string | null;

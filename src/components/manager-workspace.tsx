@@ -3,6 +3,7 @@
 import {
   startTransition,
   useEffect,
+  useRef,
   useState,
   useTransition,
   type ReactNode,
@@ -25,7 +26,7 @@ import {
 } from "lucide-react";
 import LogoutOverlay from "@/components/logout-overlay";
 import { signOut } from "@/app/actions";
-import { loadManagerStudents } from "@/app/manager-actions";
+import { loadManagerStudentCourses, loadManagerStudents } from "@/app/manager-actions";
 import {
   roles,
   statuses,
@@ -41,7 +42,9 @@ import {
   outstandingStatuses,
   summarizeManagerStudents,
   type ManagerStats,
+  type ManagerStudentCourse,
   type ManagerStudentList,
+  type ManagerStudentRow,
 } from "@/lib/manager-stats";
 
 const BarChart = dynamic(
@@ -234,11 +237,11 @@ export default function ManagerWorkspace({
           </label>
         )}
         <div className="mt-auto border-t border-[#eee8f5] pt-4">
-          <div className="px-3 py-2">
-            <strong className="block truncate text-sm font-semibold">
+          <div className="px-3 py-2 font-[Sarabun]">
+            <strong className="block truncate text-[15px] font-semibold">
               {profile.full_name}
             </strong>
-            <span className="text-xs text-[#8b7e99]">{roles.manager}</span>
+            <span className="text-[13px] text-[#8b7e99]">{roles.manager}</span>
           </div>
           <button
             type="button"
@@ -318,11 +321,16 @@ function ManagerStudentsView({
 }) {
   const [input, setInput] = useState("");
   const [query, setQuery] = useState("");
+  const [level, setLevel] = useState("all");
+  const [academicYear, setAcademicYear] = useState("all");
+  const [semester, setSemester] = useState("all");
+  const [yearOptions, setYearOptions] = useState<number[]>([]);
   const [page, setPage] = useState(1);
   const [refresh, setRefresh] = useState(0);
   const [result, setResult] = useState<ManagerStudentList | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedStudent, setSelectedStudent] = useState<ManagerStudentRow | null>(null);
   const format = (value: number) => value.toLocaleString("th-TH");
 
   useEffect(() => {
@@ -330,7 +338,13 @@ function ManagerStudentsView({
     setLoading(true);
     setError("");
     if (demoRecords) {
-      setResult(summarizeManagerStudents(demoRecords, completed, query, page));
+      const summary = summarizeManagerStudents(demoRecords, completed, query, page, {
+        level: level === "all" ? null : Number(level),
+        academicYear: academicYear === "all" ? null : Number(academicYear),
+        semester: semester === "all" ? null : Number(semester),
+      });
+      setResult(summary);
+      setYearOptions(summary.years);
       setLoading(false);
     } else {
       startTransition(async () => {
@@ -339,9 +353,13 @@ function ManagerStudentsView({
             completed,
             page,
             query,
+            level: level === "all" ? null : Number(level),
+            academicYear: academicYear === "all" ? null : Number(academicYear),
+            semester: semester === "all" ? null : Number(semester),
           });
           if (!active) return;
           setResult(response.data);
+          if (response.data) setYearOptions(response.data.years);
           setError(response.error ?? "");
         } catch {
           if (!active) return;
@@ -355,7 +373,7 @@ function ManagerStudentsView({
     return () => {
       active = false;
     };
-  }, [completed, demoRecords, page, query, refresh]);
+  }, [completed, demoRecords, page, query, level, academicYear, semester, refresh]);
 
   const totalPages = Math.max(
     1,
@@ -363,7 +381,7 @@ function ManagerStudentsView({
   );
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[#e9e1f2] bg-white shadow-[0_8px_24px_#40206f08]">
+    <section className="overflow-hidden font-[Sarabun] rounded-2xl border border-[#e9e1f2] bg-white shadow-[0_8px_24px_#40206f08]">
       <div className="flex flex-wrap items-start justify-between gap-4 px-5 pt-6 pb-5 desk:px-7">
         <div>
           <h2 className="text-lg font-semibold text-[#3d2d52]">
@@ -371,13 +389,13 @@ function ManagerStudentsView({
               ? "นักเรียนที่แก้ไขผลการเรียนเรียบร้อยแล้ว"
               : "นักเรียนที่ยังมีผลการเรียนคงค้าง"}
           </h2>
-          <p className="mt-1 text-sm text-[#8c7e99]">
+          <p className="mt-1 text-[15px] text-[#8c7e99]">
             {completed
               ? "แก้ไขครบทุกวิชาและฝ่ายวิชาการอนุมัติแล้ว"
               : "มีอย่างน้อยหนึ่งวิชาที่ยังดำเนินการไม่เสร็จ"}
           </p>
         </div>
-        <span className="rounded-full bg-[#f3ecfb] px-3 py-1.5 text-sm font-medium text-[#6b449f]">
+        <span className="rounded-full bg-[#f3ecfb] px-3 py-1.5 text-sm font-semibold text-[#6b449f]">
           {result ? `${format(result.total)} คน` : "กำลังโหลด"}
         </span>
       </div>
@@ -392,7 +410,7 @@ function ManagerStudentsView({
         }}
         className="flex flex-wrap items-end gap-2 border-t border-[#f0ebf5] px-5 py-4 desk:px-7"
       >
-        <label className="min-w-[220px] flex-1 text-xs font-medium text-[#756782]">
+        <label className="min-w-[220px] flex-1 text-sm font-medium text-[#756782]">
           ค้นหานักเรียน
           <span className="mt-1.5 flex items-center gap-2 rounded-lg border border-[#e5dced] bg-white px-3 focus-within:border-[#9d72cf] focus-within:ring-2 focus-within:ring-[#9d72cf33]">
             <Search
@@ -409,9 +427,60 @@ function ManagerStudentsView({
             />
           </span>
         </label>
+        <label className="grid min-w-[125px] gap-1.5 text-sm font-medium text-[#756782]">
+          ระดับชั้น
+          <select
+            value={level}
+            onChange={(event) => {
+              setResult(null);
+              setPage(1);
+              setLevel(event.target.value);
+            }}
+            className="h-10 rounded-lg border border-[#e5dced] bg-white px-3 text-sm text-[#3d2d52] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
+          >
+            <option value="all">ทุกระดับชั้น</option>
+            {[1, 2, 3, 4, 5, 6].map((value) => (
+              <option key={value} value={value}>ม.{value}</option>
+            ))}
+          </select>
+        </label>
+        <label className="grid min-w-[145px] gap-1.5 text-sm font-medium text-[#756782]">
+          ปีการศึกษาล่าสุด
+          <select
+            value={academicYear}
+            onChange={(event) => {
+              setResult(null);
+              setPage(1);
+              setAcademicYear(event.target.value);
+            }}
+            className="h-10 rounded-lg border border-[#e5dced] bg-white px-3 text-sm text-[#3d2d52] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
+          >
+            <option value="all">ทุกปีการศึกษา</option>
+            {yearOptions.map((year) => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+        </label>
+        <label className="grid min-w-[125px] gap-1.5 text-sm font-medium text-[#756782]">
+          ภาคเรียนที่
+          <select
+            value={semester}
+            onChange={(event) => {
+              setResult(null);
+              setPage(1);
+              setSemester(event.target.value);
+            }}
+            className="h-10 rounded-lg border border-[#e5dced] bg-white px-3 text-sm text-[#3d2d52] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
+          >
+            <option value="all">ทุกภาคเรียน</option>
+            {[1, 2].map((value) => (
+              <option key={value} value={value}>{value}</option>
+            ))}
+          </select>
+        </label>
         <button
           type="submit"
-          className="cursor-pointer rounded-lg bg-yellow-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-yellow-700 duration-300 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
+          className="cursor-pointer rounded-lg bg-yellow-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-yellow-700 duration-300 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
         >
           ค้นหา
         </button>
@@ -445,8 +514,8 @@ function ManagerStudentsView({
         </p>
       ) : result && result.total === 0 ? (
         <p className="px-5 py-16 text-center text-sm text-[#8c7e99]">
-          {query
-            ? "ไม่พบนักเรียนที่ตรงกับคำค้นหา"
+          {query || level !== "all" || academicYear !== "all" || semester !== "all"
+            ? "ไม่พบนักเรียนที่ตรงกับคำค้นหาหรือตัวกรอง"
             : "ยังไม่มีนักเรียนในรายการนี้"}
         </p>
       ) : result ? (
@@ -463,13 +532,13 @@ function ManagerStudentsView({
             data-swipe-ignore
             className="touch-auto overflow-x-auto overscroll-x-contain"
           >
-            <table className="w-full min-w-[820px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[920px] border-collapse text-left text-sm">
               <caption className="sr-only">
                 {completed
                   ? "รายชื่อนักเรียนที่แก้ไขเรียบร้อยแล้ว"
                   : "รายชื่อนักเรียนที่ยังไม่เรียบร้อย"}
               </caption>
-              <thead className="bg-[#f8f5fc] text-xs font-semibold text-[#6d5b80]">
+              <thead className="bg-[#f8f5fc] text-sm font-semibold text-[#6d5b80]">
                 <tr>
                   <th scope="col" className="px-5 py-3.5 desk:pl-7">
                     นักเรียน
@@ -483,11 +552,16 @@ function ManagerStudentsView({
                   <th scope="col" className="px-4 py-3.5 text-right">
                     รายการทั้งหมด
                   </th>
-                  <th scope="col" className="px-4 py-3.5 text-right">
-                    ยังคงค้าง
-                  </th>
+                  { !completed &&
+                    <th scope="col" className="px-4 py-3.5 text-right">
+                      ยังคงค้าง
+                    </th>
+                  }
                   <th scope="col" className="px-5 py-3.5 text-right desk:pr-7">
                     เรียบร้อยแล้ว
+                  </th>
+                  <th scope="col" className="px-5 py-3.5 text-right desk:pr-7">
+                    รายละเอียด
                   </th>
                 </tr>
               </thead>
@@ -515,11 +589,23 @@ function ManagerStudentsView({
                     <td className="px-4 py-4 text-right font-medium tabular-nums text-[#5d4c70]">
                       {format(student.total_records)}
                     </td>
-                    <td className="px-4 py-4 text-right font-semibold tabular-nums text-[#8654c5]">
-                      {format(student.incomplete_records)}
-                    </td>
+                    {!completed &&
+                      <td className="px-4 py-4 text-right font-semibold tabular-nums text-red-500">
+                        {format(student.incomplete_records)}
+                      </td>
+                    }
                     <td className="px-5 py-4 text-right font-semibold tabular-nums text-[#32977c] desk:pr-7">
                       {format(student.completed_records)}
+                    </td>
+                    <td className="px-5 py-4 text-right desk:pr-7">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedStudent(student)}
+                        aria-label={`ดูรายละเอียดรายวิชาของ ${student.student_name}`}
+                        className="cursor-pointer whitespace-nowrap rounded-lg border border-[#d9c8ee] px-3 py-1.5 text-xs font-semibold text-[#7046a4] transition-colors hover:bg-[#f3ecfb] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
+                      >
+                        ดูรายวิชา
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -564,7 +650,142 @@ function ManagerStudentsView({
           </div>
         </>
       ) : null}
+      {selectedStudent && (
+        <ManagerStudentCoursesDialog
+          key={selectedStudent.student_code}
+          student={selectedStudent}
+          demoRecords={demoRecords}
+          completed={completed}
+          onClose={() => setSelectedStudent(null)}
+        />
+      )}
     </section>
+  );
+}
+
+function ManagerStudentCoursesDialog({
+  student,
+  demoRecords,
+  completed,
+  onClose,
+}: {
+  student: ManagerStudentRow;
+  demoRecords: GradeRecord[] | null;
+  completed: boolean;
+  onClose: () => void;
+}) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  const [courses, setCourses] = useState<ManagerStudentCourse[] | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const element = dialog.current;
+    if (element && !element.open) element.showModal();
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    if (demoRecords) {
+      setCourses(
+        demoRecords
+          .filter((record) => record.student_code === student.student_code)
+          .sort(
+            (a, b) =>
+              Number(a.status === "completed") - Number(b.status === "completed") ||
+              b.academic_year - a.academic_year ||
+              b.semester - a.semester ||
+              a.course_code.localeCompare(b.course_code),
+          ),
+      );
+    } else {
+      loadManagerStudentCourses(student.student_code)
+        .then((response) => {
+          if (!active) return;
+          setCourses(response.data);
+          setError(response.error ?? "");
+        })
+        .catch(() => {
+          if (active) setError("ไม่สามารถโหลดรายละเอียดรายวิชาได้ กรุณาลองอีกครั้ง");
+        });
+    }
+    return () => {
+      active = false;
+    };
+  }, [demoRecords, student.student_code]);
+
+  return (
+    <dialog
+      ref={dialog}
+      aria-labelledby="manager-student-courses-title"
+      onClose={onClose}
+      className="fixed inset-0 font-[Sarabun] m-auto max-h-[90vh] w-[calc(100%-32px)] max-w-[900px] overflow-y-auto rounded-2xl border-0 bg-white p-0 text-[#3d2d52] shadow-[0_20px_100px_#26164340] backdrop:bg-[#24163666] backdrop:backdrop-blur-[3px]"
+    >
+      <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[#eee8f5] bg-white px-5 py-4 desk:px-7">
+        <div>
+          <h2 id="manager-student-courses-title" className="text-xl font-semibold">
+            รายละเอียดรายวิชา · {student.student_name}
+          </h2>
+          <p className="mt-1 text-[15px] text-[#756782]">
+            รหัสนักเรียน {student.student_code} · ชั้น/ห้อง {student.classroom}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => dialog.current?.close()}
+          aria-label="ปิดรายละเอียดรายวิชา"
+          className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg text-[#756782] hover:bg-[#f3ecfb] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
+        >
+          <X size={20} aria-hidden="true" />
+        </button>
+      </div>
+      <div className="px-5 py-5 desk:px-7">
+        <div className="mb-5 flex flex-wrap gap-2 text-sm font-medium ">
+          { !completed &&
+            <span className="rounded-full bg-red-100 px-3 py-1.5 text-red-500">
+              ยังแก้ไขไม่ผ่าน {student.incomplete_records} วิชา
+            </span>
+          }
+          <span className="rounded-full bg-[#eaf7f1] px-3 py-1.5 text-[#268467]">
+            แก้ไขผ่านแล้ว {student.completed_records} วิชา
+          </span>
+        </div>
+        {error ? (
+          <p role="alert" className="rounded-xl bg-[#fff4f4] p-5 text-[15px] text-[#a35b68]">
+            {error}
+          </p>
+        ) : courses === null ? (
+          <p role="status" className="py-10 text-center text-[15px] text-[#8c7e99]">
+            กำลังโหลดรายละเอียดรายวิชา…
+          </p>
+        ) : courses.length === 0 ? (
+          <p className="py-10 text-center text-[15px] text-[#8c7e99]">ไม่พบรายวิชาของนักเรียน</p>
+        ) : (
+          <div className="space-y-3">
+            {courses.map((course) => (
+              <article key={course.id} className="rounded-xl border border-[#e9e1f2] p-4">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-semibold text-[15px]">{course.course_code} · {course.course_name}</h3>
+                    <p className="mt-1 text-sm text-[#756782]">
+                      ปีการศึกษา {course.academic_year} · ภาคเรียนที่ {course.semester}
+                    </p>
+                  </div>
+                  <span className={`rounded-full px-3 py-1 text-sm font-semibold ${course.status === "completed" ? "bg-[#eaf7f1] text-[#268467]" : "bg-red-100 text-red-500"}`}>
+                    {course.status === "completed" ? "แก้ไขผ่านแล้ว" : "ยังแก้ไขไม่ผ่าน"}
+                  </span>
+                </div>
+                <dl className="mt-4 grid gap-3 border-t border-[#f0ebf5] pt-4 text-sm sm:grid-cols-2">
+                  <div><dt className="text-xs text-[#8c7e99]">หน่วยกิต</dt><dd className="mt-1">{course.credits}</dd></div>
+                  <div><dt className="text-xs text-[#8c7e99]">คุณครูประจำวิชา</dt><dd className="mt-1">{course.teacher_name.join(", ")}</dd></div>
+                  <div><dt className="text-xs text-[#8c7e99]">ผลการเรียนเดิม</dt><dd className="mt-1">{course.original_grade}</dd></div>
+                  <div><dt className="text-xs text-[#8c7e99]">สถานะปัจจุบัน</dt><dd className="mt-1">{statuses[course.status].label}</dd></div>
+                </dl>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
+    </dialog>
   );
 }
 
@@ -580,9 +801,9 @@ function ManagerMetric({
   tone: "purple" | "amber" | "green";
 }) {
   return (
-    <section className="rounded-2xl border border-[#e9e1f2] bg-white p-5 shadow-[0_8px_24px_#40206f08] desk:p-6">
+    <section className="rounded-2xl border border-[#e9e1f2] bg-white font-[Sarabun] p-5 shadow-[0_8px_24px_#40206f08] desk:p-6">
       <div className="flex items-start justify-between gap-3">
-        <h2 className="text-sm font-medium leading-6 text-[#756782]">
+        <h2 className="text-[15px] font-medium leading-6 text-[#756782]">
           {label}
         </h2>
         <span
@@ -593,7 +814,7 @@ function ManagerMetric({
       </div>
       <p className="mt-3 text-4xl font-semibold tracking-tight text-[#3d2d52] tabular-nums">
         {value === null ? "—" : value.toLocaleString("th-TH")}
-        <span className="ml-2 text-sm font-normal text-[#9486a2]">คน</span>
+        <span className="ml-2 text-[15px] font-normal text-[#9486a2]">คน</span>
       </p>
     </section>
   );
@@ -647,7 +868,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
         />
       </div>
 
-      <section className="mt-6 rounded-2xl border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
+      <section className="mt-6 font-[Sarabun] rounded-2xl border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-[#6e45a8]">
@@ -656,7 +877,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
                 สถิติจำนวนนักเรียนตามระดับชั้น
               </h2>
             </div>
-            <p className="mt-1 text-sm text-[#8c7e99]">
+            <p className="mt-1 text-[15px] text-[#8c7e99]">
               แผนภูมิแสดงจำนวนนักเรียนที่มีผลการเรียนคงค้างตามระดับชั้น
             </p>
           </div>
@@ -717,19 +938,19 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
               ]}
               series={[
                 {
-                  id: "completed",
-                  data: stats.by_level.map((row) => row.completed_students),
-                  label: "แก้ไขเรียบร้อยแล้ว",
-                  color: "#44a98c",
+                  id: "incomplete",
+                  data: stats.by_level.map((row) => row.incomplete_students),
+                  label: "ยังแก้ไขไม่เรียบร้อย",
+                  color: "#ff3a3a",
                   barLabel: (item) => (item.value ? format(item.value) : ""),
                   barLabelPlacement: "outside",
                   valueFormatter: (value) => `${format(value ?? 0)} คน`,
                 },
                 {
-                  id: "incomplete",
-                  data: stats.by_level.map((row) => row.incomplete_students),
-                  label: "ยังแก้ไขไม่เรียบร้อย",
-                  color: "#8c5bd3",
+                  id: "completed",
+                  data: stats.by_level.map((row) => row.completed_students),
+                  label: "แก้ไขเรียบร้อยแล้ว",
+                  color: "#44a98c",
                   barLabel: (item) => (item.value ? format(item.value) : ""),
                   barLabelPlacement: "outside",
                   valueFormatter: (value) => `${format(value ?? 0)} คน`,
@@ -772,14 +993,14 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
         </table>
       </section>
 
-      <section className="mt-6 rounded-2xl border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
+      <section className="mt-6 font-[Sarabun] rounded-2xl border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
         <div className="flex items-center gap-2 text-[#6e45a8]">
           <PieChartIcon size={21} aria-hidden="true" />
           <h2 className="text-lg font-semibold text-[#3d2d52]">
             สัดส่วนนักเรียนตามสถานะการแก้ไข
           </h2>
         </div>
-        <p className="mt-1 text-sm text-[#8c7e99]">
+        <p className="mt-1 text-[15px] text-[#8c7e99]">
           เปรียบเทียบนักเรียนที่แก้ไขครบทุกวิชา กับนักเรียนที่ยังมีวิชาค้าง
         </p>
         {completedStudents === null || incompleteStudents === null ? (
@@ -810,7 +1031,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
                       id: "incomplete",
                       value: incompleteStudents,
                       label: "ยังแก้ไขไม่เรียบร้อย",
-                      color: "#8c5bd3",
+                      color: "#ff3a3a",
                     },
                   ],
                   arcLabel: (item) =>
@@ -840,7 +1061,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
                   key={item.label}
                   className="flex items-center justify-between gap-4 rounded-xl border border-[#f0ebf5] bg-[#fcfbfe] px-4 py-3"
                 >
-                  <span className="flex items-center gap-2 text-sm text-[#665978]">
+                  <span className="flex items-center gap-2 text-[15px] text-[#665978]">
                     <span
                       className={`size-3 shrink-0 rounded-sm ${item.color}`}
                     />
@@ -851,7 +1072,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
                   </strong>
                 </div>
               ))}
-              <p className="px-1 text-xs leading-6 text-[#8e819a]">
+              <p className="px-1 text-sm leading-6 text-[#8e819a]">
                 นับนักเรียนหนึ่งคนเพียงครั้งเดียว
                 และนับว่าเสร็จสิ้นเมื่อแก้ไขครบทุกรายวิชา
               </p>
@@ -860,7 +1081,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
         )}
       </section>
 
-      <section className="mt-6 rounded-2xl border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
+      <section className="mt-6 rounded-2xl font-[Sarabun] border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 text-[#6e45a8]">
@@ -869,7 +1090,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
                 รายการที่ยังคงค้างตามสถานะ
               </h2>
             </div>
-            <p className="mt-1 text-sm text-[#8c7e99]">
+            <p className="mt-1 text-[15px] text-[#8c7e99]">
               นับตามรายวิชา นักเรียนหนึ่งคนอาจมีหลายรายการ
             </p>
           </div>
@@ -884,12 +1105,12 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
                 key={status}
                 className="rounded-xl border border-[#ece5f3] bg-[#fcfbfe] px-4 py-5 last:col-span-2 lg:last:col-span-1"
               >
-                <p className="min-h-10 text-sm leading-5 text-[#756782]">
+                <p className="min-h-10 text-[15px] leading-5 text-[#756782]">
                   {statuses[status].label}
                 </p>
                 <p className="mt-3 text-3xl font-semibold tabular-nums text-[#54357d]">
                   {format(statusCounts[status])}
-                  <span className="ml-2 text-sm font-normal text-[#9587a3]">
+                  <span className="ml-2 text-[15px] font-normal text-[#9587a3]">
                     รายการ
                   </span>
                 </p>

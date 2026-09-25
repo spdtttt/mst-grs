@@ -163,7 +163,7 @@ export default function Workspace({
     role === "student"
       ? r.student_id === actor.id
       : role === "teacher"
-        ? r.teacher_id === actor.id
+        ? r.teacher_id.includes(actor.id)
         : role === "academic",
   );
   const outstanding = scope.filter((r) => r.status !== "completed");
@@ -208,7 +208,7 @@ export default function Workspace({
             r.course_code,
             r.student_name,
             r.student_code,
-            r.teacher_name,
+            ...r.teacher_name,
           ].some((v) => v.toLowerCase().includes(query.toLowerCase()))
         );
       }),
@@ -363,7 +363,9 @@ export default function Workspace({
         ...(extra ? ["ผลการเรียนใหม่", "วันที่ฝ่ายวิชาการอนุมัติ"] : []),
       ],
       filtered.map((r) => [
-        ...Object.values(columns).map((k) => r[k]),
+        ...Object.values(columns).map((k) =>
+          k === "teacher_name" ? r.teacher_name.join(", ") : r[k],
+        ),
         statuses[r.status].label,
         ...(extra ? [r.final_grade, thaiDate(r.completed_at, true)] : []),
       ]),
@@ -970,7 +972,7 @@ export default function Workspace({
                               <td className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
                                 {role === "student" ? (
                                   <>
-                                    <span>{r.teacher_name}</span>
+                                    <span>{r.teacher_name.join(", ")}</span>
                                     <small className="text-xs block text-muted">
                                       ชั้น {r.classroom}
                                     </small>
@@ -1239,7 +1241,8 @@ export default function Workspace({
                         <p>{Object.keys(columns).join(" · ")}</p>
                         <p>
                           ต้องมีบัญชีนักเรียนและครูในระบบก่อนนำเข้า
-                          ชื่อครูต้องตรงกับบัญชีและไม่ซ้ำ รองรับผลการเรียน 0, ร,
+                          ชื่อครูทุกคนต้องตรงกับบัญชีและไม่ซ้ำ หากมีหลายคนให้ใช้รูปแบบ
+                          1.ชื่อครูคนแรก, 2.ชื่อครูคนที่สอง รองรับผลการเรียน 0, ร,
                           มส, มผ รายการเดิมจะถูกข้ามโดยไม่เปลี่ยนสถานะ
                         </p>
                       </div>
@@ -1318,7 +1321,7 @@ export default function Workspace({
                                     {r.course_code} {r.course_name}
                                   </td>
                                   <td className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
-                                    {r.teacher_name}
+                                    {r.teacher_name.join(", ")}
                                   </td>
                                   <td className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
                                     {r.original_grade}
@@ -1511,7 +1514,7 @@ export default function Workspace({
                 <span>
                   ครูประจำวิชา
                   <strong className="font-semibold">
-                    {selected.teacher_name}
+                    {selected.teacher_name.join(", ")}
                   </strong>
                 </span>
                 <span>

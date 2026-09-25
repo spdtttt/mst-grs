@@ -42,9 +42,9 @@ function statusCode(error: unknown) {
 
 export async function notifyTeacherOfNewRequest(input: {
   recordId: string;
-  teacherId: string;
+  teacherIds: string[];
 }) {
-  if (!pushConfigured()) return;
+  if (!pushConfigured() || input.teacherIds.length === 0) return;
 
   webpush.setVapidDetails(
     process.env.VAPID_SUBJECT!,
@@ -56,7 +56,7 @@ export async function notifyTeacherOfNewRequest(input: {
   const { data, error } = await admin
     .from("push_subscriptions")
     .select("id,endpoint,p256dh,auth")
-    .eq("user_id", input.teacherId);
+    .in("user_id", input.teacherIds);
   if (error) {
     console.error("Unable to load Web Push subscriptions:", error.code);
     return;

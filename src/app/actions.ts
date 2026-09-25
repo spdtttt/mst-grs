@@ -186,7 +186,7 @@ export async function assignGrade(
     .select("id,teacher_id,status")
     .eq("id", recordId)
     .single();
-  if (!record || record.teacher_id !== user.id || record.status !== "requested")
+  if (!record || !record.teacher_id.includes(user.id) || record.status !== "requested")
     return { error: "ไม่มีสิทธิ์มอบหมายงานหรือข้อมูลเปลี่ยนแปลงแล้ว" };
 
   const uploaded: string[] = [];
@@ -258,7 +258,7 @@ export async function advance(input: {
   if (requestedRecord)
     await notifyTeacherOfNewRequest({
       recordId: requestedRecord.id,
-      teacherId: requestedRecord.teacher_id,
+      teacherIds: requestedRecord.teacher_id,
     });
   revalidatePath("/dashboard");
   return { success: true };
