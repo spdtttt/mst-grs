@@ -1,6 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { headers } from "next/headers";
 import { createHmac } from "node:crypto";
 import { randomUUID } from "node:crypto";
@@ -263,11 +264,26 @@ export async function advance(input: {
     p_final_grade: input.final_grade ?? null,
   });
   if (error) return { error: error.message };
-  if (requestedRecord)
-    await notifyTeacherOfNewRequest({
-      recordId: requestedRecord.id,
-      teacherIds: requestedRecord.teacher_id,
+  if (requestedRecord) {
+    const teacherIds = Array.isArray(requestedRecord.teacher_id)
+      ? requestedRecord.teacher_id
+      : typeof requestedRecord.teacher_id === "string"
+        ? [requestedRecord.teacher_id]
+        : [];
+    after(async () => {
+      try {
+        await notifyTeacherOfNewRequest({
+          recordId: requestedRecord.id,
+          teacherIds,
+        });
+      } catch (notificationError) {
+        console.error(
+          "Unable to notify teachers after grade request:",
+          notificationError,
+        );
+      }
     });
+  }
   revalidatePath("/dashboard");
   return { success: true };
 }
