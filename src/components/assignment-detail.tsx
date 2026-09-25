@@ -14,6 +14,7 @@ import {
   statuses,
   thaiDate,
   type AssignmentFile,
+  type GradeAssignment,
   type GradeRecord,
   type Profile,
 } from "@/lib/domain";
@@ -29,15 +30,33 @@ export default function AssignmentDetail({
   profile,
   record,
   attachments,
+  assignments = [],
   backHref,
   demo = false,
 }: {
   profile: Profile;
   record: GradeRecord;
   attachments: AssignmentFile[];
+  assignments?: GradeAssignment[];
   backHref: string;
   demo?: boolean;
 }) {
+  const tasks: GradeAssignment[] = assignments.length
+    ? assignments
+    : record.assignment && record.due_at
+      ? [{
+          id: record.id,
+          record_id: record.id,
+          round_number: 1,
+          assignment: record.assignment,
+          due_at: record.due_at,
+          assigned_at: record.assigned_at ?? record.created_at,
+          received_at: record.submitted_at,
+        }]
+      : [];
+  const tasksWithFiles = tasks.filter((task) =>
+    attachments.some((file) => file.assignment_id === task.id),
+  );
   const timeline = [
     ["ยื่นคำร้อง", record.requested_at],
     ["มอบหมายงาน", record.assigned_at],
@@ -97,23 +116,43 @@ export default function AssignmentDetail({
           </div>
         </div>
 
-        <div className="grid grid-cols-[minmax(0,1fr)_360px] gap-6 max-lg:grid-cols-1">
+        <div className="grid grid-cols-[minmax(0,1fr)_360px] gap-6 max-lg:grid-cols-1 font-[Sarabun]">
           <div className="space-y-6">
             <section className="rounded-2xl border border-line bg-white p-6 shadow-[0_12px_45px_#3c24520a] max-md:p-5">
-              <h2 className="mb-5 flex items-center gap-2 text-lg font-semibold">
+              <h2 className="mb-5 flex items-center gap-3 text-lg font-semibold">
                 <BookOpen className="text-brand" size={21} />
                 รายละเอียดภาระงาน
               </h2>
-              {record.assignment ? (
-                <>
-                  <p className="whitespace-pre-wrap text-sm leading-7 text-[#65566f]">
-                    {record.assignment}
-                  </p>
-                  <div className="mt-5 flex items-center gap-2 rounded-xl bg-[#fff8eb] px-4 py-3 text-sm text-[#956b2e]">
-                    <CalendarDays size={18} />
-                    กำหนดส่ง {thaiDate(record.due_at, true)}
-                  </div>
-                </>
+              {tasks.length ? (
+                <div className="space-y-4">
+                  {tasks.map((task) => (
+                    <article
+                      className="rounded-xl border border-[#ece6f1] bg-[#fdfbff] p-4"
+                      key={task.id}
+                    >
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                        <h3 className="font-semibold text-[#51415e]">
+                          ภาระงานที่ {task.round_number}
+                        </h3>
+                        <span className="rounded-full bg-white px-3 py-1 text-xs text-[#806695]">
+                          {task.received_at ? "ครูรับงานแล้ว" : "รอนักเรียนส่งงาน"}
+                        </span>
+                      </div>
+                      <p className="whitespace-pre-wrap text-sm leading-7 text-[#65566f]">
+                        {task.assignment}
+                      </p>
+                      <div className="mt-4 flex items-center gap-2 rounded-xl bg-[#fff8eb] px-4 py-3 text-sm text-[#956b2e]">
+                        <CalendarDays size={18} />
+                        กำหนดส่ง {thaiDate(task.due_at, true)}
+                      </div>
+                      {task.received_at && (
+                        <p className="mt-3 text-xs text-muted">
+                          ครูยืนยันรับงาน {thaiDate(task.received_at, true)}
+                        </p>
+                      )}
+                    </article>
+                  ))}
+                </div>
               ) : (
                 <p className="rounded-xl bg-[#faf8fc] px-4 py-8 text-center text-sm text-muted">
                   ครูยังไม่ได้กำหนดรายละเอียดภาระงาน
@@ -131,34 +170,45 @@ export default function AssignmentDetail({
                   </span>
                 </h2>
                 {attachments.length ? (
-                  <div className="space-y-3">
-                    {attachments.map((file) => (
-                      <div
-                        className="flex items-center gap-3 rounded-xl border border-[#ece6f1] px-4 py-3"
-                        key={file.id}
-                      >
-                        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[#f4eefb] text-brand">
-                          <FileText size={20} />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-[#51415e]">
-                            {file.original_name}
-                          </p>
-                          <p className="mt-0.5 text-xs text-muted">
-                            {fileSize(file.size_bytes)}
-                          </p>
+                  <div className="space-y-5">
+                    {tasksWithFiles.map((task) => (
+                      <div key={task.id}>
+                        <h3 className="mb-2 text-sm font-semibold text-[#675773]">
+                          ภาระงานที่ {task.round_number}
+                        </h3>
+                        <div className="space-y-3">
+                          {attachments
+                            .filter((file) => file.assignment_id === task.id)
+                            .map((file) => (
+                              <div
+                                className="flex items-center gap-3 rounded-xl border border-[#ece6f1] px-4 py-3"
+                                key={file.id}
+                              >
+                                <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[#f4eefb] text-brand">
+                                  <FileText size={20} />
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-medium text-[#51415e]">
+                                    {file.original_name}
+                                  </p>
+                                  <p className="mt-0.5 text-xs text-muted">
+                                    {fileSize(file.size_bytes)}
+                                  </p>
+                                </div>
+                                {file.signed_url && (
+                                  <a
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#dfd1ed] px-3 py-2 text-xs font-medium text-brand hover:bg-brand-soft"
+                                    href={file.signed_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <Download size={15} />
+                                    ดาวน์โหลด
+                                  </a>
+                                )}
+                              </div>
+                          ))}
                         </div>
-                        {file.signed_url && (
-                          <a
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-[#dfd1ed] px-3 py-2 text-xs font-medium text-brand hover:bg-brand-soft"
-                            href={file.signed_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Download size={15} />
-                            ดาวน์โหลด
-                          </a>
-                        )}
                       </div>
                     ))}
                   </div>
@@ -220,7 +270,7 @@ export default function AssignmentDetail({
                         <p className="text-sm font-medium text-[#604f6d]">
                           {label}
                         </p>
-                        <p className="text-xs text-muted">
+                        <p className="text-sm text-muted">
                           {thaiDate(date, true)}
                         </p>
                       </div>

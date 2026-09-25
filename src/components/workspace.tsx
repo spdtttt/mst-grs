@@ -189,12 +189,16 @@ export default function Workspace({
           view === "export" &&
           (role === "academic"
             ? r.status !== "completed"
-            : r.status === "completed")
+            : filter === "all" && r.status === "completed")
         )
           return false;
         if (view === "overview") {
           if (role === "student" && r.status === "completed") return false;
-          if (role === "teacher" && ["pending", "completed"].includes(r.status))
+          if (
+            role === "teacher" &&
+            filter === "all" &&
+            ["pending", "completed"].includes(r.status)
+          )
             return false;
           if (role === "academic" && r.status !== "teacher_approved")
             return false;
@@ -282,7 +286,7 @@ export default function Workspace({
       return r.status === "requested"
         ? "มอบหมายงาน"
         : r.status === "assigned"
-          ? "ส่งงาน"
+          ? "ยืนยันรับงาน"
           : r.status === "submitted"
             ? "อนุมัติ"
             : "รอฝ่ายวิชาการ";
@@ -571,8 +575,8 @@ export default function Workspace({
             {actor.full_name.slice(0, 1)}
           </span>
           <div>
-            <strong className="font-semibold">{actor.full_name}</strong>
-            <small className="text-xs">{roles[role]}</small>
+            <strong className="font-semibold font-[Sarabun]">{actor.full_name}</strong>
+            <small className="text-md font-[Sarabun]">{roles[role]}</small>
           </div>
           <button
             className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex size-[34px] shrink-0 items-center justify-center rounded-[7px] border-0 bg-transparent p-1.5 text-muted enabled:hover:bg-brand-soft enabled:hover:text-brand"
@@ -648,10 +652,10 @@ export default function Workspace({
             </a>
           </div>
         )}
-        <main className="mx-auto max-w-[1600px] px-9 pt-[30px] max-roomy:px-6 max-roomy:pt-[25px] max-desk:px-4 max-desk:pt-6 large:pt-[38px]">
+        <main className="mx-auto font-[Sarabun] max-w-[1600px] px-9 pt-[30px] max-roomy:px-6 max-roomy:pt-[25px] max-desk:px-4 max-desk:pt-6 large:pt-[38px]">
           <div className="mb-[16px] flex items-center justify-between gap-5 [&_p]:mt-[7px] [&_p]:text-sm [&_p]:text-secondary max-wide:items-start max-wide:[&_h1]:text-[25px] max-desk:mb-5 max-desk:flex-col max-desk:gap-4 max-desk:[&_p]:text-[13px]">
             <div>
-              <div className="mb-[4px] text-[11px] font-semibold tracking-[1.7px] text-brand">
+              <div className="mb-[4px] text-[11px] font-semibold tracking-[1.7px] text-brand font-thai">
                 {view === "schedule"
                   ? "SYSTEM SETTINGS"
                   : view === "import"
@@ -662,7 +666,7 @@ export default function Workspace({
                         ? "RECOVERY HISTORY"
                         : "STUDENT RECOVERY"}
               </div>
-              <h1 className="text-[29px] leading-normal font-[650] tracking-[-0.5px]">
+              <h1 className="text-[29px] leading-normal font-[650] tracking-[-0.5px] font-thai">
                 {view === "overview"
                   ? role === "student"
                     ? "ผลการเรียนของฉัน"
@@ -763,11 +767,11 @@ export default function Workspace({
                       </h2>
                       <p>
                         {role === "student" ? (
-                          <>
+                          <span className="text-[15px] flex gap-3 items-center">
                             <span>รหัสนักเรียน {actor.student_code}</span>
                             <i />
                             {actor.classroom}
-                          </>
+                          </span>
                         ) : role === "teacher" ? (
                           "แสดงเฉพาะคำร้องที่นักเรียนยื่นแล้วในรายวิชาของคุณ"
                         ) : (
@@ -1485,12 +1489,12 @@ export default function Workspace({
       >
         {selected && (
           <>
-            <div className="sticky top-0 z-[2] flex items-center justify-between border-b border-line bg-white px-[26px] py-[22px] [&_h2]:text-[21px] max-desk:p-[18px] max-desk:[&_h2]:text-lg">
+            <div className="sticky font-[Sarabun] top-0 z-[2] flex items-center justify-between border-b border-line bg-white px-[26px] py-[22px] [&_h2]:text-[21px] max-desk:p-[18px] max-desk:[&_h2]:text-lg">
               <div>
-                <div className="mb-[7px] text-[11px] font-semibold tracking-[1.7px] text-brand">
+                <div className="mb-[7px] text-[14px] font-semibold tracking-[1.7px] text-brand">
                   {selected.course_code}
                 </div>
-                <h2 className="text-lg leading-normal font-[650]">
+                <h2 className=" leading-normal font-[650]">
                   {selected.course_name}
                 </h2>
               </div>
@@ -1503,47 +1507,47 @@ export default function Workspace({
                 <X />
               </button>
             </div>
-            <div className="px-[26px] py-[23px] [&>input]:w-full [&>textarea]:w-full [&>select]:w-full max-desk:p-[18px]">
-              <div className="grid grid-cols-2 gap-[18px] rounded-[10px] bg-[#faf8fd] p-[18px] [&>span]:text-[11px] [&>span]:text-[#84728f] [&_strong]:mt-[3px] [&_strong]:block [&_strong]:text-[13px] [&_strong]:text-[#574365] max-desk:gap-[15px] max-desk:p-3.5">
+            <div className="px-[26px] font-[Sarabun] py-[23px] [&>input]:w-full [&>textarea]:w-full [&>select]:w-full max-desk:p-[18px]">
+              <div className="grid grid-cols-2 gap-[18px] rounded-[10px] bg-[#faf8fd] p-[18px] [&>span]:text-[14px] [&>span]:text-[#84728f] [&_strong]:mt-[3px] [&_strong]:block [&_strong]:text-[14px] max-desk:gap-[15px] max-desk:p-3.5">
                 <span>
                   นักเรียน
-                  <strong className="font-semibold">
+                  <strong className="font-semibold text-[#574365]">
                     {selected.student_name} ({selected.student_code})
                   </strong>
                 </span>
                 <span>
                   ครูประจำวิชา
-                  <strong className="font-semibold">
+                  <strong className="font-semibold text-[#574365]">
                     {selected.teacher_name.join(", ")}
                   </strong>
                 </span>
                 <span>
                   ชั้น/ห้อง
-                  <strong className="font-semibold">
+                  <strong className="font-semibold text-[#574365]">
                     {selected.classroom}
                   </strong>
                 </span>
                 <span>
                   ภาคเรียน / ปีการศึกษา
-                  <strong className="font-semibold">
+                  <strong className="font-semibold text-[#574365]">
                     {selected.semester} / {selected.academic_year}
                   </strong>
                 </span>
-                <span>
+                <span className="">
                   ผลการเรียนเดิม
-                  <strong className="font-semibold">
+                  <strong className="font-semibold text-red-500">
                     {selected.original_grade}
                   </strong>
                 </span>
                 <span>
                   สถานะ
-                  <strong className="font-semibold">
+                  <strong className="font-semibold text-[#574365]">
                     {statuses[selected.status].label}
                   </strong>
                 </span>
               </div>
               {selected.assignment && (
-                <div className="my-6 [&_p]:my-3 [&_p]:text-sm [&_p]:whitespace-pre-wrap [&_p]:text-[#7c6d8a] [&>div]:flex [&>div]:items-center [&>div]:gap-[7px] [&>div]:rounded-[7px] [&>div]:bg-[#fff8eb] [&>div]:p-2.5 [&>div]:text-xs [&>div]:text-[#a67c3c]">
+                <div className="my-6 [&_p]:mt-1 [&_p]:mb-3 [&_p]:text-[15px] [&_p]:whitespace-pre-wrap [&_p]:text-[#7c6d8a] [&>div]:flex [&>div]:items-center [&>div]:gap-[7px] [&>div]:rounded-[7px] [&>div]:bg-[#fff8eb] [&>div]:p-2.5 [&>div]:text-sm [&>div]:text-[#a67c3c]">
                   <h3 className="text-base leading-normal font-[650]">
                     ภาระงานที่ได้รับมอบหมาย
                   </h3>
@@ -1587,7 +1591,7 @@ export default function Workspace({
               {role === "teacher" && selected.status === "submitted" && (
                 <>
                   <label
-                    className="mt-4 mb-2 block font-[550]"
+                    className="mt-4 mb-2 block font-[650] text-[15px]"
                     htmlFor="final-grade"
                   >
                     ผลการเรียนหลังแก้ไข
@@ -1598,7 +1602,7 @@ export default function Workspace({
                     value={finalGrade}
                     onChange={(e) => setFinalGrade(e.target.value)}
                   >
-                    {["1", "1.5", "2", "2.5", "3", "3.5", "4", "ผ"].map((v) => (
+                    {["0", "ร", "มผ", "1", "1.5", "2", "2.5", "3", "3.5", "4", "ผ"].map((v) => (
                       <option key={v}>{v}</option>
                     ))}
                   </select>
@@ -1623,7 +1627,7 @@ export default function Workspace({
                 </div>
               )}
               {selected.requested_at && (
-                <div className="mt-[23px] mb-[5px] [&>div]:flex [&>div]:items-center [&>div]:gap-2.5 [&>div]:py-[7px] [&>div]:text-xs [&>div]:text-[#8c799e] [&_strong]:font-[450] [&_small]:ml-auto [&_small]:text-[10px] [&_small]:text-[#ae9eba] max-desk:[&_small]:text-[9px] max-desk:[&_strong]:text-[11px]">
+                <div className="mt-[23px] mb-[5px] [&>div]:flex [&>div]:items-center [&>div]:gap-2.5 [&>div]:py-[7px] [&>div]:text-sm [&>div]:text-[#8c799e] [&_strong]:font-[450] [&_small]:ml-auto [&_small]:text-[12px] [&_small]:text-[#ae9eba] [&_small]:font-[Sarabun] max-desk:[&_small]:text-[9px] max-desk:[&_strong]:text-[11px]">
                   {[
                     ["ยื่นคำร้อง", selected.requested_at],
                     ["มอบหมายงาน", selected.assigned_at],
@@ -1642,7 +1646,7 @@ export default function Workspace({
                         {date ? <Check size={12} /> : null}
                       </span>
                       <strong className="font-semibold">{label}</strong>
-                      <small className="text-xs">{thaiDate(date, true)}</small>
+                      <small className="">{thaiDate(date, true)}</small>
                     </div>
                   ))}
                 </div>
@@ -1684,7 +1688,7 @@ export default function Workspace({
                 </p>
               )}
             </div>
-            <div className="sticky bottom-0 flex justify-end gap-2.5 border-t border-line bg-white px-[26px] py-[18px] max-desk:gap-2 max-desk:p-[15px] max-desk:[&_button]:px-3 max-desk:[&_button]:py-2.5 max-desk:[&_button]:text-xs max-desk:[&_button]:whitespace-normal">
+            <div className="sticky bottom-0 flex flex-wrap justify-end gap-2.5 border-t border-line bg-white px-[26px] py-[18px] max-desk:gap-2 max-desk:p-[15px] max-desk:[&_button]:px-3 max-desk:[&_button]:py-2.5 max-desk:[&_button]:text-xs max-desk:[&_button]:whitespace-normal">
               <button
                 className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border px-[18px] py-[11px] font-[550] whitespace-nowrap border-[#e3ddea] bg-white text-[#625670] enabled:hover:bg-[#f8f5fc]"
                 disabled={busy}
@@ -1692,6 +1696,22 @@ export default function Workspace({
               >
                 ปิด
               </button>
+              {role === "teacher" &&
+                ["assigned", "submitted"].includes(selected.status) && (
+                  <button
+                    className="cursor-pointer rounded-lg border border-[#d8c8eb] bg-white px-[18px] py-[11px] font-[550] text-brand transition hover:bg-brand-soft disabled:opacity-60"
+                    disabled={busy}
+                    onClick={() =>
+                      window.location.assign(
+                        `${demo ? "/demo" : "/dashboard"}/assignments/${selected.id}${demo ? "?role=teacher" : ""}`,
+                      )
+                    }
+                  >
+                    {selected.status === "assigned"
+                      ? "แก้ไขรายละเอียดงาน"
+                      : "มอบหมายงานเพิ่ม"}
+                  </button>
+                )}
               {nextStatus[role]?.[selected.status] && (
                 <button
                   className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border border-transparent px-[18px] py-[11px] font-[550] whitespace-nowrap bg-brand text-white shadow-[0_3px_6px_#713cd112] enabled:hover:bg-[#602cbc] enabled:hover:shadow-[0_3px_12px_#713cd126]"
@@ -1753,7 +1773,7 @@ function Stat({
 }) {
   return (
     <div className="rounded-xl border border-line bg-white px-[21px] pt-[19px] pb-4 shadow-[0_2px_3px_#24203d02] [&_p]:flex [&_p]:items-center [&_p]:gap-1.5 [&_p]:text-xs [&_p]:text-secondary max-roomy:p-[15px] max-roomy:[&_p]:text-[10px] max-wide:[&_p]:text-xs max-desk:p-[13px] max-desk:[&_p]:text-[10px] large:p-6">
-      <div className="flex items-center justify-between gap-2 text-sm text-[#80758e] max-roomy:items-start max-roomy:text-xs max-wide:text-sm max-desk:text-xs">
+      <div className="flex items-center justify-between gap-2 text-[15px] text-[#80758e] max-roomy:items-start max-roomy:text-xs max-wide:text-sm max-desk:text-xs">
         <span>{title}</span>
         <span
           className={twMerge(
@@ -1774,7 +1794,7 @@ function Stat({
           {icon}
         </span>
       </div>
-      <div className="mt-[3px] mb-2 font-numeric text-4xl leading-normal font-semibold tracking-[-1.4px] text-[#352944] [&>span]:ml-[9px] [&>span]:font-thai [&>span]:text-[13px] [&>span]:font-normal [&>span]:tracking-normal [&>span]:text-[#a199ab] max-desk:text-[31px]">
+      <div className="mt-[3px] mb-2 font-numeric text-4xl leading-normal font-semibold tracking-[-1.4px] text-[#352944] [&>span]:ml-[9px] [&>span]:font-[Sarabun] [&>span]:text-[15px] [&>span]:font-normal [&>span]:tracking-normal [&>span]:text-[#a199ab] max-desk:text-[31px]">
         {value.toString().padStart(2, "0")}
         <span>{unit}</span>
       </div>

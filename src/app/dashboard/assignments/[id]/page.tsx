@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import AssignmentDetail from "@/components/assignment-detail";
 import { configured, supabase } from "@/lib/supabase";
-import type { AssignmentFile, GradeRecord, Profile } from "@/lib/domain";
+import type { AssignmentFile, GradeAssignment, GradeRecord, Profile } from "@/lib/domain";
 import { isRole } from "@/lib/domain";
 
 export const dynamic = "force-dynamic";
@@ -34,16 +34,15 @@ export default async function AssignmentPage({
   if (!isRole(profile?.role)) redirect("/");
   if (!profile || !record) notFound();
 
-  const { data: rows, error } = await db
-    .from("assignment_files")
-    .select("*")
-    .eq("record_id", id)
-    .order("created_at");
-  if (error)
-    throw new Error("ไม่สามารถโหลดไฟล์แนบได้ กรุณาติดตั้ง migration ล่าสุด");
+  const [filesResult, assignmentsResult] = await Promise.all([
+    db.from("assignment_files").select("*").eq("record_id", id).order("created_at"),
+    db.from("grade_assignments").select("*").eq("record_id", id).order("round_number"),
+  ]);
+  if (filesResult.error || assignmentsResult.error)
+    throw new Error("ไม่สามารถโหลดภาระงานได้ กรุณาติดตั้ง migration ล่าสุด");
 
   const attachments = await Promise.all(
-    (rows ?? []).map(async (file) => {
+    (filesResult.data ?? []).map(async (file) => {
       const { data } = await db.storage
         .from("assignment-files")
         .createSignedUrl(file.storage_path, 600);
@@ -56,6 +55,7 @@ export default async function AssignmentPage({
       profile={profile as Profile}
       record={record as GradeRecord}
       attachments={attachments}
+      assignments={(assignmentsResult.data ?? []) as GradeAssignment[]}
       backHref="/dashboard"
     />
   );

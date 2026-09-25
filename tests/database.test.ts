@@ -324,6 +324,31 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     ]);
     await db.exec("reset role");
     await db.exec(readFileSync("supabase/migrations/012_multi_teachers.sql", "utf8"));
+    await db.query(
+      "update grade_records set status='assigned',assignment='Legacy assignment details',due_at=now()+interval '1 day',assigned_at=now() where id=$1",
+      [id],
+    );
+    await db.query(
+      "insert into assignment_files(record_id,storage_path,original_name,mime_type,size_bytes,uploaded_by) values($1,$2,'legacy.pdf','application/pdf',1024,$3)",
+      [id, `${id}/00000000-0000-4000-8000-000000000097.pdf`, teacher],
+    );
+    await db.exec(readFileSync("supabase/migrations/013_assignment_rounds.sql", "utf8"));
+    const legacyRound = (await db.query<{ id: string; assignment: string }>(
+      "select id,assignment from grade_assignments where record_id=$1", [id],
+    )).rows[0];
+    assert.equal(legacyRound.assignment, "Legacy assignment details");
+    assert.equal(
+      (await db.query<{ assignment_id: string }>(
+        "select assignment_id from assignment_files where record_id=$1", [id],
+      )).rows[0].assignment_id,
+      legacyRound.id,
+    );
+    await db.query("delete from assignment_files where record_id=$1", [id]);
+    await db.query("delete from grade_assignments where record_id=$1", [id]);
+    await db.query(
+      "update grade_records set status='pending',assignment=null,due_at=null,assigned_at=null where id=$1",
+      [id],
+    );
     const migratedTeacher = (
       await db.query<{ teacher_name: string[]; teacher_id: string[] }>(
         "select teacher_name,teacher_id from grade_records where id=$1",
@@ -425,15 +450,16 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     );
     await assert.rejects(
       () =>
-        db.query("select assign_grade($1,$2,$3,$4::jsonb)", [
+        db.query("select assign_grade($1,$2,$3,$4::jsonb,$5::public.grade_status)", [
           id,
           "short",
           new Date(Date.now() + 86400000).toISOString(),
           "[]",
+          "requested",
         ]),
       /กรุณากรอก/,
     );
-    await db.query("select assign_grade($1,$2,$3,$4::jsonb)", [
+    await db.query("select assign_grade($1,$2,$3,$4::jsonb,$5::public.grade_status)", [
       id,
       "Complete the assigned work",
       new Date(Date.now() + 86400000).toISOString(),
@@ -445,14 +471,82 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
           size_bytes: 1024,
         },
       ]),
+      "requested",
     ]);
     assert.equal(
       (await db.query("select * from assignment_files")).rows.length,
       1,
     );
+    await db.query("select assign_grade($1,$2,$3,$4::jsonb,$5::public.grade_status)", [
+      id,
+      "Updated assignment details",
+      new Date(Date.now() + 2 * 86400000).toISOString(),
+      "[]",
+      "assigned",
+    ]);
+    assert.equal(
+      (await db.query<{ assignment: string }>(
+        "select assignment from grade_records where id=$1", [id],
+      )).rows[0].assignment,
+      "Updated assignment details",
+    );
+    assert.equal(
+      (await db.query("select id from grade_assignments where record_id=$1", [id])).rows.length,
+      1,
+    );
+    await as(otherTeacher);
+    assert.equal(
+      (await db.query("select id from grade_assignments where record_id=$1", [id])).rows.length,
+      0,
+    );
+    await assert.rejects(
+      () => db.query("select assign_grade($1,$2,$3,$4::jsonb,$5::public.grade_status)", [
+        id, "Unauthorized assignment edit", new Date(Date.now() + 2 * 86400000).toISOString(), "[]", "assigned",
+      ]),
+      /ไม่มีสิทธิ์/,
+    );
+    await as(teacher);
+    await move("assigned");
+    await assert.rejects(
+      () => db.query("select assign_grade($1,$2,$3,$4::jsonb,$5::public.grade_status)", [
+        id, "Stale assignment edit", new Date(Date.now() + 3 * 86400000).toISOString(), "[]", "assigned",
+      ]),
+      /ข้อมูลเปลี่ยนแปลง/,
+    );
+    await db.query("select assign_grade($1,$2,$3,$4::jsonb,$5::public.grade_status)", [
+      id,
+      "Second assignment after receiving the first",
+      new Date(Date.now() + 3 * 86400000).toISOString(),
+      "[]",
+      "submitted",
+    ]);
+    const rounds = (await db.query<{
+      round_number: number; received_at: string | null;
+    }>("select round_number,received_at from grade_assignments where record_id=$1 order by round_number", [id])).rows;
+    assert.equal(rounds.length, 2);
+    assert.ok(rounds[0].received_at);
+    assert.equal(rounds[1].received_at, null);
+    assert.equal(
+      (await db.query<{ round_number: number }>(
+        "select a.round_number from assignment_files f join grade_assignments a on a.id=f.assignment_id where f.record_id=$1", [id],
+      )).rows[0].round_number,
+      1,
+    );
+    const reassigned = (await db.query<{ status: string; submitted_at: string | null }>(
+      "select status,submitted_at from grade_records where id=$1", [id],
+    )).rows[0];
+    assert.equal(reassigned.status, "assigned");
+    assert.equal(reassigned.submitted_at, null);
+    await assert.rejects(() => move("submitted", null, null, "1"), /ข้อมูลเปลี่ยนแปลง/);
     await move("assigned");
     await assert.rejects(() => move("submitted"), /ระบุผลการเรียน/);
     await move("submitted", null, null, "1");
+    await assert.rejects(
+      () => db.query("select assign_grade($1,$2,$3,$4::jsonb,$5::public.grade_status)", [
+        id, "Too late to assign more work", new Date(Date.now() + 4 * 86400000).toISOString(), "[]", "submitted",
+      ]),
+      /ไม่มีสิทธิ์/,
+    );
     await assert.rejects(() => move("teacher_approved"), /ไม่มีสิทธิ์/);
     assert.equal(
       (await db.query<{ status: string }>("select status from grade_records"))
@@ -479,7 +573,7 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     assert.equal(
       (await db.query("select * from audit_log where action='advance'")).rows
         .length,
-      4,
+      5,
     );
     assert.equal(
       (await db.query("select * from audit_log where action='assign:1'")).rows
@@ -517,7 +611,7 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     await as(otherTeacher);
     const sharedAttachmentPath = `${sharedId}/00000000-0000-4000-8000-000000000098.pdf`;
     await db.query("insert into storage.objects(bucket_id,name) values('assignment-files',$1)", [sharedAttachmentPath]);
-    await db.query("select assign_grade($1,$2,$3,$4::jsonb)", [
+    await db.query("select assign_grade($1,$2,$3,$4::jsonb,$5::public.grade_status)", [
       sharedId,
       "Shared teacher assignment",
       new Date(Date.now() + 86400000).toISOString(),
@@ -527,6 +621,7 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
         mime_type: "application/pdf",
         size_bytes: 1024,
       }]),
+      "requested",
     ]);
     await as(teacher);
     assert.equal((await db.query("select id from assignment_files where record_id=$1", [sharedId])).rows.length, 1);

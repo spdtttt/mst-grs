@@ -50,12 +50,22 @@ export type GradeRecord = {
 export type AssignmentFile = {
   id: string;
   record_id: string;
+  assignment_id: string;
   storage_path: string;
   original_name: string;
   mime_type: string;
   size_bytes: number;
   created_at: string;
   signed_url?: string;
+};
+export type GradeAssignment = {
+  id: string;
+  record_id: string;
+  round_number: number;
+  assignment: string;
+  due_at: string;
+  assigned_at: string;
+  received_at: string | null;
 };
 export type Schedule = {
   id: number;

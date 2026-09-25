@@ -136,6 +136,9 @@ export async function assignGrade(
   if (!z.uuid().safeParse(recordId).success)
     return { error: "ไม่พบรายการผลการเรียน" };
 
+  const expectedStatus = String(form.get("expected_status") ?? "");
+  if (!["requested", "assigned", "submitted"].includes(expectedStatus))
+    return { error: "ข้อมูลภาระงานไม่ถูกต้อง กรุณาโหลดหน้าใหม่" };
   const assignment = String(form.get("assignment") ?? "").trim();
   const due = String(form.get("due_at") ?? "");
   const dueAt = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(due)
@@ -186,8 +189,12 @@ export async function assignGrade(
     .select("id,teacher_id,status")
     .eq("id", recordId)
     .single();
-  if (!record || !record.teacher_id.includes(user.id) || record.status !== "requested")
-    return { error: "ไม่มีสิทธิ์มอบหมายงานหรือข้อมูลเปลี่ยนแปลงแล้ว" };
+  if (
+    !record ||
+    !record.teacher_id.includes(user.id) ||
+    record.status !== expectedStatus
+  )
+    return { error: "ไม่มีสิทธิ์แก้ไขหรือมอบหมายงานเพิ่มแล้ว กรุณาโหลดหน้าใหม่" };
 
   const uploaded: string[] = [];
   for (const item of prepared) {
@@ -214,6 +221,7 @@ export async function assignGrade(
   }));
   const { error } = await db.rpc("assign_grade", {
     p_id: recordId,
+    p_expected: expectedStatus,
     p_assignment: assignment,
     p_due_at: dueAt.toISOString(),
     p_files: attachmentRows,

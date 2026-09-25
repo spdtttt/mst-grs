@@ -1,9 +1,13 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { ArrowRight, FileUp, Info } from "lucide-react";
+import { ArrowRight, CalendarDays, Clock3, FileUp, Info } from "lucide-react";
 import { assignGrade, type AssignmentActionState } from "@/app/actions";
 import type { GradeRecord, Profile } from "@/lib/domain";
+
+const dueTimeOptions = Array.from({ length: 20 }, (_, index) =>
+  `${String(7 + Math.floor(index / 2)).padStart(2, "0")}:${index % 2 ? "30" : "00"}`,
+);
 
 export default function AssignmentActions({
   profile,
@@ -14,6 +18,11 @@ export default function AssignmentActions({
   record: GradeRecord;
   demo?: boolean;
 }) {
+  const mode = record.status;
+  const initialDue = mode === "assigned" && record.due_at
+    ? new Date(Date.parse(record.due_at) + 7 * 60 * 60 * 1000).toISOString().slice(0, 16)
+    : "";
+  const initialTime = initialDue.slice(11, 16);
   const submitAssignment = assignGrade.bind(null, record.id);
   const [state, formAction, pending] = useActionState<
     AssignmentActionState,
@@ -21,7 +30,12 @@ export default function AssignmentActions({
   >(submitAssignment, { error: "" });
   const [demoMessage, setDemoMessage] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
-  const canAssign = profile.role === "teacher" && record.status === "requested";
+  const [dueDate, setDueDate] = useState(initialDue.slice(0, 10));
+  const [dueTime, setDueTime] = useState(
+    dueTimeOptions.includes(initialTime) ? initialTime : "",
+  );
+  const canAssign = profile.role === "teacher" &&
+    ["requested", "assigned", "submitted"].includes(mode);
 
   if (!canAssign) return null;
 
@@ -32,9 +46,13 @@ export default function AssignmentActions({
           <FileUp size={22} />
         </span>
         <div>
-          <h2 className="text-lg font-semibold text-ink">กำหนดภาระงาน</h2>
+          <h2 className="text-lg font-semibold text-ink">
+            {mode === "assigned" ? "แก้ไขภาระงาน" : mode === "submitted" ? "มอบหมายภาระงานเพิ่ม" : "กำหนดภาระงาน"}
+          </h2>
           <p className="mt-1 text-sm text-secondary">
-            ระบุรายละเอียด กำหนดส่ง และแนบเอกสารประกอบให้นักเรียน
+            {mode === "assigned"
+              ? "แก้ไขรายละเอียดและกำหนดส่งก่อนยืนยันรับงานจากนักเรียน"
+              : "ระบุรายละเอียด กำหนดส่ง และแนบเอกสารประกอบให้นักเรียน"}
           </p>
         </div>
       </div>
@@ -52,6 +70,7 @@ export default function AssignmentActions({
             : undefined
         }
       >
+        <input type="hidden" name="expected_status" value={mode} />
         <label className="mb-2 block font-medium" htmlFor="assignment">
           รายละเอียดภาระงาน
         </label>
@@ -62,23 +81,69 @@ export default function AssignmentActions({
           minLength={10}
           maxLength={10000}
           required
-          defaultValue={record.assignment ?? ""}
+          defaultValue={mode === "assigned" ? record.assignment ?? "" : ""}
           placeholder="ระบุชิ้นงาน วิธีดำเนินการ เกณฑ์การประเมิน และสถานที่ส่งงาน"
         />
 
-        <label className="mt-5 mb-2 block font-medium" htmlFor="due_at">
-          กำหนดส่งงาน (เวลาไทย)
-        </label>
-        <input
-          className="w-full rounded-xl border border-[#ded5e8] bg-white px-4 py-3 outline-none focus:border-brand focus:ring-3 focus:ring-[#713cd115]"
-          id="due_at"
-          name="due_at"
-          type="datetime-local"
-          required
-        />
+        <div className="mt-5">
+          <p className="font-semibold text-lg">กำหนดส่งงาน</p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#675773]" htmlFor="due_date">
+                วันที่ส่ง
+              </label>
+              <div className="relative">
+                <CalendarDays
+                  className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-brand"
+                  size={19}
+                  aria-hidden="true"
+                />
+                <input
+                  className="w-full rounded-xl border border-[#ded5e8] bg-white py-3 pr-4 pl-12 outline-none focus:border-brand focus:ring-3 focus:ring-[#713cd115]"
+                  id="due_date"
+                  type="date"
+                  value={dueDate}
+                  onChange={(event) => setDueDate(event.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#675773]" htmlFor="due_time">
+                เวลา
+              </label>
+              <div className="relative">
+                <Clock3
+                  className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-brand"
+                  size={19}
+                  aria-hidden="true"
+                />
+                <select
+                  className="w-full rounded-xl border border-[#ded5e8] bg-white py-3 pr-4 pl-12 outline-none focus:border-brand focus:ring-3 focus:ring-[#713cd115]"
+                  id="due_time"
+                  value={dueTime}
+                  onChange={(event) => setDueTime(event.target.value)}
+                  required
+                >
+                  <option value="">เลือกเวลา</option>
+                  {dueTimeOptions.map((time) => (
+                    <option key={time} value={time}>
+                      {time} น.
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+          <input
+            type="hidden"
+            name="due_at"
+            value={dueDate && dueTime ? `${dueDate}T${dueTime}` : ""}
+          />
+        </div>
 
         <label className="mt-5 mb-2 block font-medium" htmlFor="attachments">
-          ไฟล์แนบเพิ่มเติม{" "}
+          {mode === "assigned" ? "เพิ่มไฟล์แนบ (ไฟล์เดิมยังอยู่)" : "ไฟล์แนบเพิ่มเติม"}{" "}
           <span className="font-normal text-muted">(ไม่บังคับ)</span>
         </label>
         <label
@@ -126,8 +191,9 @@ export default function AssignmentActions({
 
         <div className="mt-5 flex items-start gap-2 rounded-xl bg-[#f7f3fd] p-4 text-sm leading-6 text-[#6d5785]">
           <Info className="mt-0.5 shrink-0" size={18} />
-          เมื่อตกลงมอบหมายงาน
-          นักเรียนจะเห็นรายละเอียดและดาวน์โหลดไฟล์แนบได้ทันที
+          {mode === "assigned"
+            ? "นักเรียนจะเห็นรายละเอียดที่แก้ไขทันที ก่อนครูยืนยันรับงาน"
+            : "นักเรียนจะเห็นรายละเอียดและดาวน์โหลดไฟล์แนบได้ทันที"}
         </div>
 
         {(state.error || demoMessage) && (
@@ -148,7 +214,13 @@ export default function AssignmentActions({
           type="submit"
           disabled={pending}
         >
-          {pending ? "กำลังอัปโหลดและบันทึก…" : "ยืนยันมอบหมายงาน"}
+          {pending
+            ? "กำลังอัปโหลดและบันทึก…"
+            : mode === "assigned"
+              ? "บันทึกการแก้ไข"
+              : mode === "submitted"
+                ? "ยืนยันมอบหมายงานเพิ่ม"
+                : "ยืนยันมอบหมายงาน"}
           {!pending && <ArrowRight size={18} />}
         </button>
       </form>
