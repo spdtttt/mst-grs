@@ -8,7 +8,10 @@
     "start": "next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "accounts": "tsx scripts/provision-accounts.ts"
+    "accounts": "tsx scripts/provision-accounts.ts",
+    "load:generate": "tsx scripts/generate-load-data.ts",
+    "load:local": "tsx scripts/benchmark-school.ts",
+    "load:live": "tsx scripts/live-load-test.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
