@@ -80,7 +80,7 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
               className="focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 shrink-0"
             >
               <Image
-                src="https://upload.wikimedia.org/wikipedia/commons/4/44/MuangST2020.jpg"
+                src="/icon.png"
                 alt="โรงเรียนเมืองสุราษฎร์ธานี"
                 width={90}
                 height={90}
@@ -88,7 +88,7 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
               />
             </a>
             <div className="flex flex-col items-center justify-between gap-2 text-center text-xl font-bold tracking-wide text-[#2F3038] sm:text-2xl md:items-start md:gap-0 md:text-left md:text-3xl">
-              <p>ระบบแก้ไขผลการเรียนคงค้าง โรงเรียนเมืองสุราษฎร์ธานี</p>
+              <h1>ระบบแก้ไขผลการเรียนคงค้าง โรงเรียนเมืองสุราษฎร์ธานี</h1>
               <p className="w-fit bg-[#2F3038] px-3 py-1.5 text-lg text-white sm:text-xl md:px-4 md:py-2 md:text-3xl">
                 MST Grade Recovery System
               </p>
@@ -103,9 +103,9 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
             <div className="flex size-14 items-center justify-center rounded-full bg-[#2F3038]">
               <UserRound className="size-7 text-white" aria-hidden="true" />
             </div>
-            <h1 className="font-thai text-xl font-bold text-[#2F3038]">
+            <h2 className="font-thai text-xl font-bold text-[#2F3038]">
               เข้าสู่ระบบ
-            </h1>
+            </h2>
           </div>
 
           <form action={action} className="flex w-full flex-col font-thai">
@@ -233,6 +233,29 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
           </form>
         </div>
       </div>
+      <section
+        aria-labelledby="about-system"
+        className="mx-auto mt-6 max-w-3xl px-6 text-[#46464E]"
+      >
+        <div className="rounded-2xl border border-[#E4D6F7] bg-white/80 p-6 sm:p-8">
+          <h2 id="about-system" className="text-lg font-bold text-[#2F3038]">
+            เกี่ยวกับ MST Grade Recovery System
+          </h2>
+          <p className="mt-3">
+            ระบบแก้ไขผลการเรียนคงค้างของโรงเรียนเมืองสุราษฎร์ธานี
+            ช่วยให้นักเรียนและบุคลากรติดตามการแก้ไขผลการเรียนในแต่ละรายวิชาได้ในที่เดียว
+          </p>
+          <ul className="mt-3 list-disc space-y-2 pl-5">
+            <li>นักเรียนตรวจสอบรายวิชาคงค้าง ยื่นคำร้อง และติดตามงานที่ครูมอบหมาย</li>
+            <li>ครูผู้สอนมอบหมายงาน ตรวจรับงาน และอนุมัติผลการแก้ไข</li>
+            <li>ฝ่ายวิชาการและผู้บริหารติดตามความคืบหน้าและผลการดำเนินการ</li>
+          </ul>
+          <p className="mt-4 text-sm">
+            เลือกประเภทผู้ใช้งานและเข้าสู่ระบบเพื่อดูข้อมูลตามสิทธิ์ของคุณ
+            หากเข้าสู่ระบบไม่ได้ โปรดติดต่อฝ่ายวิชาการของโรงเรียน
+          </p>
+        </div>
+      </section>
     </main>
   );
 }

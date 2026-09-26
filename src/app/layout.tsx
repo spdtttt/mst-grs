@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { siteUrl } from "@/lib/site";
 import "@fontsource-variable/noto-sans-thai";
 import "./globals.css";
 export const metadata: Metadata = {
-  title: "MST GRS | ระบบแก้ไขผลการเรียน",
+  metadataBase: new URL(siteUrl),
+  title: "MST GRS | ระบบแก้ไขผลการเรียนคงค้าง",
   description: "ระบบจัดการผลการเรียนคงค้างและติดตามการแก้ไขผลการเรียน",
   robots: { index: false, follow: false },
 };
