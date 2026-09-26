@@ -33,6 +33,7 @@ export default function AssignmentDetail({
   assignments = [],
   backHref,
   demo = false,
+  archivedAt,
 }: {
   profile: Profile;
   record: GradeRecord;
@@ -40,6 +41,7 @@ export default function AssignmentDetail({
   assignments?: GradeAssignment[];
   backHref: string;
   demo?: boolean;
+  archivedAt?: string;
 }) {
   const tasks: GradeAssignment[] = assignments.length
     ? assignments
@@ -96,6 +98,7 @@ export default function AssignmentDetail({
       )}
 
       <div className="mx-auto max-w-6xl px-6 py-9 max-md:px-4 max-md:py-6">
+        {archivedAt && <p className="mb-5 rounded-xl border border-line bg-white p-4 text-sm text-secondary">ประวัติการแก้ไข · เก็บเข้าประวัติเมื่อ {thaiDate(archivedAt, true)} · เปิดอ่านได้ตลอดเวลา</p>}
         <div className="mb-7">
           <div className="mb-2 text-xs font-semibold tracking-[1.6px] text-brand">
             ASSIGNMENT DETAIL

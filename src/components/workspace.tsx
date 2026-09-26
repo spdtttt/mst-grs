@@ -1,6 +1,7 @@
 "use client";
 import { twMerge } from "tailwind-merge";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   GraduationCap,
   LayoutDashboard,
@@ -33,6 +34,7 @@ import LogoutOverlay from "@/components/logout-overlay";
 import { advance, saveSchedule, signOut, importGrades } from "@/app/actions";
 import {
   type GradeRecord,
+  type ArchivedGradeRecord,
   type Profile,
   type Schedule,
   type Role,
@@ -59,6 +61,7 @@ import {
 import Image from "next/image";
 
 type View = "overview" | "outstanding" | "history" | "export" | "import" | "schedule";
+const emptyHistory: ArchivedGradeRecord[] = [];
 const navTitles: Record<View, string> = {
   overview: "ภาพรวมผลการเรียน",
   outstanding: "รายการคงค้าง",
@@ -92,17 +95,23 @@ export default function Workspace({
   profile,
   records,
   schedule,
+  historyRecords = emptyHistory,
+  initialView = "overview",
   demo = false,
 }: {
   profile: Profile;
   records: GradeRecord[];
   schedule: Schedule;
+  historyRecords?: ArchivedGradeRecord[];
+  initialView?: "overview" | "history";
   demo?: boolean;
 }) {
+  const router = useRouter();
   const [actor, setActor] = useState(profile);
   const [items, setItems] = useState(records);
+  const [archives, setArchives] = useState(historyRecords);
   const [settings, setSettings] = useState(schedule);
-  const [view, setView] = useState<View>("overview");
+  const [view, setView] = useState<View>(initialView);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [year, setYear] = useState("all");
@@ -142,9 +151,27 @@ export default function Workspace({
     if (!demo) setItems(records);
   }, [records, demo]);
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 30000);
+    if (!demo) setArchives(historyRecords);
+  }, [historyRecords, demo]);
+  useEffect(() => {
+    if (!demo) setSettings(schedule);
+  }, [schedule, demo]);
+  useEffect(() => {
+    const t = setInterval(() => {
+      setNow(Date.now());
+      if (!demo && settings.closes_at && Date.now() >= Date.parse(settings.closes_at)) router.refresh();
+    }, 30000);
     return () => clearInterval(t);
-  }, []);
+  }, [demo, settings.closes_at, router]);
+  useEffect(() => {
+    if (!demo || !settings.closes_at || now < Date.parse(settings.closes_at)) return;
+    const completed = items.filter((record) => record.status === "completed");
+    if (!completed.length) return;
+    setArchives((previous) => [...completed.map((record) => ({
+      ...record, archived_at: new Date(now).toISOString(), archived_closes_at: settings.closes_at!,
+    })), ...previous]);
+    setItems((previous) => previous.filter((record) => record.status !== "completed"));
+  }, [demo, items, settings.closes_at, now]);
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(""), 6000);
@@ -167,6 +194,10 @@ export default function Workspace({
         ? r.teacher_id.includes(actor.id)
         : role === "academic",
   );
+  const historyScope = archives.filter((r) => role === "student"
+    ? r.student_id === actor.id
+    : role === "teacher" ? r.teacher_id.includes(actor.id) : role === "academic");
+  const visibleScope = view === "history" ? historyScope : scope;
   const outstanding = scope.filter((r) => r.status !== "completed");
   const completed = scope.filter((r) => r.status === "completed");
   const awaiting = scope.filter((r) =>
@@ -180,11 +211,11 @@ export default function Workspace({
     role === "student"
       ? ["overview", "history"]
       : role === "teacher"
-        ? ["overview", "export"]
-        : ["overview", "outstanding", "import", "export", "schedule"];
+        ? ["overview", "history", "export"]
+        : ["overview", "outstanding", "history", "import", "export", "schedule"];
   const filtered = useMemo(
     () => {
-      const rows = scope.filter((r) => {
+      const rows = visibleScope.filter((r) => {
         if (view === "outstanding" && r.status === "completed") return false;
         if (view === "history" && r.status !== "completed") return false;
         if (
@@ -229,7 +260,7 @@ export default function Workspace({
       }
       return rows;
     },
-    [scope, view, role, filter, year, semester, query],
+    [visibleScope, view, role, filter, year, semester, query],
   );
   const pages = Math.max(1, Math.ceil(filtered.length / 8));
   const shown = filtered.slice(
@@ -242,6 +273,11 @@ export default function Workspace({
     setQuery("");
     setMobile(false);
     setProblem("");
+    if (v === "history") {
+      setYear("all");
+      setSemester("all");
+      if (!demo) router.refresh();
+    }
   }
   function switchRole(r: Role) {
     setActor(demoProfiles[r]);
@@ -285,6 +321,7 @@ export default function Workspace({
     });
   }
   function actionLabel(r: GradeRecord) {
+    if (view === "history") return "ดูประวัติ";
     if (role === "student")
       return r.status === "pending"
         ? "ยื่นคำร้อง"
@@ -378,6 +415,7 @@ export default function Workspace({
         ...Object.keys(columns),
         "สถานะ",
         ...(extra ? ["ผลการเรียนใหม่", "วันที่ฝ่ายวิชาการอนุมัติ"] : []),
+        ...(view === "history" ? ["วันที่เก็บเข้าประวัติ"] : []),
       ],
       filtered.map((r) => [
         ...Object.values(columns).map((k) =>
@@ -385,6 +423,7 @@ export default function Workspace({
         ),
         statuses[r.status].label,
         ...(extra ? [r.final_grade, thaiDate(r.completed_at, true)] : []),
+        ...(view === "history" ? [thaiDate((r as ArchivedGradeRecord).archived_at, true)] : []),
       ]),
     );
     setToast(`ส่งออก ${filtered.length} รายการแล้ว`);
@@ -709,7 +748,7 @@ export default function Workspace({
                     }}
                   >
                     <option value="all">ทุกปีการศึกษา</option>
-                    {[...new Set(scope.map((r) => r.academic_year))]
+                    {[...new Set(visibleScope.map((r) => r.academic_year))]
                       .sort((a, b) => b - a)
                       .map((y) => (
                         <option key={y} value={y}>
@@ -734,7 +773,7 @@ export default function Workspace({
                     <option value="all">ทุกภาคเรียน</option>
                     {[
                       ...new Set(
-                        scope
+                        visibleScope
                           .filter(
                             (r) =>
                               year === "all" ||
@@ -754,13 +793,15 @@ export default function Workspace({
               </div>
             )}
           </div>
-          {!open && !(role === "academic" && view === "schedule") ? (
+          {!open && view !== "history" && !(role === "academic" && view === "schedule") ? (
             <div className="rounded-[14px] border border-line bg-white px-[25px] py-[60px] text-center text-[#9481aa] [&>svg]:mx-auto [&_h2]:m-[15px] [&_h2]:text-ink [&>div]:m-5 [&>div]:text-sm max-desk:px-4 max-desk:py-10 max-desk:[&_h2]:text-[19px]">
               <Clock3 size={42} />
               <h2 className="text-lg leading-normal font-[650]">
                 อยู่นอกช่วงเวลาให้บริการ
               </h2>
               <p>{settings.notice}</p>
+              <button className="mt-4 rounded-lg bg-brand px-4 py-2 text-white" onClick={() => navigate("history")}>เปิดประวัติการแก้ไข</button>
+              <p className="mt-3 text-sm">ประวัติเปิดอ่านได้ตลอดเวลา รายการที่แก้สำเร็จจะย้ายเข้าประวัติอัตโนมัติหลังถึงเวลาปิด</p>
               <div>
                 เปิด {thaiDate(settings.opens_at, true)}
                 <br />
@@ -769,7 +810,14 @@ export default function Workspace({
             </div>
           ) : (
             <>
-              {view !== "schedule" && view !== "import" && (
+              {view === "history" && (
+                <div className="mb-5 rounded-xl border border-line bg-white p-4 text-sm text-secondary">
+                  <p>ประวัติการแก้ไขที่เก็บเมื่อถึงเวลาปิดระบบ · เปิดอ่านได้ตลอดเวลา</p>
+                  <p className="mt-1">{role === "student" ? "แสดงเฉพาะรายการของคุณ" : role === "teacher" ? "แสดงเฉพาะรายวิชาที่คุณเป็นครูผู้สอน" : "แสดงประวัติของนักเรียนทั้งหมด"} · รายการที่เพิ่งแก้สำเร็จจะเข้าประวัติเมื่อปิดรอบถัดไป</p>
+                  <button className="mt-2 text-brand underline" onClick={() => { setNow(Date.now()); if (!demo) router.refresh(); }}>รีเฟรชประวัติ</button>
+                </div>
+              )}
+              {view !== "schedule" && view !== "import" && view !== "history" && (
                 <>
                   <section className="relative mb-6 flex items-center justify-between gap-6 rounded-[13px] border border-[#e9dff6] bg-linear-[110deg,#efe7fa,#f5effc_70%,#eee6f9] px-[30px] py-[26px] [&_h2]:text-[23px] [&_h2]:font-[650] [&_h2]:text-[#533481] [&_p]:mt-2 [&_p]:flex [&_p]:items-center [&_p]:gap-3.5 [&_p]:text-sm [&_p]:text-[#806196] [&_i]:h-2.5 [&_i]:w-px [&_i]:bg-[#cdbadf] max-desk:mb-[17px] max-desk:p-[21px] max-desk:[&_h2]:text-xl max-desk:[&_p]:flex-wrap max-desk:[&_p]:gap-2 max-desk:[&_p]:text-xs large:p-[31px]">
                     <div>
@@ -879,11 +927,11 @@ export default function Workspace({
                           : view === "export"
                           ? "ไฟล์ CSV รองรับการเปิดใน Microsoft Excel"
                           : view === "history"
-                            ? "รายการที่เสร็จสมบูรณ์จะแสดงความคืบหน้า 100%"
+                            ? "ค้นหาและดูรายละเอียดผลการเรียนที่ย้ายเข้าประวัติแล้ว"
                             : "ตรวจสอบรายละเอียดและดำเนินการตามสถานะของแต่ละรายวิชา"}
                       </p>
                     </div>
-                    {view === "export" && (
+                    {(view === "export" || view === "history") && (
                       <button
                         className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border border-transparent px-[18px] py-[11px] font-[550] whitespace-nowrap bg-brand text-white shadow-[0_3px_6px_#713cd112] enabled:hover:bg-[#602cbc] enabled:hover:shadow-[0_3px_12px_#713cd126]"
                         onClick={exportData}
@@ -908,7 +956,7 @@ export default function Workspace({
                         onChange={(e) => setQuery(e.target.value)}
                       />
                     </div>
-                    {role !== "academic" && (
+                    {role !== "academic" && view !== "history" && (
                       <div className="relative max-w-full">
                         <select
                           className="min-w-[153px] max-w-full appearance-none rounded-lg border border-[#e1dce9] bg-white py-[9px] pr-10 pl-[13px] text-sm text-[#796788] outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115] max-desk:min-w-0 max-desk:py-2 max-desk:text-[13px]"
@@ -992,6 +1040,7 @@ export default function Workspace({
                                       <span>·</span> {r.semester}/
                                       {r.academic_year}
                                     </small>
+                                    {view === "history" && <small className="text-xs text-secondary">เก็บเข้าประวัติ {thaiDate((r as ArchivedGradeRecord).archived_at, true)}</small>}
                                   </div>
                                 </div>
                               </td>
@@ -1121,7 +1170,7 @@ export default function Workspace({
                             : "ยังไม่มีรายการในหน้านี้"}
                         </h3>
                         <p>
-                          {role === "teacher"
+                          {view === "history" ? "รายการที่แก้สำเร็จจะเข้าประวัติเมื่อถึงเวลาปิดระบบ" : role === "teacher"
                             ? "คำร้องจะแสดงเมื่อนักเรียนยื่นคำร้องเข้ามาแล้ว"
                             : role === "academic"
                               ? "รายการจะแสดงตามขั้นตอนการอนุมัติของระบบ"
@@ -1436,8 +1485,8 @@ export default function Workspace({
                       <div className="my-5 flex items-start gap-2.5 rounded-lg border border-[#e8dff5] bg-[#f6f2fd] p-[15px] text-sm text-[#6b5788] [&>svg]:mt-[3px] [&>svg]:shrink-0">
                         <Info size={18} />
                         <span>
-                          เมื่อถึงเวลาปิดระบบ นักเรียน ครู
-                          และฝ่ายวิชาการจะไม่สามารถเข้าถึงหรือเปลี่ยนแปลงผลการเรียนได้
+                          เมื่อถึงเวลาปิดระบบ รายการที่แก้สำเร็จจะย้ายเข้าประวัติอัตโนมัติ
+                          นักเรียน ครู และฝ่ายวิชาการยังเปิดอ่านประวัติได้ตลอดเวลา แต่ดำเนินการแก้ผลการเรียนไม่ได้
                           ฝ่ายวิชาการยังสามารถปรับช่วงเวลาได้จากเมนูตั้งค่าเวลาเปิด–ปิดระบบ
                         </span>
                       </div>
@@ -1629,6 +1678,12 @@ export default function Workspace({
                     ))}
                   </select>
                 </>
+              )}
+              {view === "history" && (
+                <div className="my-4 rounded-lg border border-line p-4 text-sm text-secondary">
+                  <p>เก็บเข้าประวัติเมื่อ {thaiDate((selected as ArchivedGradeRecord).archived_at, true)}</p>
+                  {!demo && <a className="mt-2 inline-block text-brand underline" href={`/dashboard/assignments/${selected.id}`}>ดูภาระงานและไฟล์แนบย้อนหลัง</a>}
+                </div>
               )}
               {selected.final_grade && (
                 <div className="my-5 flex items-start gap-2.5 rounded-lg border border-[#e8dff5] bg-[#f6f2fd] p-[15px] text-sm text-[#6b5788] [&>svg]:mt-[3px] [&>svg]:shrink-0">

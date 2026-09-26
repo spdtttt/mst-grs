@@ -192,7 +192,7 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
       original_grade: "0",
     };
     const importRows = (rows: unknown[]) =>
-      db.query("select public.import_grades($1::jsonb) result", [
+      db.query<{ result: { inserted: number; skipped: number } }>("select public.import_grades($1::jsonb) result", [
         JSON.stringify(rows),
       ]);
     await as(academic);
@@ -808,6 +808,80 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
       () => db.query("select * from profiles"),
       /permission denied/,
     );
+    // Archive lifecycle: the cron entry point is exercised directly because
+    // pg_cron is not available in the embedded PostgreSQL test runtime.
+    await db.exec("reset role");
+    await db.exec(readFileSync("supabase/migrations/016_grade_record_history.sql", "utf8"));
+    const beforeCompleted = (await db.query<{ id: string; student_id: string; teacher_id: string[] }>(
+      "select * from grade_records where status='completed' order by id",
+    )).rows;
+    const beforePending = (await db.query("select * from grade_records where status<>'completed' order by id")).rows;
+    assert.ok(beforeCompleted.length >= 2);
+    assert.ok(beforePending.length > 0);
+    assert.equal((await db.query<{ moved: number }>("select archive_completed_grade_records() moved")).rows[0].moved, 0, "never archive before closing");
+    const roundsBefore = (await db.query<Record<string, unknown>>("select * from grade_assignments where record_id=$1 order by round_number", [id])).rows;
+    const filesBefore = (await db.query<Record<string, unknown>>("select * from assignment_files where record_id=$1 order by id", [id])).rows;
+    const auditsBefore = (await db.query("select * from audit_log where record_id=$1 order by id", [id])).rows;
+    assert.ok(roundsBefore.length > 0);
+    assert.ok(filesBefore.length > 0);
+    assert.ok(auditsBefore.length > 0);
+    // Simulate the clock passing the deadline without invoking the schedule UI.
+    await db.exec("alter table site_schedule disable trigger archive_on_schedule_change; update site_schedule set opens_at=now()-interval '2 days',closes_at=now()-interval '1 day'; alter table site_schedule enable trigger archive_on_schedule_change;");
+    await db.exec("create function test_archive_failure() returns trigger language plpgsql as $$ begin raise exception 'test archive rollback'; end $$; create trigger test_archive_failure before delete on grade_records for each row execute function test_archive_failure();");
+    await assert.rejects(() => db.query("select archive_completed_grade_records()"), /test archive rollback/);
+    assert.equal((await db.query("select * from grade_record_history")).rows.length, 0);
+    assert.deepEqual((await db.query("select * from assignment_files where record_id=$1 order by id", [id])).rows, filesBefore, "failed move leaves attachments intact");
+    await db.exec("drop trigger test_archive_failure on grade_records; drop function test_archive_failure();");
+    assert.equal((await db.query<{ moved: number }>("select archive_completed_grade_records() moved")).rows[0].moved, beforeCompleted.length);
+    assert.equal((await db.query<{ moved: number }>("select archive_completed_grade_records() moved")).rows[0].moved, 0, "cron retries are idempotent");
+    assert.deepEqual((await db.query("select * from grade_records order by id")).rows, beforePending, "unfinished records are untouched");
+    const archived = (await db.query<{ id: string; student_id: string; teacher_id: string[]; archived_at: unknown; archived_closes_at: unknown }>("select * from grade_record_history order by id")).rows;
+    assert.deepEqual(archived.map(({ archived_at, archived_closes_at, ...record }) => record), beforeCompleted, "all original columns survive unchanged");
+    assert.deepEqual((await db.query("select * from grade_assignments where archived_record_id=$1 order by round_number", [id])).rows,
+      roundsBefore.map((r) => ({ ...r, record_id: null, archived_record_id: id })));
+    assert.deepEqual((await db.query("select * from assignment_files where archived_record_id=$1 order by id", [id])).rows,
+      filesBefore.map((r) => ({ ...r, record_id: null, archived_record_id: id })));
+    assert.equal((await db.query("select * from audit_log where archived_record_id=$1", [id])).rows.length, auditsBefore.length + 1);
+
+    for (const actor of [student, other, teacher, otherTeacher, academic, manager]) {
+      await as(actor);
+      const expected = archived.filter((record) => actor === academic ||
+        ((actor === student || actor === other) && record.student_id === actor) ||
+        ((actor === teacher || actor === otherTeacher) && record.teacher_id.includes(actor)));
+      assert.deepEqual((await db.query<{ id: string }>("select id from grade_record_history order by id")).rows.map(r => r.id), expected.map(r => r.id), "history RLS applies while closed");
+      await assert.rejects(() => db.query("select archive_completed_grade_records()"), /permission denied/);
+      await assert.rejects(() => db.query("delete from grade_record_history"), /permission denied/);
+      await assert.rejects(() => db.query("update grade_record_history set final_grade='4'"), /permission denied/);
+    }
+    await as(student);
+    assert.equal((await db.query("select * from grade_assignments where archived_record_id=$1", [id])).rows.length, roundsBefore.length);
+    assert.equal((await db.query("select * from assignment_files where archived_record_id=$1", [id])).rows.length, filesBefore.length);
+    const archivedPath = filesBefore[0].storage_path;
+    assert.equal((await db.query("select * from storage.objects where name=$1", [archivedPath])).rows.length, 1, "archived file remains downloadable while closed");
+    await as(other);
+    assert.equal((await db.query("select * from assignment_files where archived_record_id=$1", [id])).rows.length, 0);
+    assert.equal((await db.query("select * from storage.objects where name=$1", [archivedPath])).rows.length, 0);
+    await as(academic);
+    await db.query("select update_schedule(now()-interval '1 hour',now()+interval '1 day','new period')");
+    assert.deepEqual((await importRows([{ ...input, teacher_name: [input.teacher_name] }])).rows[0].result, { inserted: 0, skipped: 1 }, "reimport does not resurrect archived grades");
+    assert.equal((await db.query("select * from grade_record_history")).rows.length, archived.length, "history remains available while open");
+    await as(student);
+    assert.equal((await db.query("select * from grade_record_history where id=$1", [id])).rows.length, 1);
+    await as(teacher);
+    assert.equal((await db.query("select * from grade_record_history where id=$1", [id])).rows.length, 1);
+
+    // Reopening immediately after expiry must archive even before cron's tick.
+    await db.exec("reset role");
+    await db.query("update grade_records set status='completed',final_grade='1',completed_at=now() where id=$1", [sharedId]);
+    await db.exec("alter table site_schedule disable trigger archive_on_schedule_change; update site_schedule set opens_at=now()-interval '2 days',closes_at=now()-interval '1 day'; alter table site_schedule enable trigger archive_on_schedule_change;");
+    await as(academic);
+    await db.query("select update_schedule(now()-interval '1 hour',now()+interval '1 day','reopen before cron')");
+    assert.equal((await db.query("select * from grade_records where id=$1", [sharedId])).rows.length, 0);
+    assert.equal((await db.query("select * from grade_record_history where id=$1", [sharedId])).rows.length, 1);
+    await as(otherTeacher);
+    assert.equal((await db.query("select * from grade_record_history where id=$1", [sharedId])).rows.length, 1, "co-teachers can read their archived course");
+    await db.exec("reset role; set role anon");
+    await assert.rejects(() => db.query("select * from grade_record_history"), /permission denied/);
   } finally {
     await db.close();
   }

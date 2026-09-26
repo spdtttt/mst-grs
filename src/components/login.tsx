@@ -237,7 +237,7 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
         aria-labelledby="about-system"
         className="mx-auto mt-6 max-w-3xl px-6 text-[#46464E]"
       >
-        <div className="rounded-2xl border border-[#E4D6F7] bg-white/80 p-6 sm:p-8">
+        <div className="rounded-2xl border hidden border-[#E4D6F7] bg-white/80 p-6 sm:p-8">
           <h2 id="about-system" className="text-lg font-bold text-[#2F3038]">
             เกี่ยวกับ MST Grade Recovery System
           </h2>

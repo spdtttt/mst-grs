@@ -27,16 +27,24 @@ export default async function AssignmentPage({
   if (!user)
     redirect(`/?next=${encodeURIComponent(`/dashboard/assignments/${id}`)}`);
 
-  const [{ data: profile }, { data: record }] = await Promise.all([
+  const [{ data: profile }, activeResult] = await Promise.all([
     db.from("profiles").select("*").eq("id", user.id).single(),
-    db.from("grade_records").select("*").eq("id", id).single(),
+    db.from("grade_records").select("*").eq("id", id).maybeSingle(),
   ]);
+  if (activeResult.error)
+    throw new Error("ไม่สามารถโหลดผลการเรียนได้");
+  const historyResult = !activeResult.data
+    ? await db.from("grade_record_history").select("*").eq("id", id).maybeSingle()
+    : null;
+  if (historyResult?.error) throw new Error("ไม่สามารถโหลดประวัติผลการเรียนได้");
+  const record = activeResult.data ?? historyResult?.data;
+  const archived = !!historyResult?.data;
   if (!isRole(profile?.role)) redirect("/");
   if (!profile || !record) notFound();
 
   const [filesResult, assignmentsResult] = await Promise.all([
-    db.from("assignment_files").select("*").eq("record_id", id).order("created_at"),
-    db.from("grade_assignments").select("*").eq("record_id", id).order("round_number"),
+    db.from("assignment_files").select("*").eq(archived ? "archived_record_id" : "record_id", id).order("created_at"),
+    db.from("grade_assignments").select("*").eq(archived ? "archived_record_id" : "record_id", id).order("round_number"),
   ]);
   if (filesResult.error || assignmentsResult.error)
     throw new Error("ไม่สามารถโหลดภาระงานได้ กรุณาติดตั้ง migration ล่าสุด");
@@ -56,7 +64,8 @@ export default async function AssignmentPage({
       record={record as GradeRecord}
       attachments={attachments}
       assignments={(assignmentsResult.data ?? []) as GradeAssignment[]}
-      backHref="/dashboard"
+      backHref={archived ? "/dashboard?view=history" : "/dashboard"}
+      archivedAt={archived ? record.archived_at : undefined}
     />
   );
 }

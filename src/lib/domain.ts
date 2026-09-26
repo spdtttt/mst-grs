@@ -47,9 +47,14 @@ export type GradeRecord = {
   final_grade: string | null;
   created_at: string;
 };
+export type ArchivedGradeRecord = GradeRecord & {
+  archived_at: string;
+  archived_closes_at: string;
+};
 export type AssignmentFile = {
   id: string;
-  record_id: string;
+  record_id: string | null;
+  archived_record_id?: string | null;
   assignment_id: string;
   storage_path: string;
   original_name: string;
@@ -60,7 +65,8 @@ export type AssignmentFile = {
 };
 export type GradeAssignment = {
   id: string;
-  record_id: string;
+  record_id: string | null;
+  archived_record_id?: string | null;
   round_number: number;
   assignment: string;
   due_at: string;

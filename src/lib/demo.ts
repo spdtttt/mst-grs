@@ -1,4 +1,4 @@
-import type { GradeRecord, Profile, Role, Schedule, Status } from "./domain";
+import type { ArchivedGradeRecord, GradeRecord, Profile, Role, Schedule, Status } from "./domain";
 export const demoProfiles: Record<Role, Profile> = {
   student: {
     id: "student-demo",
@@ -90,3 +90,12 @@ export const demoRecords: GradeRecord[] = samples.map(
     created_at: "2026-09-01T00:00:00+07:00",
   }),
 );
+
+export const demoHistory: ArchivedGradeRecord[] = [{
+  ...demoRecords[5],
+  id: "demo-history-1",
+  academic_year: 2568,
+  semester: 2,
+  archived_at: "2026-09-17T16:00:10+07:00",
+  archived_closes_at: "2026-09-17T16:00:00+07:00",
+}];
