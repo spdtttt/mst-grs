@@ -80,7 +80,7 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
               className="focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 shrink-0"
             >
               <Image
-                src="/icon.png"
+                src="/icon.svg"
                 alt="โรงเรียนเมืองสุราษฎร์ธานี"
                 width={90}
                 height={90}
