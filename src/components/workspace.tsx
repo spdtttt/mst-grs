@@ -58,9 +58,10 @@ import {
 } from "@/lib/import";
 import Image from "next/image";
 
-type View = "overview" | "history" | "export" | "import" | "schedule";
+type View = "overview" | "outstanding" | "history" | "export" | "import" | "schedule";
 const navTitles: Record<View, string> = {
   overview: "ภาพรวมผลการเรียน",
+  outstanding: "รายการคงค้าง",
   history: "ประวัติแก้ไขผลการเรียน",
   export: "ส่งออกรายการผลการเรียน",
   import: "นำเข้าผลการเรียน",
@@ -180,10 +181,11 @@ export default function Workspace({
       ? ["overview", "history"]
       : role === "teacher"
         ? ["overview", "export"]
-        : ["overview", "import", "export", "schedule"];
+        : ["overview", "outstanding", "import", "export", "schedule"];
   const filtered = useMemo(
-    () =>
-      scope.filter((r) => {
+    () => {
+      const rows = scope.filter((r) => {
+        if (view === "outstanding" && r.status === "completed") return false;
         if (view === "history" && r.status !== "completed") return false;
         if (
           view === "export" &&
@@ -215,7 +217,18 @@ export default function Workspace({
             ...r.teacher_name,
           ].some((v) => v.toLowerCase().includes(query.toLowerCase()))
         );
-      }),
+      });
+      if (view === "outstanding") {
+        rows.sort((a, b) =>
+          statuses[a.status].progress - statuses[b.status].progress ||
+          a.classroom.localeCompare(b.classroom, "th", { numeric: true }) ||
+          a.student_code.localeCompare(b.student_code, "th", { numeric: true }) ||
+          a.course_code.localeCompare(b.course_code, "th", { numeric: true }) ||
+          a.id.localeCompare(b.id),
+        );
+      }
+      return rows;
+    },
     [scope, view, role, filter, year, semester, query],
   );
   const pages = Math.max(1, Math.ceil(filtered.length / 8));
@@ -527,6 +540,8 @@ export default function Workspace({
             const Icon =
               v === "overview"
                 ? LayoutDashboard
+                : v === "outstanding"
+                  ? ClipboardList
                 : v === "history"
                   ? History
                   : v === "export"
@@ -774,6 +789,8 @@ export default function Workspace({
                           </span>
                         ) : role === "teacher" ? (
                           "แสดงเฉพาะคำร้องที่นักเรียนยื่นแล้วในรายวิชาของคุณ"
+                        ) : view === "outstanding" ? (
+                          "ติดตามผลการเรียนที่ยังแก้ไขไม่เสร็จสิ้นทุกสถานะ"
                         ) : (
                           "ยืนยันการแก้ไขผลการเรียนหลังครูประจำวิชาอนุมัติ"
                         )}
@@ -832,13 +849,16 @@ export default function Workspace({
                 </>
               )}
               {(view === "overview" ||
+                view === "outstanding" ||
                 view === "history" ||
                 view === "export") && (
                 <section className="overflow-hidden rounded-[13px] border border-line bg-white shadow-[0_2px_4px_#28203702]">
                   <div className="flex items-center justify-between gap-[18px] px-6 pt-[23px] pb-[17px] [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-base [&_p]:mt-[5px] [&_p]:text-sm [&_p]:text-secondary max-desk:flex-col max-desk:items-start max-desk:px-[17px] max-desk:pt-5 max-desk:pb-[15px] max-desk:[&_h2]:text-[15px] max-desk:[&_p]:text-xs">
                     <div>
                       <h2 className="text-lg leading-normal font-[650]">
-                        {view === "history"
+                        {view === "outstanding"
+                          ? "รายการผลการเรียนคงค้าง"
+                          : view === "history"
                           ? "ประวัติการแก้ไข"
                           : view === "export"
                             ? role === "academic"
@@ -854,7 +874,9 @@ export default function Workspace({
                         </span>
                       </h2>
                       <p>
-                        {view === "export"
+                        {view === "outstanding"
+                          ? ""
+                          : view === "export"
                           ? "ไฟล์ CSV รองรับการเปิดใน Microsoft Excel"
                           : view === "history"
                             ? "รายการที่เสร็จสมบูรณ์จะแสดงความคืบหน้า 100%"
@@ -1056,7 +1078,7 @@ export default function Workspace({
                                 </div>
                               </td>
                               <td className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
-                                {view === "export" || view === "history" ? (
+                                {view === "export" || view === "history" || view === "outstanding" ? (
                                   <button
                                     className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border font-[550] whitespace-nowrap border-[#e3ddea] bg-white text-[#625670] enabled:hover:bg-[#f8f5fc] px-3 py-[7px]"
                                     onClick={() => show(r)}
