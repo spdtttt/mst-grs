@@ -27,13 +27,13 @@ export const metadata: Metadata = {
     title: siteTitle,
     description: siteDescription,
     locale: "th_TH",
-    images: [{ url: "/icon.png", alt: "MST GRS โรงเรียนเมืองสุราษฎร์ธานี" }],
+    images: [{ url: "/icon.svg", alt: "MST GRS โรงเรียนเมืองสุราษฎร์ธานี" }],
   },
   twitter: {
     card: "summary",
     title: siteTitle,
     description: siteDescription,
-    images: ["/icon.png"],
+    images: ["/icon.svg"],
   },
 };
 
