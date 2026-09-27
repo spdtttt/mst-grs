@@ -1,4 +1,4 @@
-export const siteUrl = "https://mst-grs-xcua.vercel.app";
+export const siteUrl = "https://mst-grs.vercel.app";
 export const siteName = "MST GRS";
 export const siteTitle =
   "ระบบแก้ไขผลการเรียนคงค้าง โรงเรียนเมืองสุราษฎร์ธานี | MST GRS";
