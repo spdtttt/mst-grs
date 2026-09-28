@@ -72,7 +72,7 @@ export function useSwipeSidebar(width: number) {
     if (
       phase !== "idle" ||
       event.touches.length !== 1 ||
-      window.matchMedia("(min-width: 45.0625rem)").matches
+      window.matchMedia("(min-width: 48rem)").matches
     )
       return;
     const touch = event.touches[0];

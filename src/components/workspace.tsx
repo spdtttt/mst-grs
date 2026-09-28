@@ -48,6 +48,8 @@ import {
 } from "@/lib/domain";
 import { demoProfiles } from "@/lib/demo";
 import ManagerWorkspace from "@/components/manager-workspace";
+import styles from "./dashboard.module.css";
+import RecoveryRail from "./recovery-rail";
 import { useSwipeSidebar } from "@/lib/use-swipe-sidebar";
 import { summarizeManagerStats } from "@/lib/manager-stats";
 import { worksheetRows } from "@/lib/import-excel";
@@ -523,7 +525,7 @@ export default function Workspace({
   }
   return (
     <div
-      className="min-h-screen touch-pan-y desk:touch-auto"
+      className={`${styles.app} min-h-screen touch-pan-y desk:touch-auto`}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -544,6 +546,7 @@ export default function Workspace({
         ref={asideRef}
         onTransitionEnd={onTransitionEnd}
         className={twMerge(
+          styles.sidebar,
           "fixed inset-y-0 left-0 z-40 flex w-[244px] flex-col border-r border-line bg-white px-[19px] pt-[30px] max-roomy:w-[220px] max-roomy:px-[13px] max-wide:w-[205px] max-wide:px-2.5 max-desk:w-[245px] max-desk:px-[18px] max-desk:duration-300 max-desk:ease-out motion-reduce:transition-none",
           mobilePhase === "idle"
             ? mobile
@@ -557,7 +560,7 @@ export default function Workspace({
           className="focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 mx-2 flex items-center gap-[11px] text-2xl leading-[1.2] font-[650] tracking-[-0.5px] [&_b]:font-normal [&_b]:text-brand [&_small]:mt-[7px] [&_small]:block [&_small]:text-[8px] [&_small]:font-medium [&_small]:tracking-[1.4px] [&_small]:text-[#9a90ac] max-wide:text-[21px] max-wide:[&_small]:text-[7px] max-desk:text-2xl"
         >
           <Image
-            src="https://upload.wikimedia.org/wikipedia/commons/4/44/MuangST2020.jpg"
+            src="/icon.svg"
             alt="โรงเรียนเมืองสุราษฎร์ธานี"
             width={45}
             height={45}
@@ -574,7 +577,7 @@ export default function Workspace({
         <div className="mx-[15px] mb-3 text-xs text-secondary">
           {roles[role]}
         </div>
-        <nav>
+        <nav aria-label="เมนูหลัก">
           {available.map((v) => {
             const Icon =
               v === "overview"
@@ -597,6 +600,8 @@ export default function Workspace({
                     view === v && "bg-brand-soft font-semibold text-brand",
                   ),
                 )}
+                aria-current={view === v ? "page" : undefined}
+                title={v === "overview" ? role === "student" ? "ผลการเรียนของฉัน" : role === "teacher" ? "คำร้องของนักเรียน" : "รายการรออนุมัติ" : navTitles[v]}
                 onClick={() => navigate(v)}
                 key={v}
               >
@@ -621,9 +626,7 @@ export default function Workspace({
             );
           })}
         </nav>
-        <div className="mt-auto">
-          {role === "teacher" && !demo && <PushNotificationControl />}
-        </div>
+        <div className={styles.school}><strong>โรงเรียนเมืองสุราษฎร์ธานี</strong><p>ระบบแก้ไขผลการเรียนคงค้าง<br />ติดตามทุกขั้นตอนในที่เดียว</p></div>
         <div className="-mx-[19px] flex items-center gap-[9px] border-t border-line px-[17px] py-5 [&>div]:min-w-0 [&>div]:flex-1 [&_strong]:block [&_strong]:truncate [&_strong]:text-md [&_small]:text-xs [&_small]:text-muted max-roomy:-mx-[13px] max-roomy:px-[13px] max-wide:-mx-2.5 max-desk:-mx-[18px]">
           <span className="inline-flex size-[38px] shrink-0 items-center justify-center rounded-full bg-[#ece3f9] font-semibold text-brand">
             {actor.full_name.slice(0, 1)}
@@ -645,9 +648,10 @@ export default function Workspace({
             )}
           </button>
         </div>
+        <button className={styles.tabletLogout} onClick={logout} disabled={loggingOut} aria-label="ออกจากระบบ" title="ออกจากระบบ"><LogOut size={20} /></button>
       </aside>
-      <div className="ml-[244px] max-roomy:ml-[220px] max-wide:ml-[205px] max-desk:ml-0">
-        <header className="flex h-[77px] items-center justify-between gap-5 border-b border-line bg-white px-9 max-roomy:px-6 max-desk:h-[66px] max-desk:gap-2.5 max-desk:px-4">
+      <div className={styles.shell}>
+        <header className={`${styles.topbar} flex h-[77px] items-center justify-between gap-5 border-b border-line bg-white px-9 max-roomy:px-6 max-desk:h-[66px] max-desk:gap-2.5 max-desk:px-4`}>
           <div className="flex items-center gap-3 text-xs text-[#a49bad] [&_strong]:font-[450] [&_strong]:text-[#776b87] max-desk:gap-1.5 max-desk:text-[11px] max-desk:[&>span]:hidden max-desk:[&>svg]:hidden">
             <button
               className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 size-[34px] shrink-0 items-center justify-center rounded-[7px] border-0 bg-transparent p-1.5 text-muted enabled:hover:bg-brand-soft enabled:hover:text-brand hidden max-desk:inline-flex"
@@ -706,20 +710,9 @@ export default function Workspace({
             </a>
           </div>
         )}
-        <main className="mx-auto font-[Sarabun] max-w-[1600px] px-9 pt-[30px] max-roomy:px-6 max-roomy:pt-[25px] max-desk:px-4 max-desk:pt-6 large:pt-[38px]">
-          <div className="mb-[16px] flex items-center justify-between gap-5 [&_p]:mt-[7px] [&_p]:text-sm [&_p]:text-secondary max-wide:items-start max-wide:[&_h1]:text-[25px] max-desk:mb-5 max-desk:flex-col max-desk:gap-4 max-desk:[&_p]:text-[13px]">
+        <main className={styles.page}>
+          <div className={styles.heading}>
             <div>
-              <div className="mb-[4px] text-[11px] font-semibold tracking-[1.7px] text-brand font-thai">
-                {view === "schedule"
-                  ? "SYSTEM SETTINGS"
-                  : view === "import"
-                    ? "DATA MANAGEMENT"
-                    : view === "export"
-                      ? "REPORTS & EXPORT"
-                      : view === "history"
-                        ? "RECOVERY HISTORY"
-                        : "STUDENT RECOVERY"}
-              </div>
               <h1 className="text-[29px] leading-normal font-[650] tracking-[-0.5px] font-thai">
                 {view === "overview"
                   ? role === "student"
@@ -793,6 +786,8 @@ export default function Workspace({
               </div>
             )}
           </div>
+          <div className={twMerge(styles.columns, role === "academic" && view === "schedule" && styles.scheduleColumns)}>
+          <div className={styles.content}>
           {!open && view !== "history" && !(role === "academic" && view === "schedule") ? (
             <div className="rounded-[14px] border border-line bg-white px-[25px] py-[60px] text-center text-[#9481aa] [&>svg]:mx-auto [&_h2]:m-[15px] [&_h2]:text-ink [&>div]:m-5 [&>div]:text-sm max-desk:px-4 max-desk:py-10 max-desk:[&_h2]:text-[19px]">
               <Clock3 size={42} />
@@ -819,7 +814,7 @@ export default function Workspace({
               )}
               {view !== "schedule" && view !== "import" && view !== "history" && (
                 <>
-                  <section className="relative mb-6 flex items-center justify-between gap-6 rounded-[13px] border border-[#e9dff6] bg-linear-[110deg,#efe7fa,#f5effc_70%,#eee6f9] px-[30px] py-[26px] [&_h2]:text-[23px] [&_h2]:font-[650] [&_h2]:text-[#533481] [&_p]:mt-2 [&_p]:flex [&_p]:items-center [&_p]:gap-3.5 [&_p]:text-sm [&_p]:text-[#806196] [&_i]:h-2.5 [&_i]:w-px [&_i]:bg-[#cdbadf] max-desk:mb-[17px] max-desk:p-[21px] max-desk:[&_h2]:text-xl max-desk:[&_p]:flex-wrap max-desk:[&_p]:gap-2 max-desk:[&_p]:text-xs large:p-[31px]">
+                  <section className={styles.hero}>
                     <div>
                       <h2 className="text-lg leading-normal font-[650]">
                         {role === "student"
@@ -854,7 +849,7 @@ export default function Workspace({
                       </div>
                     </div>
                   </section>
-                  <section className="mb-[27px] grid grid-cols-4 gap-4 max-roomy:gap-2.5 max-wide:grid-cols-2 max-desk:mb-5">
+                  <section className={styles.metrics} aria-label="ภาพรวมผลการเรียน">
                     <Stat
                       title="รายวิชาทั้งหมด"
                       value={scope.length}
@@ -900,7 +895,7 @@ export default function Workspace({
                 view === "outstanding" ||
                 view === "history" ||
                 view === "export") && (
-                <section className="overflow-hidden rounded-[13px] border border-line bg-white shadow-[0_2px_4px_#28203702]">
+                <section className={styles.tableCard}>
                   <div className="flex items-center justify-between gap-[18px] px-6 pt-[23px] pb-[17px] [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-base [&_p]:mt-[5px] [&_p]:text-sm [&_p]:text-secondary max-desk:flex-col max-desk:items-start max-desk:px-[17px] max-desk:pt-5 max-desk:pb-[15px] max-desk:[&_h2]:text-[15px] max-desk:[&_p]:text-xs">
                     <div>
                       <h2 className="text-lg leading-normal font-[650]">
@@ -980,7 +975,7 @@ export default function Workspace({
                     )}
                   </div>
                   <div className="overflow-x-auto [&_tbody_tr]:hover:bg-[#fdfbff] max-desk:[&_table]:min-w-[800px]">
-                    <table className="w-full border-collapse text-left whitespace-nowrap">
+                    <table className={`${styles.records} w-full border-collapse text-left`}>
                       <thead>
                         <tr>
                           <th className="border-y border-line bg-[#faf9fc] px-[22px] py-[13px] text-xs font-medium text-[#796d89] first:pl-6 last:pr-6 last:text-right">
@@ -1011,7 +1006,7 @@ export default function Workspace({
                               : !nextStatus[role]?.[r.status];
                           return (
                             <tr key={r.id}>
-                              <td className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
+                              <td data-label="รายวิชา" className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
                                 <div className="flex items-center gap-3 [&_strong]:block [&_strong]:text-sm [&_strong]:font-[550] [&_strong]:text-[#4b3a5b] [&_small]:mt-[3px] [&_small]:block [&_small]:min-w-[180px] [&_small]:text-xs [&_small]:whitespace-normal [&_small]:text-secondary [&_small_span]:mx-[5px] [&_small_span]:text-[#d4c9de]">
                                   <span
                                     className={twMerge(
@@ -1044,7 +1039,7 @@ export default function Workspace({
                                   </div>
                                 </div>
                               </td>
-                              <td className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
+                              <td data-label={role === "student" ? "ครูประจำวิชา" : "ชั้น/ห้อง"} className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
                                 {role === "student" ? (
                                   <>
                                     <span>{r.teacher_name.join(", ")}</span>
@@ -1056,7 +1051,7 @@ export default function Workspace({
                                   r.classroom
                                 )}
                               </td>
-                              <td className="border-b border-[#f0edf5] px-[22px] py-[21px] text-center align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 large:py-[23px]">
+                              <td data-label="ผลการเรียนเดิม" className="border-b border-[#f0edf5] px-[22px] py-[21px] text-center align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 large:py-[23px]">
                                 <span className="inline-grid h-[30px] min-w-[30px] place-items-center rounded-[7px] bg-[#fff0f0] px-1.5 font-semibold text-[#c2656f]">
                                   {r.original_grade}
                                 </span>
@@ -1257,7 +1252,7 @@ export default function Workspace({
               )}
               {view === "import" && (
                 <>
-                  <section className="overflow-hidden rounded-[13px] border border-line bg-white shadow-[0_2px_4px_#28203702]">
+                  <section className={styles.tableCard}>
                     <div className="flex items-center justify-between gap-[18px] px-6 pt-[23px] pb-[17px] [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-base [&_p]:mt-[5px] [&_p]:text-sm [&_p]:text-secondary max-desk:flex-col max-desk:items-start max-desk:px-[17px] max-desk:pt-5 max-desk:pb-[15px] max-desk:[&_h2]:text-[15px] max-desk:[&_p]:text-xs">
                       <div>
                         <h2 className="text-lg leading-normal font-[650]">
@@ -1417,8 +1412,8 @@ export default function Workspace({
                 </>
               )}
               {role === "academic" && view === "schedule" && (
-                <div className="grid grid-cols-[1fr_280px] gap-[22px] max-roomy:grid-cols-1">
-                  <section className="overflow-hidden rounded-[13px] border border-line bg-white shadow-[0_2px_4px_#28203702]">
+                <div className={`${styles.scheduleFormLayout} grid grid-cols-[1fr_280px] gap-[22px] max-roomy:grid-cols-1`}>
+                  <section className={styles.tableCard}>
                     <div className="flex items-center justify-between gap-[18px] px-6 pt-[23px] pb-[17px] [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-base [&_p]:mt-[5px] [&_p]:text-sm [&_p]:text-secondary max-desk:flex-col max-desk:items-start max-desk:px-[17px] max-desk:pt-5 max-desk:pb-[15px] max-desk:[&_h2]:text-[15px] max-desk:[&_p]:text-xs">
                       <div>
                         <h2 className="text-lg leading-normal font-[650]">
@@ -1545,6 +1540,11 @@ export default function Workspace({
               <ShieldCheck size={14} /> ข้อมูลตามสิทธิ์ของผู้ใช้งาน
             </span>
           </footer>
+          </div>
+          <RecoveryRail records={scope} schedule={settings} open={open}>
+            {role === "teacher" && !demo && <PushNotificationControl />}
+          </RecoveryRail>
+          </div>
         </main>
       </div>
       <dialog
@@ -1849,51 +1849,10 @@ function Stat({
   detail: string;
 }) {
   return (
-    <div className="rounded-xl border border-line bg-white px-[21px] pt-[19px] pb-4 shadow-[0_2px_3px_#24203d02] [&_p]:flex [&_p]:items-center [&_p]:gap-1.5 [&_p]:text-xs [&_p]:text-secondary max-roomy:p-[15px] max-roomy:[&_p]:text-[10px] max-wide:[&_p]:text-xs max-desk:p-[13px] max-desk:[&_p]:text-[10px] large:p-6">
-      <div className="flex items-center justify-between gap-2 text-[15px] text-[#80758e] max-roomy:items-start max-roomy:text-xs max-wide:text-sm max-desk:text-xs">
-        <span>{title}</span>
-        <span
-          className={twMerge(
-            "grid size-[34px] place-items-center rounded-[9px] max-roomy:size-[29px] max-roomy:shrink-0 max-roomy:[&_svg]:w-[18px] max-desk:size-7",
-            tone === "gray"
-              ? "bg-brand-soft text-brand"
-              : tone === "purple"
-                ? "bg-brand-soft text-brand"
-                : tone === "amber"
-                  ? "bg-[#fcf4e4] text-status-amber"
-                  : tone === "blue"
-                    ? "bg-[#edf4ff] text-status-blue"
-                    : tone === "green"
-                      ? "bg-[#eaf7f2] text-status-green"
-                      : "",
-          )}
-        >
-          {icon}
-        </span>
-      </div>
-      <div className="mt-[3px] mb-2 font-numeric text-4xl leading-normal font-semibold tracking-[-1.4px] text-[#352944] [&>span]:ml-[9px] [&>span]:font-[Sarabun] [&>span]:text-[15px] [&>span]:font-normal [&>span]:tracking-normal [&>span]:text-[#a199ab] max-desk:text-[31px]">
-        {value.toString().padStart(2, "0")}
-        <span>{unit}</span>
-      </div>
-      <p>
-        <span
-          className={twMerge(
-            "size-1 rounded-full",
-            tone === "gray"
-              ? "bg-[#a07ad4]"
-              : tone === "purple"
-                ? "bg-[#a07ad4]"
-                : tone === "amber"
-                  ? "bg-[#d4ad5a]"
-                  : tone === "blue"
-                    ? "bg-[#72a9de]"
-                    : tone === "green"
-                      ? "bg-[#60b098]"
-                      : "",
-          )}
-        />
-        {detail}
-      </p>
+    <div className={styles.metric} data-tone={tone}>
+      <div className={styles.metricTop}><span>{title}</span><span className={styles.metricIcon}>{icon}</span></div>
+      <div className={styles.metricValue}>{value.toLocaleString("th-TH")}<span>{unit}</span></div>
+      <p>{detail}</p>
     </div>
   );
 }

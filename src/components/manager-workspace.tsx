@@ -24,6 +24,7 @@ import {
   Search,
   X,
 } from "lucide-react";
+import styles from "./dashboard.module.css";
 import LogoutOverlay from "@/components/logout-overlay";
 import { signOut } from "@/app/actions";
 import { loadManagerStudentCourses, loadManagerStudents } from "@/app/manager-actions";
@@ -82,7 +83,7 @@ type ManagerView = "dashboard" | "incomplete" | "completed";
 const pages = [
   {
     id: "dashboard",
-    label: "Dashboard สถิติ",
+    label: "ภาพรวมสถิติ",
     icon: BarChart3,
   },
   {
@@ -126,7 +127,7 @@ export default function ManagerWorkspace({
     onTouchEnd,
     onTouchCancel,
     onTransitionEnd,
-  } = useSwipeSidebar(250);
+  } = useSwipeSidebar(245);
   const currentPage = pages.find((page) => page.id === view) ?? pages[0];
   const title = "title" in currentPage ? currentPage.title : currentPage.label;
 
@@ -149,7 +150,7 @@ export default function ManagerWorkspace({
 
   return (
     <div
-      className="min-h-screen touch-auto bg-[#f8f6fc] text-[#372d45]"
+      className={`${styles.app} min-h-screen touch-auto`}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -167,15 +168,15 @@ export default function ManagerWorkspace({
         id="manager-aside"
         ref={asideRef}
         onTransitionEnd={onTransitionEnd}
-        className={`fixed inset-y-0 left-0 z-40 flex w-[250px] flex-col border-r border-[#e8e0f1] bg-white px-4 py-6 duration-300 ease-out motion-reduce:transition-none desk:translate-x-0 ${phase === "idle" ? (mobileMenuOpen ? "translate-x-0 transition-transform" : "-translate-x-full transition-transform") : `translate-x-[var(--sidebar-offset)] ${phase === "dragging" ? "transition-none" : "transition-transform"}`}`}
+        className={`${styles.sidebar} fixed inset-y-0 left-0 z-40 flex w-[250px] flex-col border-r border-[#e8e0f1] bg-white px-4 py-6 duration-300 ease-out motion-reduce:transition-none desk:translate-x-0 ${phase === "idle" ? (mobileMenuOpen ? "translate-x-0 transition-transform" : "-translate-x-full transition-transform") : `translate-x-[var(--sidebar-offset)] ${phase === "dragging" ? "transition-none" : "transition-transform"}`}`}
       >
         <div className="flex items-start justify-between gap-1">
           <a
             href={demo ? "/demo" : "/dashboard"}
-            className="focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 flex min-w-0 items-center gap-2 text-2xl leading-[1.2] font-[650] tracking-[-0.5px] [&_b]:font-normal [&_b]:text-brand [&_small]:mt-[7px] [&_small]:block [&_small]:text-[8px] [&_small]:font-medium [&_small]:tracking-[1.4px] [&_small]:text-[#9a90ac] max-wide:text-[21px] max-wide:[&_small]:text-[7px] max-desk:text-[20px]"
+            className="focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 mx-2 flex items-center gap-[11px] text-2xl leading-[1.2] font-[650] tracking-[-0.5px] [&_b]:font-normal [&_b]:text-brand [&_small]:mt-[7px] [&_small]:block [&_small]:text-[8px] [&_small]:font-medium [&_small]:tracking-[1.4px] [&_small]:text-[#9a90ac] max-wide:text-[21px] max-wide:[&_small]:text-[7px] max-desk:text-2xl "
           >
             <Image
-              src="https://upload.wikimedia.org/wikipedia/commons/4/44/MuangST2020.jpg"
+              src="/icon.svg"
               alt="โรงเรียนเมืองสุราษฎร์ธานี"
               width={45}
               height={45}
@@ -205,6 +206,7 @@ export default function ManagerWorkspace({
             const Icon = page.icon;
             return (
               <button
+                title={page.label}
                 key={page.id}
                 type="button"
                 aria-current={view === page.id ? "page" : undefined}
@@ -215,7 +217,7 @@ export default function ManagerWorkspace({
                 className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8455c8] ${view === page.id ? "bg-[#f1eafb] font-semibold text-[#633ba1]" : "text-[#756782] hover:bg-[#faf7fe]"}`}
               >
                 <Icon size={19} aria-hidden="true" />
-                {page.label}
+                <span>{page.label}</span>
               </button>
             );
           })}
@@ -237,7 +239,7 @@ export default function ManagerWorkspace({
           </label>
         )}
         <div className="mt-auto border-t border-[#eee8f5] pt-4">
-          <div className="px-3 py-2 font-[Sarabun]">
+          <div className="px-3 py-2 font-sans">
             <strong className="block truncate text-[15px] font-semibold">
               {profile.full_name}
             </strong>
@@ -257,9 +259,10 @@ export default function ManagerWorkspace({
             {loggingOut ? "กำลังออกจากระบบ..." : "ออกจากระบบ"}
           </button>
         </div>
+        <button className={styles.tabletLogout} onClick={logout} disabled={pending || loggingOut} aria-label="ออกจากระบบ" title="ออกจากระบบ"><LogOut size={20} /></button>
       </aside>
 
-      <div className="min-h-screen desk:ml-[250px]">
+      <div className={styles.shell}>
         <header className="flex h-[76px] items-center justify-between gap-4 border-b border-[#e8e0f1] bg-white px-5 desk:px-9">
           <button
             type="button"
@@ -278,14 +281,10 @@ export default function ManagerWorkspace({
             โหมดทดลอง · ข้อมูลสมมติ ไม่บันทึกลงฐานข้อมูล
           </div>
         )}
-        <main className="mx-auto max-w-[1400px] px-5 py-8 desk:px-9 desk:py-10">
-          <div className="mb-8">
-            <span className="text-xs font-semibold tracking-[0.18em] text-[#9467c3]">
-              MANAGEMENT
-            </span>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[#3e2e52] desk:text-3xl">
-              {title}
-            </h1>
+        <main className={styles.page}>
+          <div className={styles.managerHeading}>
+            <h1>{title}</h1>
+            <p>ติดตามภาพรวมการแก้ไขผลการเรียนของนักเรียน โรงเรียนเมืองสุราษฎร์ธานี</p>
           </div>
           {view === "dashboard" ? (
             stats ? (
@@ -381,7 +380,7 @@ function ManagerStudentsView({
   );
 
   return (
-    <section className="overflow-hidden font-[Sarabun] rounded-2xl border border-[#e9e1f2] bg-white shadow-[0_8px_24px_#40206f08]">
+    <section className="overflow-hidden font-sans rounded-2xl border border-[#e9e1f2] bg-white shadow-[0_8px_24px_#40206f08]">
       <div className="flex flex-wrap items-start justify-between gap-4 px-5 pt-6 pb-5 desk:px-7">
         <div>
           <h2 className="text-lg font-semibold text-[#3d2d52]">
@@ -718,7 +717,7 @@ function ManagerStudentCoursesDialog({
       ref={dialog}
       aria-labelledby="manager-student-courses-title"
       onClose={onClose}
-      className="fixed inset-0 font-[Sarabun] m-auto max-h-[90vh] w-[calc(100%-32px)] max-w-[900px] overflow-y-auto rounded-2xl border-0 bg-white p-0 text-[#3d2d52] shadow-[0_20px_100px_#26164340] backdrop:bg-[#24163666] backdrop:backdrop-blur-[3px]"
+      className="fixed inset-0 font-sans m-auto max-h-[90vh] w-[calc(100%-32px)] max-w-[900px] overflow-y-auto rounded-2xl border-0 bg-white p-0 text-[#3d2d52] shadow-[0_20px_100px_#26164340] backdrop:bg-[#24163666] backdrop:backdrop-blur-[3px]"
     >
       <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[#eee8f5] bg-white px-5 py-4 desk:px-7">
         <div>
@@ -801,7 +800,7 @@ function ManagerMetric({
   tone: "purple" | "amber" | "green";
 }) {
   return (
-    <section className="rounded-2xl border border-[#e9e1f2] bg-white font-[Sarabun] p-5 shadow-[0_8px_24px_#40206f08] desk:p-6">
+    <section className={styles.metric} data-tone={tone}>
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-[15px] font-medium leading-6 text-[#756782]">
           {label}
@@ -812,10 +811,10 @@ function ManagerMetric({
           {icon}
         </span>
       </div>
-      <p className="mt-3 text-4xl font-semibold tracking-tight text-[#3d2d52] tabular-nums">
+      <div className={styles.metricValue}>
         {value === null ? "—" : value.toLocaleString("th-TH")}
         <span className="ml-2 text-[15px] font-normal text-[#9486a2]">คน</span>
-      </p>
+      </div>
     </section>
   );
 }
@@ -846,7 +845,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
   const statusCounts = stats.outstanding_by_status;
 
   return (
-    <>
+    <div className={styles.managerDashboard}>
       <div className="grid gap-4 md:grid-cols-3">
         <ManagerMetric
           label="นักเรียนที่มีผลการเรียนคงค้างทั้งหมด"
@@ -868,7 +867,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
         />
       </div>
 
-      <section className="mt-6 font-[Sarabun] rounded-2xl border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
+      <section className="mt-6 font-sans rounded-2xl border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-[#6e45a8]">
@@ -888,11 +887,11 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
 
         <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#746782]">
           <span className="inline-flex items-center gap-2">
-            <span className="size-4 bg-[#44a98c]" />
+            <span className="size-4 bg-status-green" />
             แก้ไขเรียบร้อยแล้ว
           </span>
           <span className="inline-flex items-center gap-2">
-            <span className="size-4 bg-[#8c5bd3]" />
+            <span className="size-4 bg-status-amber" />
             ยังแก้ไขไม่เรียบร้อย
           </span>
         </div>
@@ -941,7 +940,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
                   id: "incomplete",
                   data: stats.by_level.map((row) => row.incomplete_students),
                   label: "ยังแก้ไขไม่เรียบร้อย",
-                  color: "#ff3a3a",
+                  color: "var(--color-status-amber)",
                   barLabel: (item) => (item.value ? format(item.value) : ""),
                   barLabelPlacement: "outside",
                   valueFormatter: (value) => `${format(value ?? 0)} คน`,
@@ -950,7 +949,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
                   id: "completed",
                   data: stats.by_level.map((row) => row.completed_students),
                   label: "แก้ไขเรียบร้อยแล้ว",
-                  color: "#44a98c",
+                  color: "var(--color-status-green)",
                   barLabel: (item) => (item.value ? format(item.value) : ""),
                   barLabelPlacement: "outside",
                   valueFormatter: (value) => `${format(value ?? 0)} คน`,
@@ -993,7 +992,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
         </table>
       </section>
 
-      <section className="mt-6 font-[Sarabun] rounded-2xl border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
+      <section className="mt-6 font-sans rounded-2xl border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
         <div className="flex items-center gap-2 text-[#6e45a8]">
           <PieChartIcon size={21} aria-hidden="true" />
           <h2 className="text-lg font-semibold text-[#3d2d52]">
@@ -1012,7 +1011,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
             ยังไม่มีข้อมูลนักเรียนสำหรับแสดงแผนภูมิ
           </p>
         ) : (
-          <div className="mt-6 flex flex-col items-center justify-center gap-6 md:flex-row md:gap-12">
+          <div className={styles.pieLayout}>
             <PieChart
               width={260}
               height={260}
@@ -1025,13 +1024,13 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
                       id: "completed",
                       value: completedStudents,
                       label: "แก้ไขเรียบร้อยแล้ว",
-                      color: "#44a98c",
+                      color: "var(--color-status-green)",
                     },
                     {
                       id: "incomplete",
                       value: incompleteStudents,
                       label: "ยังแก้ไขไม่เรียบร้อย",
-                      color: "#ff3a3a",
+                      color: "var(--color-status-amber)",
                     },
                   ],
                   arcLabel: (item) =>
@@ -1049,12 +1048,12 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
                 {
                   label: "แก้ไขเรียบร้อยแล้ว",
                   value: completedStudents,
-                  color: "bg-[#44a98c]",
+                  color: "bg-status-green",
                 },
                 {
                   label: "ยังแก้ไขไม่เรียบร้อย",
                   value: incompleteStudents,
-                  color: "bg-[#8c5bd3]",
+                  color: "bg-status-amber",
                 },
               ].map((item) => (
                 <div
@@ -1081,7 +1080,7 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
         )}
       </section>
 
-      <section className="mt-6 rounded-2xl font-[Sarabun] border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
+      <section className="mt-6 rounded-2xl font-sans border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 text-[#6e45a8]">
@@ -1123,6 +1122,6 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
           </p>
         )}
       </section>
-    </>
+    </div>
   );
 }

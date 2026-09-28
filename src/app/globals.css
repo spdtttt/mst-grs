@@ -1,24 +1,58 @@
 @import "tailwindcss";
 
-@import '@fontsource/sarabun';
+@import "@fontsource/sarabun";
 
-/* Design tokens only. All component styles live in Tailwind utility classes. */
+/* Shared MST-GRS tokens, adapted from DESIGN.md. */
 @theme {
-  --font-sans: "Noto Sans Thai Variable", Tahoma, Arial, sans-serif;
-  --font-thai: "Noto Sans Thai Variable", Tahoma, Arial, sans-serif;
-  --font-numeric: Arial, sans-serif;
-  --color-brand: #713cd1;
-  --color-brand-soft: #f1ebfc;
-  --color-ink: #252137;
-  --color-muted: #858094;
-  --color-secondary: #756a83;
-  --color-line: #eeebf3;
-  --color-canvas: #f8f9fc;
+  --font-sans: "Prompt", "Noto Sans Thai Variable", Tahoma, sans-serif;
+  --font-thai: "Prompt", "Noto Sans Thai Variable", Tahoma, sans-serif;
+  --font-numeric: "Prompt", sans-serif;
+  --color-brand: #7d1e8a;
+  --color-brand-hover: #70176c;
+  --color-brand-soft: #f3eaf6;
+  --color-ink: #2b1c2a;
+  --color-muted: #73807b;
+  --color-secondary: #685b6b;
+  --color-line: #e6ecea;
+  --color-canvas: #f4f7f6;
+  --color-surface: #ffffff;
+  --color-sidebar-from: #781876;
+  --color-sidebar-to: #3a0a38;
+  --color-sidebar-active: #6e1f7a;
+  --color-success-soft: #eaf6ef;
+  --color-info-soft: #eef4fe;
+  --color-warning-soft: #fff6e8;
   --color-status-green: #16866d;
   --color-status-amber: #b8801a;
   --color-status-blue: #397cc5;
-  --breakpoint-desk: 45.0625rem;
+  --shadow-card: 0 1px 2px rgb(16 40 32 / 4%), 0 4px 16px rgb(16 40 32 / 4%);
+  --breakpoint-desk: 48rem;
   --breakpoint-wide: 60.0625rem;
   --breakpoint-roomy: 75.0625rem;
   --breakpoint-large: 96.875rem;
+}
+
+@layer base {
+  body {
+    overflow-x: clip;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    outline-offset: 3px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+  }
+  table {
+    font-variant-numeric: tabular-nums;
+  }
 }
