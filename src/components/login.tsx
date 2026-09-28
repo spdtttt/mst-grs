@@ -1,6 +1,5 @@
 "use client";
 import { useActionState, useState } from "react";
-import styles from "./dashboard.module.css";
 import Image from "next/image";
 import {
   Eye,
@@ -70,7 +69,7 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
   const VisibilityIcon = visible ? Eye : EyeOff;
 
   return (
-    <main className={styles.login}>
+    <main className="min-h-screen w-full bg-gradient-to-b from-white to-[#F1E7FC] pb-16 font-sans">
       <nav className="flex w-full justify-center border-b border-[#E4D6F7] bg-white shadow-sm md:justify-start">
         <div className="mx-auto w-full max-w-[1600px] p-4 md:px-10 md:py-7.5">
           <div className="flex flex-col items-center gap-3 md:flex-row md:items-stretch md:gap-7">
@@ -99,7 +98,7 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
       </nav>
 
       <div className="flex flex-col items-center justify-center px-4">
-        <div className={styles.loginCard}>
+        <div className="w-full max-w-xl p-6 sm:p-7">
           <div className="mb-5 flex flex-col items-center gap-2   ">
             <div className="flex size-14 items-center justify-center rounded-full bg-[#2F3038]">
               <UserRound className="size-7 text-white" aria-hidden="true" />
@@ -180,7 +179,7 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
                       }
                       aria-pressed={visible}
                       onClick={() => setVisible(!visible)}
-                      className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 absolute z-10 top-1/2 right-3 -translate-y-1/2 text-[#46464E] transition-opacity duration-200 hover:opacity-70"
+                      className="cursor-pointer enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 absolute top-1/2 right-3 -translate-y-1/2 text-[#46464E] transition-opacity duration-200 hover:opacity-70"
                     >
                       <VisibilityIcon className="size-5" aria-hidden="true" />
                     </button>
@@ -216,7 +215,7 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
                       aria-label={visible ? "ซ่อนข้อมูล" : "แสดงข้อมูล"}
                       aria-pressed={visible}
                       onClick={() => setVisible(!visible)}
-                      className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 absolute z-10 top-1/2 right-3 -translate-y-1/2 text-[#46464E] transition-opacity duration-200 hover:opacity-70"
+                      className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 absolute top-1/2 right-3 -translate-y-1/2 text-[#46464E] transition-opacity duration-200 hover:opacity-70"
                     >
                       <VisibilityIcon className="size-5" aria-hidden="true" />
                     </button>
@@ -227,7 +226,7 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
             <button
               type="submit"
               disabled={pending}
-              className="cursor-pointer disabled:cursor-not-allowed focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 mt-6 w-full bg-[#6D5E00] py-3 text-center font-medium text-white transition-colors duration-300 enabled:hover:bg-[#7D6E00] disabled:opacity-50"
+              className="cursor-pointer enabled:active:translate-y-px disabled:cursor-not-allowed focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 mt-6 w-full bg-[#6D5E00] py-3 text-center font-medium text-white transition-colors duration-300 enabled:hover:bg-[#7D6E00] disabled:opacity-50"
             >
               {pending ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
             </button>
