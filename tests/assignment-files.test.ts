@@ -9,7 +9,7 @@ import {
 
 const megabyte = 1024 * 1024;
 
-test("allows assignments without files and uploads at the 4 MB boundary", () => {
+test("allows assignments without files and supported attachments", () => {
   assert.equal(validateAssignmentFiles([]), "");
   assert.equal(validateAssignmentFiles([{ name: "งาน.pdf", size: 4 * megabyte }]), "");
   assert.equal(validateAssignmentFiles([
