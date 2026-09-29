@@ -11,7 +11,10 @@ import { importSchema } from "@/lib/import";
 import { safeReturnPath } from "@/lib/navigation";
 import { notifyTeacherOfNewRequest } from "@/lib/push";
 import { z } from "zod";
-import { assignmentFileMimeType, validateAssignmentFiles } from "@/lib/assignment-files";
+import {
+  assignmentFileMimeType, assignmentFileSchema, uploadedAssignmentFileSchema,
+  parseAssignmentDetails, validateAssignmentFiles, type AssignmentUpload,
+} from "@/lib/assignment-files";
 import { isRole } from "@/lib/domain";
 export async function signIn(_prev: { error: string }, form: FormData) {
   if (!configured())
@@ -115,94 +118,92 @@ export async function removePushSubscription(endpoint: string) {
   return error ? { error: error.message } : { success: true };
 }
 
-export async function assignGrade(
-  recordId: string,
-  _prev: AssignmentActionState,
-  form: FormData,
-): Promise<AssignmentActionState> {
+async function assignmentContext(recordId: string, form: FormData) {
   if (!configured()) return { error: "ยังไม่ได้เชื่อมต่อฐานข้อมูล" };
   if (!z.uuid().safeParse(recordId).success)
     return { error: "ไม่พบรายการผลการเรียน" };
 
-  const expectedStatus = String(form.get("expected_status") ?? "");
-  if (!["requested", "assigned", "submitted"].includes(expectedStatus))
-    return { error: "ข้อมูลภาระงานไม่ถูกต้อง กรุณาโหลดหน้าใหม่" };
-  const assignment = String(form.get("assignment") ?? "").trim();
-  const due = String(form.get("due_at") ?? "");
-  const dueAt = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(due)
-    ? new Date(`${due}+07:00`)
-    : null;
-  if (
-    assignment.length < 10 ||
-    assignment.length > 10000 ||
-    !dueAt ||
-    !Number.isFinite(dueAt.getTime()) ||
-    dueAt.getTime() <= Date.now()
-  )
-    return {
-      error: "กรุณาระบุรายละเอียดงานอย่างน้อย 10 ตัวอักษร และกำหนดส่งในอนาคต",
-    };
-
-  const files = form
-    .getAll("attachments")
-    .filter((item): item is File => item instanceof File && item.size > 0);
-  const fileError = validateAssignmentFiles(files);
-  if (fileError) return { error: fileError };
-
-  const prepared = files.map((file) => {
-    const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
-    const mimeType = assignmentFileMimeType(file.name);
-    return {
-      file,
-      extension,
-      mimeType,
-      storage_path: `${recordId}/${randomUUID()}.${extension}`,
-    };
-  });
-  if (prepared.some((item) => !item.mimeType))
-    return {
-      error: "รองรับเฉพาะ PDF, Word, Excel, PowerPoint, JPG, PNG และ TXT",
-    };
-
+  const details = parseAssignmentDetails(form);
+  if (details.error) return { error: details.error };
   const db = await supabase();
   const {
     data: { user },
   } = await db.auth.getUser();
   if (!user) return { error: "กรุณาเข้าสู่ระบบใหม่" };
-  const { data: record } = await db
+  const { data: record, error } = await db
     .from("grade_records")
     .select("id,teacher_id,status")
     .eq("id", recordId)
     .single();
+  if (error) return { error: "ไม่สามารถตรวจสอบสิทธิ์มอบหมายงานได้ กรุณาลองใหม่" };
   if (
     !record ||
-    !record.teacher_id.includes(user.id) ||
-    record.status !== expectedStatus
+    !record.teacher_id?.includes(user.id) ||
+    record.status !== details.expectedStatus
   )
     return { error: "ไม่มีสิทธิ์แก้ไขหรือมอบหมายงานเพิ่มแล้ว กรุณาโหลดหน้าใหม่" };
 
-  const uploaded: string[] = [];
-  for (const item of prepared) {
-    const bytes = new Uint8Array(await item.file.arrayBuffer());
-    const { error } = await db.storage
-      .from("assignment-files")
-      .upload(item.storage_path, bytes, {
-        contentType: item.mimeType,
-        upsert: false,
-      });
-    if (error) {
-      if (uploaded.length)
-        await db.storage.from("assignment-files").remove(uploaded);
-      return { error: "อัปโหลดไฟล์แนบไม่สำเร็จ กรุณาลองใหม่อีกครั้ง" };
-    }
-    uploaded.push(item.storage_path);
-  }
+  return { db, ...details };
+}
 
-  const attachmentRows = prepared.map((item) => ({
-    storage_path: item.storage_path,
-    original_name: item.file.name.slice(0, 180),
-    mime_type: item.mimeType,
-    size_bytes: item.file.size,
+export async function prepareAssignmentUploads(
+  recordId: string,
+  form: FormData,
+  input: unknown,
+): Promise<{ error: string; uploads?: AssignmentUpload[] }> {
+  const parsed = z.array(assignmentFileSchema).safeParse(input);
+  if (!parsed.success) return { error: "ข้อมูลไฟล์แนบไม่ถูกต้อง" };
+  const fileError = validateAssignmentFiles(parsed.data);
+  if (fileError) return { error: fileError };
+  const context = await assignmentContext(recordId, form);
+  if (!("db" in context)) return { error: context.error };
+  const uploads: AssignmentUpload[] = [];
+  for (const file of parsed.data) {
+    const extension = file.name.split(".").pop()!.toLowerCase();
+    const path = `${recordId}/${randomUUID()}.${extension}`;
+    const { data, error } = await context.db.storage.from("assignment-files")
+      .createSignedUploadUrl(path, { upsert: false });
+    if (error || !data) {
+      console.error("assignment: prepare upload failed", { recordId, code: error?.name });
+      return { error: "ไม่สามารถเตรียมอัปโหลดได้ กรุณาตรวจสอบสิทธิ์และช่วงเวลาให้บริการ" };
+    }
+    uploads.push({ ...file, storage_path: path, token: data.token, mime_type: assignmentFileMimeType(file.name)! });
+  }
+  return { error: "", uploads };
+}
+
+export async function cleanupAssignmentUploads(recordId: string, paths: string[]) {
+  const parsed = z.array(z.string().regex(/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.[a-z0-9]+$/)).safeParse(paths);
+  if (!configured() || !z.uuid().safeParse(recordId).success || !parsed.success ||
+    parsed.data.some((path) => !path.startsWith(`${recordId}/`))) return;
+  const db = await supabase();
+  // RLS permits only the owning teachers to remove files not linked to a task.
+  await db.storage.from("assignment-files").remove(parsed.data);
+}
+
+export async function assignGrade(
+  recordId: string,
+  _prev: AssignmentActionState,
+  form: FormData,
+): Promise<AssignmentActionState> {
+  const context = await assignmentContext(recordId, form);
+  if (!("db" in context)) return { error: context.error };
+  const { db, expectedStatus, assignment, dueAt } = context;
+  let input: unknown;
+  try { input = JSON.parse(String(form.get("attachments_metadata") ?? "[]")); }
+  catch { return { error: "ข้อมูลไฟล์แนบไม่ถูกต้อง" }; }
+  const parsed = z.array(uploadedAssignmentFileSchema).safeParse(input);
+  if (!parsed.success || parsed.data.some((file) => !file.storage_path.startsWith(`${recordId}/`)))
+    return { error: "ข้อมูลไฟล์แนบไม่ถูกต้อง" };
+  const fileError = validateAssignmentFiles(parsed.data);
+  if (fileError) return { error: fileError };
+  if (form.getAll("attachments").some((item) => item instanceof File && item.size > 0))
+    return { error: "กรุณาโหลดหน้าใหม่ก่อนอัปโหลดไฟล์" };
+  const attachmentRows = parsed.data.map((file) => ({
+    storage_path: file.storage_path,
+    original_name: file.name,
+    mime_type: assignmentFileMimeType(file.name),
+    size_bytes: file.size,
   }));
   const { error } = await db.rpc("assign_grade", {
     p_id: recordId,
@@ -212,8 +213,6 @@ export async function assignGrade(
     p_files: attachmentRows,
   });
   if (error) {
-    if (uploaded.length)
-      await db.storage.from("assignment-files").remove(uploaded);
     return { error: error.message };
   }
 

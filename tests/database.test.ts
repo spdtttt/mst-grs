@@ -882,6 +882,55 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     assert.equal((await db.query("select * from grade_record_history where id=$1", [sharedId])).rows.length, 1, "co-teachers can read their archived course");
     await db.exec("reset role; set role anon");
     await assert.rejects(() => db.query("select * from grade_record_history"), /permission denied/);
+
+    // Direct uploads must accept large files while validating actual Storage metadata.
+    await db.exec("reset role; alter table storage.objects add column metadata jsonb;");
+    await db.exec(readFileSync("supabase/migrations/019_direct_assignment_uploads.sql", "utf8"));
+    assert.equal((await db.query<{ file_size_limit: number | null }>(
+      "select file_size_limit from storage.buckets where id='assignment-files'",
+    )).rows[0].file_size_limit, null);
+    await as(academic);
+    await importRows([{ ...input, course_code: "UPLOAD-TEST", teacher_name: [input.teacher_name] }]);
+    const uploadId = (await db.query<{ id: string }>(
+      "select id from grade_records where course_code='UPLOAD-TEST'",
+    )).rows[0].id;
+    await as(student);
+    await db.query("select advance_grade($1,'pending')", [uploadId]);
+    const largePath = `${uploadId}/00000000-0000-4000-8000-000000000098.png`;
+    const largeSize = Math.ceil(6.6 * 1024 * 1024);
+    const largeFile = { storage_path: largePath, original_name: "phone.png", mime_type: "image/png", size_bytes: largeSize };
+    const assignUpload = (files: unknown[], expected = "requested") => db.query(
+      "select assign_grade($1,$2,now()+interval '1 day',$3::jsonb,$4::grade_status)",
+      [uploadId, "Complete the uploaded worksheet", JSON.stringify(files), expected],
+    );
+    await assert.rejects(() => assignUpload([]), /ไม่มีสิทธิ์/);
+    await as(otherTeacher);
+    await assert.rejects(() => assignUpload([]), /ไม่มีสิทธิ์/);
+    await as(teacher);
+    await assert.rejects(() => assignUpload([largeFile]), /ไม่พบไฟล์/);
+    await db.query("insert into storage.objects(bucket_id,name,metadata) values('assignment-files',$1,$2::jsonb)",
+      [largePath, JSON.stringify({ size: largeSize, mimetype: "image/png" })]);
+    await assert.rejects(() => assignUpload([{ ...largeFile, size_bytes: 1024 }]), /ไม่พบไฟล์/);
+    await assert.rejects(() => assignUpload([{ ...largeFile, mime_type: "application/pdf" }]), /ไม่พบไฟล์/);
+    await assert.rejects(() => assignUpload([largeFile], "submitted"), /ข้อมูลเปลี่ยนแปลง/);
+    await assignUpload([largeFile]);
+    assert.equal((await db.query<{ size_bytes: number }>(
+      "select size_bytes from assignment_files where storage_path=$1", [largePath],
+    )).rows[0].size_bytes, largeSize);
+    const extraFiles = [];
+    for (let index = 0; index < 6; index++) {
+      const storage_path = `${uploadId}/00000000-0000-4000-8000-00000000008${index}.pdf`;
+      const size_bytes = index === 0 ? 3 * 1024 ** 3 : 1024;
+      await db.query("insert into storage.objects(bucket_id,name,metadata) values('assignment-files',$1,$2::jsonb)",
+        [storage_path, JSON.stringify({ size: size_bytes, mimetype: "application/pdf" })]);
+      extraFiles.push({ storage_path, original_name: `${index}.pdf`, mime_type: "application/pdf", size_bytes });
+    }
+    await assignUpload(extraFiles, "assigned");
+    assert.equal((await db.query("select * from assignment_files where record_id=$1", [uploadId])).rows.length, 7);
+    await db.query("delete from storage.objects where name=$1", [largePath]);
+    assert.equal((await db.query("select * from storage.objects where name=$1", [largePath])).rows.length, 1,
+      "cleanup cannot delete a file already linked to a task");
+    await assignUpload([], "assigned");
   } finally {
     await db.close();
   }

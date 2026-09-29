@@ -3,9 +3,10 @@
 import { startTransition, useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, CalendarDays, Clock3, FileUp, Info } from "lucide-react";
-import { assignGrade, type AssignmentActionState } from "@/app/actions";
+import { assignGrade, prepareAssignmentUploads, cleanupAssignmentUploads, type AssignmentActionState } from "@/app/actions";
 import type { GradeRecord, Profile } from "@/lib/domain";
-import { validateAssignmentFiles } from "@/lib/assignment-files";
+import { assignmentSubmissionForm, validateAssignmentFiles } from "@/lib/assignment-files";
+import { uploadAssignmentFile } from "@/lib/assignment-upload";
 
 const dueTimeOptions = Array.from({ length: 20 }, (_, index) =>
   `${String(7 + Math.floor(index / 2)).padStart(2, "0")}:${index % 2 ? "30" : "00"}`,
@@ -26,14 +27,49 @@ export default function AssignmentActions({
     : "";
   const initialTime = initialDue.slice(11, 16);
   const router = useRouter();
+  const [uploadProgress, setUploadProgress] = useState<string>("");
   async function submitAssignment(previous: AssignmentActionState, form: FormData) {
     let result: AssignmentActionState;
+    const files = form.getAll("attachments").filter(
+      (item): item is File => item instanceof File && item.name !== "",
+    );
+    const submission = assignmentSubmissionForm(form);
+    let paths: string[] = [];
+    let stage: "prepare" | "upload" | "save" = "prepare";
+    async function cleanup() {
+      if (paths.length) await cleanupAssignmentUploads(record.id, paths).catch(() => {});
+    }
     try {
-      result = await assignGrade(record.id, previous, form);
-    } catch {
+      if (files.length) {
+        setUploadProgress("กำลังเตรียมอัปโหลด…");
+        const prepared = await prepareAssignmentUploads(record.id, submission,
+          files.map((file) => ({ name: file.name.slice(0, 180), size: file.size })));
+        if (prepared.error || !prepared.uploads) return { error: prepared.error || "ไม่สามารถเตรียมอัปโหลดได้" };
+        paths = prepared.uploads.map((upload) => upload.storage_path);
+        stage = "upload";
+        for (const [index, file] of files.entries()) {
+          await uploadAssignmentFile(file, prepared.uploads[index], (bytes) => {
+            setUploadProgress(`กำลังอัปโหลดไฟล์ ${index + 1}/${files.length} (${Math.round(bytes / file.size * 100)}%)`);
+          });
+        }
+        submission.set("attachments_metadata", JSON.stringify(prepared.uploads.map(
+          ({ name, size, storage_path }) => ({ name, size, storage_path }),
+        )));
+      }
+      stage = "save";
+      setUploadProgress("กำลังบันทึกมอบหมายงาน…");
+      result = await assignGrade(record.id, previous, submission);
+      if (result.error) await cleanup();
+    } catch (error) {
+      // A missing save response does not prove the database transaction failed.
+      if (stage !== "save") await cleanup();
       return {
-        error: "ไม่สามารถยืนยันผลการบันทึกได้ กรุณาตรวจสอบการเชื่อมต่อและสถานะงานก่อนลองใหม่ ข้อมูลที่กรอกยังอยู่ในฟอร์ม",
+        error: stage === "upload" && error instanceof Error ? error.message
+          : stage === "prepare" ? "ไม่สามารถเตรียมอัปโหลดได้ กรุณาตรวจสอบการเชื่อมต่อและลองอีกครั้ง"
+          : "ไม่สามารถยืนยันผลการบันทึกได้ กรุณาตรวจสอบการเชื่อมต่อและสถานะงานก่อนลองใหม่ ข้อมูลที่กรอกยังอยู่ในฟอร์ม",
       };
+    } finally {
+      setUploadProgress("");
     }
     if (result.success) router.push("/dashboard");
     return result;
@@ -78,7 +114,7 @@ export default function AssignmentActions({
           if (pending || state.success) return;
           const form = new FormData(event.currentTarget);
           const files = form.getAll("attachments").filter(
-            (item): item is File => item instanceof File && item.size > 0,
+            (item): item is File => item instanceof File && item.name !== "",
           );
           const error = validateAssignmentFiles(files);
           setFileError(error);
@@ -176,7 +212,7 @@ export default function AssignmentActions({
             เลือกไฟล์จากเครื่อง
           </span>
           <span className="mt-1 text-xs leading-5 text-muted">
-            ไม่จำกัดจำนวน ไม่จำกัดขนาดไฟล์ · PDF, Word, Excel, PowerPoint, JPG,
+            PDF, Word, Excel, PowerPoint, JPG,
             PNG หรือ TXT
           </span>
         </label>
@@ -235,7 +271,7 @@ export default function AssignmentActions({
           disabled={pending || !!fileError || state.success}
         >
           {pending || state.success
-            ? "กำลังอัปโหลดและบันทึก…"
+            ? uploadProgress || "กำลังบันทึก…"
             : mode === "assigned"
               ? "บันทึกการแก้ไข"
               : mode === "submitted"

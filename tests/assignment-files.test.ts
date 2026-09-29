@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import {
   assignmentFileMimeType,
   validateAssignmentFiles,
+  assignmentSubmissionForm,
+  parseAssignmentDetails,
 } from "../src/lib/assignment-files";
 
 const megabyte = 1024 * 1024;
@@ -16,18 +18,42 @@ test("allows assignments without files and uploads at the 4 MB boundary", () => 
   ]), "");
 });
 
-test("rejects large phone photos and aggregate uploads before submission", () => {
-  assert.match(validateAssignmentFiles([{ name: "IMG_001.JPG", size: 6 * megabyte }]), /4 MB/);
-  assert.match(validateAssignmentFiles([
+test("allows the reported 6.6 MB phone image and large aggregate uploads", () => {
+  assert.equal(validateAssignmentFiles([{ name: "IMG_001.PNG", size: Math.ceil(6.6 * megabyte) }]), "");
+  assert.equal(validateAssignmentFiles([
     { name: "page1.png", size: 2 * megabyte },
     { name: "page2.png", size: 2 * megabyte + 1 },
-  ]), /4 MB/);
+  ]), "");
+  assert.equal(validateAssignmentFiles([{ name: "large.pdf", size: 3 * 1024 * megabyte }]), "");
 });
 
-test("allows five files and rejects six", () => {
+test("does not impose a file-count limit", () => {
   const files = Array.from({ length: 5 }, (_, i) => ({ name: `${i}.pdf`, size: 100 }));
   assert.equal(validateAssignmentFiles(files), "");
-  assert.match(validateAssignmentFiles([...files, files[0]]), /5/);
+  assert.equal(validateAssignmentFiles([...files, files[0]]), "");
+});
+
+test("server action payload excludes file bytes", async () => {
+  const form = new FormData();
+  form.set("expected_status", "requested");
+  form.set("assignment", "Complete the assigned worksheet");
+  form.set("due_at", "2099-01-01T10:00");
+  form.set("attachments", new File([new Uint8Array(7 * megabyte)], "phone.png", { type: "image/png" }));
+  const submission = assignmentSubmissionForm(form);
+  assert.equal(submission.has("attachments"), false);
+  assert.equal(submission.get("assignment"), form.get("assignment"));
+  assert.equal(parseAssignmentDetails(submission).error, undefined);
+  assert.ok((await new Response(submission).arrayBuffer()).byteLength < 1024);
+});
+
+test("rejects empty files and invalid assignment details before upload", () => {
+  assert.ok(validateAssignmentFiles([{ name: "empty.pdf", size: 0 }]));
+  const form = new FormData();
+  assert.ok(parseAssignmentDetails(form).error);
+  form.set("expected_status", "requested");
+  form.set("assignment", "Complete the assigned worksheet");
+  form.set("due_at", "2000-01-01T10:00");
+  assert.ok(parseAssignmentDetails(form).error);
 });
 
 test("accepts supported extensions even when mobile file MIME is absent", () => {

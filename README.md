@@ -36,6 +36,21 @@
 
 เอกสารอ้างอิง: [Supabase Cron](https://supabase.com/docs/guides/cron/quickstart)
 
+## การอัปโหลดไฟล์มอบหมายงาน
+
+ก่อนใช้การอัปโหลดตรงเข้า Storage ให้รัน `supabase/migrations/019_direct_assignment_uploads.sql`
+ใน Supabase SQL Editor แล้ว deploy แอปเวอร์ชันใหม่ Migration นี้ยกเลิกเพดานขนาดและจำนวนไฟล์ของแอป
+เปลี่ยน `size_bytes` เป็น `bigint` และตรวจขนาดกับชนิดไฟล์จาก Storage จริงก่อนบันทึกงาน
+ข้อมูลและไฟล์เดิมยังอยู่ครบ
+
+ไฟล์ส่งจากเบราว์เซอร์ไป Supabase Storage ด้วย signed token และ TUS ซึ่งแบ่งส่งเป็นส่วน ๆ
+และลองส่งต่อเมื่อเครือข่ายสะดุด ส่วน Server Actions รับเฉพาะข้อความกับข้อมูลอ้างอิงไฟล์
+จึงไม่ส่งไฟล์ขนาดใหญ่ผ่าน Vercel Functions
+
+แอปไม่กำหนดเพดานขนาดไฟล์ แต่ยังขึ้นกับ Global file size limit ใน Supabase Storage Settings
+และแพ็กเกจของโครงการ หาก Storage ปฏิเสธเพราะขนาดเกิน ให้ตรวจการตั้งค่านี้
+ดู [ข้อจำกัด Supabase Storage](https://supabase.com/docs/guides/storage/uploads/file-limits)
+
 ## บัญชีและวิธีเข้าสู่ระบบ
 
 | บทบาท               | ข้อมูลเข้าสู่ระบบ                                  |
