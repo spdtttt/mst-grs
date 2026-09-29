@@ -16,6 +16,7 @@ import {
   parseAssignmentDetails, validateAssignmentFiles, type AssignmentUpload,
 } from "@/lib/assignment-files";
 import { isRole } from "@/lib/domain";
+import { scheduleDates } from "@/lib/schedule-dates";
 export async function signIn(_prev: { error: string }, form: FormData) {
   if (!configured())
     return { error: "ยังไม่ได้เชื่อมต่อฐานข้อมูล กรุณาติดต่อฝ่ายวิชาการ" };
@@ -271,16 +272,14 @@ export async function advance(input: {
   return { success: true };
 }
 export async function saveSchedule(input: {
-  opens_at: string;
-  closes_at: string;
+  opens_on: string;
+  closes_on: string;
   notice: string;
 }) {
   if (!configured()) return { error: "ยังไม่ได้เชื่อมต่อฐานข้อมูล" };
-  if (
-    !Number.isFinite(Date.parse(input.opens_at)) ||
-    !Number.isFinite(Date.parse(input.closes_at))
-  )
-    return { error: "กรุณาระบุช่วงเวลาให้ครบ" };
+  const range = scheduleDates(input.opens_on, input.closes_on);
+  if (!range)
+    return { error: "กรุณาระบุวันที่ให้ครบ โดยวันปิดต้องเป็นวันเดียวกับหรือหลังวันเปิดระบบ" };
   const db = await supabase();
   const {
     data: { user },
@@ -294,8 +293,8 @@ export async function saveSchedule(input: {
   if (profile?.role !== "academic")
     return { error: "เฉพาะฝ่ายวิชาการเท่านั้นที่ตั้งเวลาเปิด–ปิดระบบได้" };
   const { error } = await db.rpc("update_schedule", {
-    p_opens_at: input.opens_at,
-    p_closes_at: input.closes_at,
+    p_opens_at: range.opens_at,
+    p_closes_at: range.closes_at,
     p_notice: input.notice,
   });
   if (error) return { error: error.message };

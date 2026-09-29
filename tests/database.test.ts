@@ -931,6 +931,31 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     assert.equal((await db.query("select * from storage.objects where name=$1", [largePath])).rows.length, 1,
       "cleanup cannot delete a file already linked to a task");
     await assignUpload([], "assigned");
+
+    // Date-only schedules normalize legacy hours and preserve inclusive closing days.
+    await db.exec("reset role");
+    const today = (await db.query<{ today: string }>("select (now() at time zone 'Asia/Bangkok')::date::text as today")).rows[0].today;
+    await db.query("update grade_records set status='completed',final_grade='1',completed_at=now() where id=$1", [uploadId]);
+    await db.exec("alter table site_schedule disable trigger archive_on_schedule_change");
+    await db.query("update site_schedule set opens_at=$1::timestamptz,closes_at=$2::timestamptz", [`${today}T01:00:00+07:00`, `${today}T02:00:00+07:00`]);
+    await db.exec("alter table site_schedule enable trigger archive_on_schedule_change");
+    await db.exec(readFileSync("supabase/migrations/020_date_only_schedule.sql", "utf8"));
+    assert.equal((await db.query("select id from grade_records where id=$1", [uploadId])).rows.length, 1,
+      "conversion must not archive against the old partial-day deadline");
+    await as(academic);
+    await db.query("select update_schedule($1,$2,'same day')", [`${today}T09:00:00+07:00`, `${today}T10:00:00+07:00`]);
+    assert.equal((await db.query<{ open: boolean }>("select site_is_open() as open")).rows[0].open, true);
+    const bounds = (await db.query<{ opens_at: Date; closes_at: Date }>("select opens_at,closes_at from site_schedule")).rows[0];
+    assert.equal(new Date(bounds.opens_at).getTime(), Date.parse(`${today}T00:00:00+07:00`));
+    assert.equal(new Date(bounds.closes_at).getTime(), Date.parse(`${today}T00:00:00+07:00`) + 86400000);
+    await db.query("select update_schedule($1,$2,'repeat save')", [bounds.opens_at, bounds.closes_at]);
+    assert.deepEqual((await db.query("select opens_at,closes_at from site_schedule")).rows[0], bounds);
+    await db.exec("reset role");
+    assert.equal((await db.query<{ count: number }>("select archive_completed_grade_records() as count")).rows[0].count, 0);
+    await as(teacher);
+    await assert.rejects(() => db.query("select update_schedule($1,$2,'forbidden')", [bounds.opens_at, bounds.closes_at]), /ไม่มีสิทธิ์/);
+    await as(academic);
+    await assert.rejects(() => db.query("select update_schedule($1,$2,'backwards')", [bounds.closes_at, bounds.opens_at]), /ช่วงวันที่/);
   } finally {
     await db.close();
   }

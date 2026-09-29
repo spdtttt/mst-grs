@@ -37,7 +37,7 @@ test("two approvals are mandatory and teacher approval stays 75%", () => {
   assert.equal(isRole("admin"), false);
   assert.equal(isRole(null), false);
 });
-test("schedule is closed until configured, inclusive opening and exclusive closing", () => {
+test("schedule uses whole Bangkok dates, including the closing day", () => {
   const s = {
     id: 1,
     opens_at: "2026-09-17T09:00:00+07:00",
@@ -46,7 +46,10 @@ test("schedule is closed until configured, inclusive opening and exclusive closi
   };
   assert.equal(isOpen({ ...s, opens_at: null, closes_at: null }), false);
   assert.equal(isOpen(s, Date.parse("2026-09-17T02:00:00Z")), true);
-  assert.equal(isOpen(s, Date.parse("2026-09-17T03:00:00Z")), false);
+  assert.equal(isOpen(s, Date.parse("2026-09-17T03:00:00Z")), true);
+  assert.equal(isOpen(s, Date.parse("2026-09-16T17:00:00Z")), true);
+  assert.equal(isOpen(s, Date.parse("2026-09-17T16:59:59.999Z")), true);
+  assert.equal(isOpen(s, Date.parse("2026-09-17T17:00:00Z")), false);
 });
 test("manager chart counts students once after all their courses are complete", () => {
   const stats = summarizeManagerStats([

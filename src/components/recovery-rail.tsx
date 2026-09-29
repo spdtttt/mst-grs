@@ -7,6 +7,7 @@ import {
 } from "@/lib/domain";
 import styles from "./dashboard.module.css";
 import type { ReactNode } from "react";
+import { scheduleClosingDisplay } from "@/lib/schedule-dates";
 
 export default function RecoveryRail({
   records,
@@ -85,11 +86,11 @@ export default function RecoveryRail({
         <dl>
           <div>
             <dt>เปิดรับดำเนินการ</dt>
-            <dd>{thaiDate(schedule.opens_at, true)}</dd>
+            <dd>{thaiDate(schedule.opens_at)}</dd>
           </div>
           <div>
             <dt>ปิดรับดำเนินการ</dt>
-            <dd>{thaiDate(schedule.closes_at, true)}</dd>
+            <dd>{thaiDate(scheduleClosingDisplay(schedule.closes_at))}</dd>
           </div>
         </dl>
         <p>

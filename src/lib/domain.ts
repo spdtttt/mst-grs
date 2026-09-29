@@ -1,3 +1,5 @@
+import { normalizeSchedule } from "./schedule-dates";
+
 export type Role = "student" | "teacher" | "academic" | "manager";
 export function isRole(value: unknown): value is Role {
   return (
@@ -111,7 +113,8 @@ export const nextStatus: Partial<
   },
   academic: { teacher_approved: "completed" },
 };
-export function isOpen(s: Schedule, now = Date.now()) {
+export function isOpen(schedule: Schedule, now = Date.now()) {
+  const s = normalizeSchedule(schedule);
   return (
     !!s.opens_at &&
     !!s.closes_at &&

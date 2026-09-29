@@ -61,6 +61,7 @@ import {
   type ImportRow,
 } from "@/lib/import";
 import Image from "next/image";
+import { bangkokDate, normalizeSchedule, scheduleClosingDate, scheduleClosingDisplay, scheduleDates } from "@/lib/schedule-dates";
 
 type View = "overview" | "outstanding" | "history" | "export" | "import" | "schedule";
 const emptyHistory: ArchivedGradeRecord[] = [];
@@ -112,7 +113,7 @@ export default function Workspace({
   const [actor, setActor] = useState(profile);
   const [items, setItems] = useState(records);
   const [archives, setArchives] = useState(historyRecords);
-  const [settings, setSettings] = useState(schedule);
+  const [settings, setSettings] = useState(() => normalizeSchedule(schedule));
   const [view, setView] = useState<View>(initialView);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
@@ -139,8 +140,8 @@ export default function Workspace({
   const [assignment, setAssignment] = useState("");
   const [due, setDue] = useState("");
   const [finalGrade, setFinalGrade] = useState("1");
-  const [opens, setOpens] = useState(localBangkok(schedule.opens_at));
-  const [closes, setCloses] = useState(localBangkok(schedule.closes_at));
+  const [opens, setOpens] = useState(bangkokDate(schedule.opens_at));
+  const [closes, setCloses] = useState(scheduleClosingDate(schedule.closes_at));
   const [notice, setNotice] = useState(schedule.notice);
   const [preview, setPreview] = useState<ImportRow[]>([]);
   const [fileErrors, setFileErrors] = useState<string[]>([]);
@@ -156,7 +157,7 @@ export default function Workspace({
     if (!demo) setArchives(historyRecords);
   }, [historyRecords, demo]);
   useEffect(() => {
-    if (!demo) setSettings(schedule);
+    if (!demo) setSettings(normalizeSchedule(schedule));
   }, [schedule, demo]);
   useEffect(() => {
     const t = setInterval(() => {
@@ -477,22 +478,18 @@ export default function Workspace({
   function submitSchedule(e: React.FormEvent) {
     e.preventDefault();
     setProblem("");
-    if (
-      !opens ||
-      !closes ||
-      Date.parse(closes + "+07:00") <= Date.parse(opens + "+07:00")
-    ) {
-      setProblem("วันปิดต้องอยู่หลังวันเปิดระบบ");
+    const range = scheduleDates(opens, closes);
+    if (!range) {
+      setProblem("กรุณาระบุวันที่ให้ครบ โดยวันปิดต้องเป็นวันเดียวกับหรือหลังวันเปิดระบบ");
       return;
     }
     startTransition(async () => {
       const value = {
-        opens_at: new Date(opens + "+07:00").toISOString(),
-        closes_at: new Date(closes + "+07:00").toISOString(),
+        ...range,
         notice,
       };
       if (!demo) {
-        const result = await saveSchedule(value);
+        const result = await saveSchedule({ opens_on: opens, closes_on: closes, notice });
         if (result.error) {
           setProblem(result.error);
           return;
@@ -773,9 +770,9 @@ export default function Workspace({
               <button className="mt-4 rounded-lg bg-brand px-4 py-2 text-white" onClick={() => navigate("history")}>เปิดประวัติการแก้ไข</button>
               <p className="mt-3 text-sm">ประวัติเปิดอ่านได้ตลอดเวลา รายการที่แก้สำเร็จจะย้ายเข้าประวัติอัตโนมัติหลังถึงเวลาปิด</p>
               <div>
-                เปิด {thaiDate(settings.opens_at, true)}
+                เปิด {thaiDate(settings.opens_at)}
                 <br />
-                ปิด {thaiDate(settings.closes_at, true)}
+                ปิด {thaiDate(scheduleClosingDisplay(settings.closes_at))}
               </div>
             </div>
           ) : (
@@ -819,7 +816,7 @@ export default function Workspace({
                       <div>
                         <small className="text-sm">กำหนดปิดรับดำเนินการ</small>
                         <strong className="font-semibold">
-                          {thaiDate(settings.closes_at)}
+                          {thaiDate(scheduleClosingDisplay(settings.closes_at))}
                         </strong>
                       </div>
                     </div>
@@ -1394,7 +1391,7 @@ export default function Workspace({
                         <h2 className="text-lg leading-normal font-[650]">
                           ช่วงเวลาให้บริการ
                         </h2>
-                        <p>เวลาในประเทศไทย (UTC+7)</p>
+                        <p>นับตามวันที่ในประเทศไทย เปิดให้ใช้งานได้ตลอดวันปิดที่เลือก</p>
                       </div>
                       <CalendarDays size={24} />
                     </div>
@@ -1408,13 +1405,13 @@ export default function Workspace({
                             className="mt-4 mb-2 block font-[550]"
                             htmlFor="opens"
                           >
-                            วันและเวลาเปิดระบบ
+                            วันที่เปิดระบบ
                           </label>
                           <input
                             className="max-w-full rounded-lg border border-[#e1dce9] bg-white px-[13px] py-[11px] text-ink outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115]"
                             required
                             id="opens"
-                            type="datetime-local"
+                            type="date"
                             value={opens}
                             onInput={(e) => setOpens(e.currentTarget.value)}
                             onChange={(e) => setOpens(e.target.value)}
@@ -1425,13 +1422,14 @@ export default function Workspace({
                             className="mt-4 mb-2 block font-[550]"
                             htmlFor="closes"
                           >
-                            วันและเวลาปิดระบบ
+                            วันที่ปิดระบบ
                           </label>
                           <input
                             className="max-w-full rounded-lg border border-[#e1dce9] bg-white px-[13px] py-[11px] text-ink outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115]"
                             required
                             id="closes"
-                            type="datetime-local"
+                            type="date"
+                            min={opens || undefined}
                             value={closes}
                             onInput={(e) => setCloses(e.currentTarget.value)}
                             onChange={(e) => setCloses(e.target.value)}
@@ -1455,7 +1453,7 @@ export default function Workspace({
                       <div className="my-5 flex items-start gap-2.5 rounded-lg border border-[#e8dff5] bg-[#f6f2fd] p-[15px] text-sm text-[#6b5788] [&>svg]:mt-[3px] [&>svg]:shrink-0">
                         <Info size={18} />
                         <span>
-                          เมื่อถึงเวลาปิดระบบ รายการที่แก้สำเร็จจะย้ายเข้าประวัติอัตโนมัติ
+                          เมื่อพ้นวันที่ปิดระบบ รายการที่แก้สำเร็จจะย้ายเข้าประวัติอัตโนมัติ
                           นักเรียน ครู และฝ่ายวิชาการยังเปิดอ่านประวัติได้ตลอดเวลา แต่ดำเนินการแก้ผลการเรียนไม่ได้
                           ฝ่ายวิชาการยังสามารถปรับช่วงเวลาได้จากเมนูตั้งค่าเวลาเปิด–ปิดระบบ
                         </span>
@@ -1487,9 +1485,9 @@ export default function Workspace({
                     </span>
                     <hr />
                     <small className="text-xs">เปิดระบบ</small>
-                    <p>{thaiDate(settings.opens_at, true)}</p>
+                    <p>{thaiDate(settings.opens_at)}</p>
                     <small className="text-xs">ปิดระบบ</small>
-                    <p>{thaiDate(settings.closes_at, true)}</p>
+                    <p>{thaiDate(scheduleClosingDisplay(settings.closes_at))}</p>
                     <div className="text-muted">
                       ฝ่ายวิชาการสามารถตั้งเวลาเปิด–ปิดระบบได้
                       แม้อยู่นอกช่วงเวลาให้บริการ
