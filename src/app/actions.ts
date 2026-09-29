@@ -11,6 +11,7 @@ import { importSchema } from "@/lib/import";
 import { safeReturnPath } from "@/lib/navigation";
 import { notifyTeacherOfNewRequest } from "@/lib/push";
 import { z } from "zod";
+import { assignmentFileMimeType, validateAssignmentFiles } from "@/lib/assignment-files";
 import { isRole } from "@/lib/domain";
 export async function signIn(_prev: { error: string }, form: FormData) {
   if (!configured())
@@ -66,7 +67,7 @@ export async function signOut() {
   redirect("/");
 }
 
-export type AssignmentActionState = { error: string };
+export type AssignmentActionState = { error: string; success?: boolean };
 
 const pushSubscriptionSchema = z.object({
   endpoint: z
@@ -114,20 +115,6 @@ export async function removePushSubscription(endpoint: string) {
   return error ? { error: error.message } : { success: true };
 }
 
-const assignmentFileTypes: Record<string, string> = {
-  pdf: "application/pdf",
-  doc: "application/msword",
-  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  xls: "application/vnd.ms-excel",
-  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  ppt: "application/vnd.ms-powerpoint",
-  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  jpg: "image/jpeg",
-  jpeg: "image/jpeg",
-  png: "image/png",
-  txt: "text/plain",
-};
-
 export async function assignGrade(
   recordId: string,
   _prev: AssignmentActionState,
@@ -159,15 +146,12 @@ export async function assignGrade(
   const files = form
     .getAll("attachments")
     .filter((item): item is File => item instanceof File && item.size > 0);
-  if (files.length > 5) return { error: "แนบไฟล์ได้ไม่เกิน 5 ไฟล์" };
-  if (files.some((file) => file.size > 4 * 1024 * 1024))
-    return { error: "ไฟล์แต่ละไฟล์ต้องมีขนาดไม่เกิน 4 MB" };
-  if (files.reduce((total, file) => total + file.size, 0) > 4 * 1024 * 1024)
-    return { error: "ไฟล์แนบทั้งหมดต้องมีขนาดรวมไม่เกิน 4 MB" };
+  const fileError = validateAssignmentFiles(files);
+  if (fileError) return { error: fileError };
 
   const prepared = files.map((file) => {
     const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
-    const mimeType = assignmentFileTypes[extension];
+    const mimeType = assignmentFileMimeType(file.name);
     return {
       file,
       extension,
@@ -235,7 +219,7 @@ export async function assignGrade(
 
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/assignments/${recordId}`);
-  redirect("/dashboard");
+  return { error: "", success: true };
 }
 
 export async function advance(input: {

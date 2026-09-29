@@ -1,9 +1,11 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { startTransition, useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, CalendarDays, Clock3, FileUp, Info } from "lucide-react";
 import { assignGrade, type AssignmentActionState } from "@/app/actions";
 import type { GradeRecord, Profile } from "@/lib/domain";
+import { validateAssignmentFiles } from "@/lib/assignment-files";
 
 const dueTimeOptions = Array.from({ length: 20 }, (_, index) =>
   `${String(7 + Math.floor(index / 2)).padStart(2, "0")}:${index % 2 ? "30" : "00"}`,
@@ -23,12 +25,25 @@ export default function AssignmentActions({
     ? new Date(Date.parse(record.due_at) + 7 * 60 * 60 * 1000).toISOString().slice(0, 16)
     : "";
   const initialTime = initialDue.slice(11, 16);
-  const submitAssignment = assignGrade.bind(null, record.id);
+  const router = useRouter();
+  async function submitAssignment(previous: AssignmentActionState, form: FormData) {
+    let result: AssignmentActionState;
+    try {
+      result = await assignGrade(record.id, previous, form);
+    } catch {
+      return {
+        error: "ไม่สามารถยืนยันผลการบันทึกได้ กรุณาตรวจสอบการเชื่อมต่อและสถานะงานก่อนลองใหม่ ข้อมูลที่กรอกยังอยู่ในฟอร์ม",
+      };
+    }
+    if (result.success) router.push("/dashboard");
+    return result;
+  }
   const [state, formAction, pending] = useActionState<
     AssignmentActionState,
     FormData
   >(submitAssignment, { error: "" });
   const [demoMessage, setDemoMessage] = useState("");
+  const [fileError, setFileError] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState(initialDue.slice(0, 10));
   const [dueTime, setDueTime] = useState(
@@ -58,17 +73,23 @@ export default function AssignmentActions({
       </div>
 
       <form
-        action={demo ? undefined : formAction}
-        onSubmit={
-          demo
-            ? (event) => {
-                event.preventDefault();
-                setDemoMessage(
-                  "บันทึกตัวอย่างแล้ว (โหมดทดลองไม่อัปโหลดไฟล์จริง)",
-                );
-              }
-            : undefined
-        }
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (pending || state.success) return;
+          const form = new FormData(event.currentTarget);
+          const files = form.getAll("attachments").filter(
+            (item): item is File => item instanceof File && item.size > 0,
+          );
+          const error = validateAssignmentFiles(files);
+          setFileError(error);
+          if (error) return;
+          if (demo) {
+            setDemoMessage("บันทึกตัวอย่างแล้ว (โหมดทดลองไม่อัปโหลดไฟล์จริง)");
+            return;
+          }
+          // Dispatch manually so unsuccessful submissions keep the form and files.
+          startTransition(() => formAction(form));
+        }}
       >
         <input type="hidden" name="expected_status" value={mode} />
         <label className="mb-2 block font-medium" htmlFor="assignment">
@@ -155,7 +176,7 @@ export default function AssignmentActions({
             เลือกไฟล์จากเครื่อง
           </span>
           <span className="mt-1 text-xs leading-5 text-muted">
-            สูงสุด 5 ไฟล์ รวมไม่เกิน 4 MB · PDF, Word, Excel, PowerPoint, JPG,
+            ไม่จำกัดจำนวน ไม่จำกัดขนาดไฟล์ · PDF, Word, Excel, PowerPoint, JPG,
             PNG หรือ TXT
           </span>
         </label>
@@ -166,13 +187,12 @@ export default function AssignmentActions({
           type="file"
           accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
           multiple
-          onChange={(event) =>
-            setSelectedFiles(
-              Array.from(event.currentTarget.files ?? []).map(
-                (file) => file.name,
-              ),
-            )
-          }
+          disabled={pending || state.success}
+          onChange={(event) => {
+            const files = Array.from(event.currentTarget.files ?? []);
+            setSelectedFiles(files.map((file) => file.name));
+            setFileError(validateAssignmentFiles(files));
+          }}
         />
         {selectedFiles.length > 0 && (
           <div className="mt-3 rounded-xl border border-[#e9e1f0] bg-white px-4 py-3 text-sm text-[#675773]">
@@ -196,25 +216,25 @@ export default function AssignmentActions({
             : "นักเรียนจะเห็นรายละเอียดและดาวน์โหลดไฟล์แนบได้ทันที"}
         </div>
 
-        {(state.error || demoMessage) && (
+        {(fileError || state.error || demoMessage) && (
           <p
             className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
-              state.error
+              fileError || state.error
                 ? "border-[#f1d2d6] bg-[#fff3f3] text-[#ad3d49]"
                 : "border-[#d8ebdf] bg-[#f1faf5] text-status-green"
             }`}
             role="status"
           >
-            {state.error || demoMessage}
+            {fileError || state.error || demoMessage}
           </p>
         )}
 
         <button
           className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 font-semibold text-white shadow-[0_6px_18px_#713cd12c] transition enabled:hover:bg-[#602cbc] disabled:cursor-not-allowed disabled:opacity-60"
           type="submit"
-          disabled={pending}
+          disabled={pending || !!fileError || state.success}
         >
-          {pending
+          {pending || state.success
             ? "กำลังอัปโหลดและบันทึก…"
             : mode === "assigned"
               ? "บันทึกการแก้ไข"
