@@ -220,24 +220,14 @@ export default function Workspace({
       const rows = visibleScope.filter((r) => {
         if (view === "outstanding" && r.status === "completed") return false;
         if (view === "history" && r.status !== "completed") return false;
+        if (view === "export" && role === "academic" && r.status !== "completed")
+          return false;
         if (
-          view === "export" &&
-          (role === "academic"
-            ? r.status !== "completed"
-            : filter === "all" && r.status === "completed")
+          view === "overview" &&
+          role === "academic" &&
+          r.status !== "teacher_approved"
         )
           return false;
-        if (view === "overview") {
-          if (role === "student" && r.status === "completed") return false;
-          if (
-            role === "teacher" &&
-            filter === "all" &&
-            ["pending", "completed"].includes(r.status)
-          )
-            return false;
-          if (role === "academic" && r.status !== "teacher_approved")
-            return false;
-        }
         return (
           (role === "academic" || filter === "all" || r.status === filter) &&
           (year === "all" || String(r.academic_year) === year) &&
