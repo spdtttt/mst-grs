@@ -764,23 +764,8 @@ export default function Workspace({
                     onChange={(e) => setSemester(e.target.value)}
                   >
                     <option value="all">ทุกภาคเรียน</option>
-                    {[
-                      ...new Set(
-                        visibleScope
-                          .filter(
-                            (r) =>
-                              year === "all" ||
-                              String(r.academic_year) === year,
-                          )
-                          .map((r) => r.semester),
-                      ),
-                    ]
-                      .sort((a, b) => a - b)
-                      .map((term) => (
-                        <option key={term} value={term}>
-                          ภาคเรียนที่ {term}
-                        </option>
-                      ))}
+                    <option value="1">ภาคเรียนที่ 1</option>
+                    <option value="2">ภาคเรียนที่ 2</option>
                   </select>
                 </div>
               </div>
