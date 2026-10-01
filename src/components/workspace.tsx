@@ -43,6 +43,7 @@ import {
   roles,
   nextStatus,
   isOpen,
+  resetForNewPeriod,
   thaiDate,
   safeCell,
 } from "@/lib/domain";
@@ -148,6 +149,7 @@ export default function Workspace({
   const [fileName, setFileName] = useState("");
   const [reading, setReading] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
+  const processedClosings = useRef(new Set<string>());
   const fileInput = useRef<HTMLInputElement>(null);
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -168,12 +170,13 @@ export default function Workspace({
   }, [demo, settings.closes_at, router]);
   useEffect(() => {
     if (!demo || !settings.closes_at || now < Date.parse(settings.closes_at)) return;
+    if (processedClosings.current.has(settings.closes_at)) return;
+    processedClosings.current.add(settings.closes_at);
     const completed = items.filter((record) => record.status === "completed");
-    if (!completed.length) return;
     setArchives((previous) => [...completed.map((record) => ({
       ...record, archived_at: new Date(now).toISOString(), archived_closes_at: settings.closes_at!,
     })), ...previous]);
-    setItems((previous) => previous.filter((record) => record.status !== "completed"));
+    setItems((previous) => previous.filter((record) => record.status !== "completed").map(resetForNewPeriod));
   }, [demo, items, settings.closes_at, now]);
   useEffect(() => {
     if (!toast) return;
@@ -1454,6 +1457,7 @@ export default function Workspace({
                         <Info size={18} />
                         <span>
                           เมื่อพ้นวันที่ปิดระบบ รายการที่แก้สำเร็จจะย้ายเข้าประวัติอัตโนมัติ
+                          {" "}รายการที่ยังไม่สำเร็จจะกลับเป็นสถานะยังไม่ยื่นคำร้อง และต้องเริ่มดำเนินการใหม่ในรอบถัดไป{" "}
                           นักเรียน ครู และฝ่ายวิชาการยังเปิดอ่านประวัติได้ตลอดเวลา แต่ดำเนินการแก้ผลการเรียนไม่ได้
                           ฝ่ายวิชาการยังสามารถปรับช่วงเวลาได้จากเมนูตั้งค่าเวลาเปิด–ปิดระบบ
                         </span>

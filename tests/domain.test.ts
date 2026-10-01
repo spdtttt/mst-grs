@@ -7,6 +7,7 @@ import {
   safeCell,
   isRole,
   roles,
+  resetForNewPeriod,
 } from "../src/lib/domain";
 import { columns, parseRows, parseDelimited } from "../src/lib/import";
 import { loginEmail, identityPassword } from "../src/lib/identity";
@@ -16,6 +17,19 @@ import {
   summarizeManagerStats,
   summarizeManagerStudents,
 } from "../src/lib/manager-stats";
+test("new-period reset clears workflow progress without changing the original failed course", () => {
+  for (const record of demoRecords.filter((record) => record.status !== "completed")) {
+    const reset = resetForNewPeriod(record);
+    assert.equal(reset.status, "pending");
+    for (const field of ["assignment", "due_at", "requested_at", "assigned_at", "submitted_at", "teacher_approved_at", "completed_at", "final_grade"] as const) {
+      assert.equal(reset[field], null);
+    }
+    for (const field of ["id", "academic_year", "semester", "original_grade", "course_code", "student_id", "teacher_id"] as const) {
+      assert.deepEqual(reset[field], record[field]);
+    }
+    assert.deepEqual(resetForNewPeriod(reset), reset);
+  }
+});
 test("two approvals are mandatory and teacher approval stays 75%", () => {
   assert.equal(nextStatus.student?.pending, "requested");
   assert.equal(nextStatus.teacher?.requested, "assigned");

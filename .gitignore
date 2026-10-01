@@ -10,3 +10,4 @@ accounts*.csv
 credentials/
 data
 docs
+prompt.txt

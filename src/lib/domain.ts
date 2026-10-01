@@ -53,6 +53,21 @@ export type ArchivedGradeRecord = GradeRecord & {
   archived_at: string;
   archived_closes_at: string;
 };
+
+export function resetForNewPeriod(record: GradeRecord): GradeRecord {
+  return {
+    ...record,
+    status: "pending",
+    assignment: null,
+    due_at: null,
+    requested_at: null,
+    assigned_at: null,
+    submitted_at: null,
+    teacher_approved_at: null,
+    completed_at: null,
+    final_grade: null,
+  };
+}
 export type AssignmentFile = {
   id: string;
   record_id: string | null;

@@ -956,6 +956,94 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     await assert.rejects(() => db.query("select update_schedule($1,$2,'forbidden')", [bounds.opens_at, bounds.closes_at]), /ไม่มีสิทธิ์/);
     await as(academic);
     await assert.rejects(() => db.query("select update_schedule($1,$2,'backwards')", [bounds.closes_at, bounds.opens_at]), /ช่วงวันที่/);
+
+    // Period rollover: reset every unfinished state and preserve earlier attempts.
+    const unfinishedStates = ["pending", "requested", "assigned", "submitted", "teacher_approved"];
+    for (const state of unfinishedStates) {
+      await importRows([{ ...input, course_code: `RESET-${state}`, teacher_name: [input.teacher_name] }]);
+    }
+    await db.exec("reset role");
+    const resetRecords = (await db.query<{ id: string; course_code: string }>(
+      "select id,course_code from grade_records where course_code like 'RESET-%' order by course_code",
+    )).rows;
+    for (const record of resetRecords) {
+      await db.query("update grade_records set status=$2::grade_status,assignment='Previous period worksheet',due_at=now()+interval '1 day',requested_at=now(),assigned_at=now(),submitted_at=now(),teacher_approved_at=now(),final_grade='1' where id=$1",
+        [record.id, record.course_code.slice(6)]);
+    }
+    const resetId = resetRecords.find((record) => record.course_code === "RESET-assigned")!.id;
+    const oldTask = (await db.query<{ id: string }>("insert into grade_assignments(record_id,round_number,assignment,due_at) values($1,1,'Previous period worksheet',now()+interval '1 day') returning id", [resetId])).rows[0].id;
+    const oldPath = `${resetId}/00000000-0000-4000-8000-000000000079.pdf`;
+    await db.query("insert into storage.objects(bucket_id,name,metadata) values('assignment-files',$1,'{\"size\":1024,\"mimetype\":\"application/pdf\"}')", [oldPath]);
+    await db.query("insert into assignment_files(record_id,assignment_id,storage_path,original_name,mime_type,size_bytes,uploaded_by) values($1,$2,$3,'old.pdf','application/pdf',1024,$4)", [resetId, oldTask, oldPath, teacher]);
+    const beforeReset = (await db.query<Record<string, unknown>>("select * from grade_records where id=any($1::uuid[]) order by id", [resetRecords.map((record) => record.id)])).rows;
+    await db.exec(readFileSync("supabase/migrations/021_reset_unfinished_on_close.sql", "utf8"));
+    assert.equal((await db.query("select * from school_period_closures")).rows.length, 0, "do not reset before the closing date");
+    const firstClose = new Date(Date.parse(`${today}T00:00:00+07:00`) - 2 * 86400000).toISOString();
+    async function expireWithoutTrigger(close: string) {
+      await db.exec("reset role; alter table site_schedule disable trigger archive_on_schedule_change");
+      await db.query("update site_schedule set opens_at=$1::timestamptz-interval '1 day',closes_at=$1::timestamptz", [close]);
+      await db.exec("alter table site_schedule enable trigger archive_on_schedule_change");
+    }
+    await expireWithoutTrigger(firstClose);
+    await db.exec("create function fail_reset_test() returns trigger language plpgsql as $$ begin if new.action='reset_at_period_close' then raise exception 'test reset rollback'; end if; return new; end $$; create trigger fail_reset_test before insert on audit_log for each row execute function fail_reset_test();");
+    await assert.rejects(() => db.query("select archive_completed_grade_records()"), /test reset rollback/);
+    assert.equal((await db.query("select * from school_period_closures")).rows.length, 0);
+    assert.equal((await db.query("select * from grade_assignments where id=$1 and record_id=$2", [oldTask, resetId])).rows.length, 1);
+    assert.equal((await db.query("select * from grade_records where id=$1", [uploadId])).rows.length, 1, "archive also rolls back with reset failure");
+    await db.exec("drop trigger fail_reset_test on audit_log; drop function fail_reset_test();");
+    await db.query("select archive_completed_grade_records()");
+    const afterReset = (await db.query<Record<string, unknown>>("select * from grade_records where id=any($1::uuid[]) order by id", [resetRecords.map((record) => record.id)])).rows;
+    for (const [index, record] of afterReset.entries()) {
+      const expected: Record<string, unknown> = { ...beforeReset[index], status: "pending" };
+      for (const field of ["assignment", "due_at", "requested_at", "assigned_at", "submitted_at", "teacher_approved_at", "completed_at", "final_grade"]) expected[field] = null;
+      assert.deepEqual(record, expected);
+    }
+    assert.equal((await db.query("select * from grade_record_history where id=$1", [uploadId])).rows.length, 1);
+    const snapshot = (await db.query<{ id: string; record_snapshot: Record<string, unknown> }>("select * from grade_reset_history where record_id=$1", [resetId])).rows[0];
+    assert.equal(snapshot.record_snapshot.status, "assigned");
+    assert.equal((await db.query("select * from grade_assignments where record_id=$1", [resetId])).rows.length, 0);
+    assert.equal((await db.query("select * from assignment_files where record_id=$1", [resetId])).rows.length, 0);
+    assert.equal((await db.query("select * from assignment_files where reset_history_id=$1", [snapshot.id])).rows.length, 1);
+    const resetCount = (await db.query("select * from grade_reset_history")).rows.length;
+    await db.query("select archive_completed_grade_records()");
+    assert.equal((await db.query("select * from grade_reset_history")).rows.length, resetCount, "cron is idempotent");
+    for (const actor of [student, teacher, academic]) {
+      await as(actor);
+      assert.equal((await db.query("select * from grade_reset_history where id=$1", [snapshot.id])).rows.length, 1);
+      assert.equal((await db.query("select * from storage.objects where name=$1", [oldPath])).rows.length, 1);
+      await assert.rejects(() => db.query("select archive_completed_grade_records()"), /permission denied/);
+      await assert.rejects(() => db.query("delete from grade_reset_history"), /permission denied/);
+    }
+    await as(other);
+    assert.equal((await db.query("select * from grade_reset_history where id=$1", [snapshot.id])).rows.length, 0);
+    assert.equal((await db.query("select * from assignment_files where reset_history_id=$1", [snapshot.id])).rows.length, 0);
+    assert.equal((await db.query("select * from storage.objects where name=$1", [oldPath])).rows.length, 0);
+    await as(academic);
+    await db.query("select update_schedule($1,$2,'next period')", [bounds.opens_at, bounds.closes_at]);
+    await as(student);
+    await db.query("select advance_grade($1,'pending')", [resetId]);
+    await as(teacher);
+    await db.query("select assign_grade($1,'New period worksheet',now()+interval '1 day','[]','requested')", [resetId]);
+    assert.equal((await db.query<{ round_number: number }>("select round_number from grade_assignments where record_id=$1", [resetId])).rows[0].round_number, 1);
+    await db.query("delete from storage.objects where name=$1", [oldPath]);
+    assert.equal((await db.query("select * from storage.objects where name=$1", [oldPath])).rows.length, 1, "retained old files cannot be removed as orphan uploads");
+    await db.exec("reset role");
+    await db.query("select archive_completed_before_close($1)", [firstClose]);
+    assert.equal((await db.query<{ status: string }>("select status from grade_records where id=$1", [resetId])).rows[0].status, "assigned", "a processed deadline cannot reset new-period progress");
+    const secondClose = new Date(Date.parse(firstClose) + 86400000).toISOString();
+    await expireWithoutTrigger(secondClose);
+    await as(academic);
+    await db.query("select update_schedule($1,$2,'reopen before cron')", [bounds.opens_at, bounds.closes_at]);
+    assert.equal((await db.query<{ status: string }>("select status from grade_records where id=$1", [resetId])).rows[0].status, "pending");
+    assert.equal((await db.query("select * from grade_reset_history where record_id=$1", [resetId])).rows.length, 2, "a second period resets even with no completed records");
+    await db.exec("reset role");
+    await db.query("update grade_records set status='completed',final_grade='1',completed_at=now() where id=$1", [resetId]);
+    await expireWithoutTrigger(new Date(Date.parse(secondClose) + 86400000).toISOString());
+    await db.query("select archive_completed_grade_records()");
+    assert.equal((await db.query("select * from grade_record_history where id=$1", [resetId])).rows.length, 1,
+      "retained failed attempts must not block a later successful archive");
+    assert.equal((await db.query("select * from grade_assignments where reset_history_id=$1", [snapshot.id])).rows.length, 1);
+    assert.equal((await db.query("select * from assignment_files where reset_history_id=$1", [snapshot.id])).rows.length, 1);
   } finally {
     await db.close();
   }
