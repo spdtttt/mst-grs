@@ -116,41 +116,13 @@
   gap: 20px;
   align-items: start;
 }
+.columns.adminColumns {
+  grid-template-columns: minmax(0, 1fr);
+}
 .content {
   min-width: 0;
 }
 .scheduleFormLayout { min-width: 0; }
-@media (min-width: 1280px) {
-  .columns.scheduleColumns {
-    grid-template-columns: minmax(0, 1fr) 280px 300px;
-    grid-template-rows: auto auto;
-  }
-  .scheduleColumns > .content,
-  .scheduleColumns .scheduleFormLayout,
-  .scheduleColumns > .rail {
-    display: contents;
-  }
-  .scheduleColumns .scheduleFormLayout > section:first-child {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-  }
-  .scheduleColumns .scheduleFormLayout > section:last-child {
-    grid-column: 2;
-    grid-row: 1;
-  }
-  .scheduleColumns > .rail > section:first-child {
-    grid-column: 3;
-    grid-row: 1;
-  }
-  .scheduleColumns > .rail > .schedule {
-    grid-column: 2 / span 2;
-    grid-row: 2;
-  }
-  .scheduleColumns > .content > footer,
-  .scheduleColumns > .content > p {
-    grid-column: 1 / -1;
-  }
-}
 .hero {
   min-height: 140px;
   padding: 24px;

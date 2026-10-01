@@ -11,7 +11,7 @@ import {
 } from "../src/lib/domain";
 import { columns, parseRows, parseDelimited } from "../src/lib/import";
 import { loginEmail, identityPassword } from "../src/lib/identity";
-import { safeReturnPath } from "../src/lib/navigation";
+import { roleReturnPath, safeReturnPath } from "../src/lib/navigation";
 import { demoRecords } from "../src/lib/demo";
 import {
   summarizeManagerStats,
@@ -45,10 +45,12 @@ test("two approvals are mandatory and teacher approval stays 75%", () => {
     "teacher",
     "academic",
     "manager",
+    "admin",
   ]);
   assert.equal(isRole("manager"), true);
+  assert.equal(isRole("admin"), true);
   assert.equal(nextStatus.manager, undefined);
-  assert.equal(isRole("admin"), false);
+  assert.equal(nextStatus.admin, undefined);
   assert.equal(isRole(null), false);
 });
 test("schedule uses whole Bangkok dates, including the closing day", () => {
@@ -286,4 +288,9 @@ test("post-login return paths stay inside the authenticated dashboard", () => {
   assert.equal(safeReturnPath("https://example.com"), "/dashboard");
   assert.equal(safeReturnPath("//example.com"), "/dashboard");
   assert.equal(safeReturnPath("/demo"), "/dashboard");
+  assert.equal(roleReturnPath("admin", "/dashboard/manager"), "/dashboard/admin");
+  assert.equal(roleReturnPath("manager", "/dashboard/admin"), "/dashboard/manager");
+  assert.equal(roleReturnPath("academic", "/dashboard/admin"), "/dashboard");
+  assert.equal(roleReturnPath("teacher", "/dashboard/assignments/00000000-0000-4000-8000-000000000001"),
+    "/dashboard/assignments/00000000-0000-4000-8000-000000000001");
 });

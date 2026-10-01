@@ -1,12 +1,13 @@
 import { normalizeSchedule } from "./schedule-dates";
 
-export type Role = "student" | "teacher" | "academic" | "manager";
+export type Role = "student" | "teacher" | "academic" | "manager" | "admin";
 export function isRole(value: unknown): value is Role {
   return (
     value === "student" ||
     value === "teacher" ||
     value === "academic" ||
-    value === "manager"
+    value === "manager" ||
+    value === "admin"
   );
 }
 export type Status =
@@ -52,6 +53,17 @@ export type GradeRecord = {
 export type ArchivedGradeRecord = GradeRecord & {
   archived_at: string;
   archived_closes_at: string;
+};
+export type GradeCorrection = {
+  id: string;
+  record_id: string;
+  student_id: string;
+  teacher_id: string[];
+  previous_grade: string;
+  new_grade: string;
+  changed_by: string;
+  changed_by_name: string;
+  changed_at: string;
 };
 
 export function resetForNewPeriod(record: GradeRecord): GradeRecord {
@@ -101,6 +113,7 @@ export const roles: Record<Role, string> = {
   teacher: "ครูประจำวิชา",
   academic: "ฝ่ายวิชาการ",
   manager: "ผู้บริหาร",
+  admin: "ผู้ดูแลระบบ",
 };
 export const statuses: Record<
   Status,

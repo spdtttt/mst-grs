@@ -28,6 +28,13 @@ export const demoProfiles: Record<Role, Profile> = {
     student_code: null,
     classroom: null,
   },
+  admin: {
+    id: "admin-demo",
+    role: "admin",
+    full_name: "ผู้ดูแลระบบ ตัวอย่าง",
+    student_code: null,
+    classroom: null,
+  },
 };
 export const demoSchedule: Schedule = {
   id: 1,

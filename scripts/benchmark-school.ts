@@ -8,7 +8,7 @@ import { syntheticSchool } from "../src/lib/synthetic-school";
 async function main() {
   const dataset = syntheticSchool();
   const db = await loadTestDatabase();
-  const result: Record<string, unknown> = { at: new Date().toISOString(), environment: "local PGlite PostgreSQL; no network or Supabase Auth", accounts: 2520, records: 1200 };
+  const result: Record<string, unknown> = { at: new Date().toISOString(), environment: "local PGlite PostgreSQL; no network or Supabase Auth", accounts: dataset.accounts.length, records: 1200 };
   const as = async (id: string) => {
     await db.exec("reset role; set role authenticated;");
     await db.query("select set_config('request.jwt.claim.sub',$1,false)", [id]);
@@ -25,7 +25,7 @@ async function main() {
       await db.query("insert into auth.users select (value->>'id')::uuid from jsonb_array_elements($1::jsonb)", [JSON.stringify(dataset.accounts)]);
       await db.query("insert into profiles(id,role,full_name,student_code,classroom) select id::uuid,role::public.app_role,full_name,student_code,classroom from jsonb_to_recordset($1::jsonb) as a(id text,role text,full_name text,student_code text,classroom text)", [JSON.stringify(dataset.accounts)]);
     });
-    await as(dataset.actors.academic.id);
+    await as(dataset.actors.admin.id);
     await db.query("select update_schedule(now()-interval '1 day',now()+interval '1 day','synthetic local benchmark')");
     await time("import_1200", async () => {
       const r = await db.query<{ result: { inserted: number; skipped: number } }>("select import_grades($1::jsonb) result", [JSON.stringify(dataset.imports)]);
@@ -67,10 +67,11 @@ async function main() {
       const r = await db.query<{ result: { total: number; items: unknown[] } }>("select manager_student_list_filtered(false,'',20,0,null,null,null) result");
       assert.equal(r.rows[0].result.total, 1000); assert.equal(r.rows[0].result.items.length, 20);
     }, 50);
-    await as(dataset.actors.academic.id);
+    await as(dataset.actors.admin.id);
     await time("close_and_archive_200", async () => {
       await db.query("select update_schedule(now()-interval '2 days',now()-interval '1 day','closed test')");
     });
+    await as(dataset.actors.academic.id);
     assert.equal((await db.query("select * from grade_record_history")).rows.length, 200);
     await db.exec("reset role");
     assert.equal((await db.query("select * from grade_records")).rows.length, 1000);

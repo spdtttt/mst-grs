@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { configured, supabase } from "@/lib/supabase";
 import Workspace from "@/components/workspace";
-import type { ArchivedGradeRecord, GradeRecord, Profile, Schedule } from "@/lib/domain";
+import type { ArchivedGradeRecord, GradeCorrection, GradeRecord, Profile, Schedule } from "@/lib/domain";
 import { isRole } from "@/lib/domain";
 export const dynamic = "force-dynamic";
 export default async function Dashboard({ searchParams }: {
@@ -21,6 +21,7 @@ export default async function Dashboard({ searchParams }: {
     .single();
   if (!isRole(profile?.role)) redirect("/");
   if (profile.role === "manager") redirect("/dashboard/manager");
+  if (profile.role === "admin") redirect("/dashboard/admin");
   const { data: schedule, error: se } = await db
     .from("site_schedule")
     .select("*")
@@ -43,14 +44,27 @@ export default async function Dashboard({ searchParams }: {
       if (data.length < 1000) return rows;
     }
   }
-  const [records, history] = await Promise.all([
+  async function loadCorrections() {
+    const rows = [];
+    for (let offset = 0; ; offset += 1000) {
+      const { data, error } = await db.from("grade_corrections").select("*")
+        .order("changed_at", { ascending: false }).order("id")
+        .range(offset, offset + 999);
+      if (error) throw new Error("ไม่สามารถโหลดประวัติการแก้ไขผลการเรียนได้ กรุณาตรวจสอบการติดตั้งฐานข้อมูล");
+      rows.push(...data);
+      if (data.length < 1000) return rows;
+    }
+  }
+  const [records, history, corrections] = await Promise.all([
     loadRecords("grade_records"), loadRecords("grade_record_history"),
+    profile.role === "teacher" ? loadCorrections() : Promise.resolve([]),
   ]);
   return (
     <Workspace
       profile={profile as Profile}
       records={records as GradeRecord[]}
       historyRecords={history as ArchivedGradeRecord[]}
+      gradeCorrections={corrections as GradeCorrection[]}
       initialView={initialView}
       schedule={schedule as Schedule}
     />

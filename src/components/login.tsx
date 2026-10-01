@@ -55,6 +55,15 @@ const roleFieldConfig: Record<Role, RoleFieldConfig> = {
     passwordLabel: "รหัสผ่าน",
     passwordPlaceholder: "กรอกรหัสผ่านสำหรับผู้บริหาร",
   },
+  admin: {
+    identifierLabel: "ชื่อผู้ใช้งาน",
+    identifierPlaceholder: "กรอกชื่อผู้ใช้งานสำหรับผู้ดูแลระบบ",
+    identifierMaxLength: 40,
+    identifierInputMode: "text",
+    showPassword: true,
+    passwordLabel: "รหัสผ่าน",
+    passwordPlaceholder: "กรอกรหัสผ่านสำหรับผู้ดูแลระบบ",
+  },
 };
 
 export default function Login({ next = "/dashboard" }: { next?: string }) {
@@ -64,7 +73,7 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
   const cfg = roleFieldConfig[role];
   const citizenIdentifier = role === "teacher" || role === "academic";
   const IdentifierIcon =
-    role === "student" ? IdCard : role === "manager" ? UserRound : Fingerprint;
+    role === "student" ? IdCard : role === "manager" || role === "admin" ? UserRound : Fingerprint;
   const CredentialIcon = role === "student" ? Fingerprint : KeyRound;
   const VisibilityIcon = visible ? Eye : EyeOff;
 

@@ -3,6 +3,7 @@ import AssignmentDetail from "@/components/assignment-detail";
 import { configured, supabase } from "@/lib/supabase";
 import type { AssignmentFile, GradeAssignment, GradeRecord, Profile } from "@/lib/domain";
 import { isRole } from "@/lib/domain";
+import { roleHomePath } from "@/lib/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -27,10 +28,11 @@ export default async function AssignmentPage({
   if (!user)
     redirect(`/?next=${encodeURIComponent(`/dashboard/assignments/${id}`)}`);
 
-  const [{ data: profile }, activeResult] = await Promise.all([
-    db.from("profiles").select("*").eq("id", user.id).single(),
-    db.from("grade_records").select("*").eq("id", id).maybeSingle(),
-  ]);
+  const { data: profile } = await db.from("profiles").select("*").eq("id", user.id).single();
+  if (!isRole(profile?.role)) redirect("/");
+  if (profile.role === "admin" || profile.role === "manager")
+    redirect(roleHomePath(profile.role));
+  const activeResult = await db.from("grade_records").select("*").eq("id", id).maybeSingle();
   if (activeResult.error)
     throw new Error("ไม่สามารถโหลดผลการเรียนได้");
   const historyResult = !activeResult.data
@@ -39,7 +41,6 @@ export default async function AssignmentPage({
   if (historyResult?.error) throw new Error("ไม่สามารถโหลดประวัติผลการเรียนได้");
   const record = activeResult.data ?? historyResult?.data;
   const archived = !!historyResult?.data;
-  if (!isRole(profile?.role)) redirect("/");
   if (!profile || !record) notFound();
 
   const [filesResult, assignmentsResult] = await Promise.all([

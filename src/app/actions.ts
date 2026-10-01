@@ -8,14 +8,14 @@ import { randomUUID } from "node:crypto";
 import { supabase, configured } from "@/lib/supabase";
 import { loginEmail, identityPassword } from "@/lib/identity";
 import { importSchema } from "@/lib/import";
-import { safeReturnPath } from "@/lib/navigation";
+import { roleReturnPath } from "@/lib/navigation";
 import { notifyTeacherOfNewRequest } from "@/lib/push";
 import { z } from "zod";
 import {
   assignmentFileMimeType, assignmentFileSchema, uploadedAssignmentFileSchema,
   parseAssignmentDetails, validateAssignmentFiles, type AssignmentUpload,
 } from "@/lib/assignment-files";
-import { isRole } from "@/lib/domain";
+import { isRole, type GradeCorrection } from "@/lib/domain";
 import { scheduleDates } from "@/lib/schedule-dates";
 export async function signIn(_prev: { error: string }, form: FormData) {
   if (!configured())
@@ -26,8 +26,8 @@ export async function signIn(_prev: { error: string }, form: FormData) {
   if (!isRole(role)) return { error: "กรุณาเลือกประเภทผู้ใช้งาน" };
   const valid =
     role === "student"
-      ? /^\d{1,20}$/.test(identifier) && /^\d{13}$/.test(credential)
-      : role === "manager"
+      ? /^\d{5,10}$/.test(identifier) && /^\d{13}$/.test(credential)
+      : role === "manager" || role === "admin"
         ? /^[A-Za-z][A-Za-z0-9_.-]{2,39}$/.test(identifier) &&
           credential.length >= 6
         : /^\d{13}$/.test(identifier);
@@ -44,7 +44,7 @@ export async function signIn(_prev: { error: string }, form: FormData) {
   if (!limit.data)
     return { error: "พยายามเข้าสู่ระบบมากเกินไป กรุณารอ 15 นาที" };
   const password =
-    role === "manager"
+    role === "manager" || role === "admin"
       ? credential
       : identityPassword(
           role,
@@ -61,7 +61,7 @@ export async function signIn(_prev: { error: string }, form: FormData) {
     await db.auth.signOut();
     return { error: "ประเภทบัญชีไม่ตรงกัน กรุณาติดต่อฝ่ายวิชาการ" };
   }
-  redirect(safeReturnPath(form.get("next")));
+  redirect(roleReturnPath(role, form.get("next")));
 }
 export async function signOut() {
   if (configured()) {
@@ -271,6 +271,25 @@ export async function advance(input: {
   revalidatePath("/dashboard");
   return { success: true };
 }
+export async function correctFinalGrade(input: {
+  id: string;
+  expectedGrade: string;
+  newGrade: string;
+}): Promise<{ error?: string; correction?: GradeCorrection }> {
+  if (!configured()) return { error: "ยังไม่ได้เชื่อมต่อฐานข้อมูล" };
+  if (!z.uuid().safeParse(input.id).success ||
+    !["0", "ร", "มผ", "1", "1.5", "2", "2.5", "3", "3.5", "4", "ผ"].includes(input.newGrade))
+    return { error: "ข้อมูลผลการเรียนไม่ถูกต้อง" };
+  const db = await supabase();
+  const { data, error } = await db.rpc("correct_final_grade", {
+    p_id: input.id,
+    p_expected: input.expectedGrade,
+    p_new: input.newGrade,
+  });
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard");
+  return { correction: data as GradeCorrection };
+}
 export async function saveSchedule(input: {
   opens_on: string;
   closes_on: string;
@@ -290,8 +309,8 @@ export async function saveSchedule(input: {
     .select("role")
     .eq("id", user.id)
     .single();
-  if (profile?.role !== "academic")
-    return { error: "เฉพาะฝ่ายวิชาการเท่านั้นที่ตั้งเวลาเปิด–ปิดระบบได้" };
+  if (profile?.role !== "admin")
+    return { error: "เฉพาะผู้ดูแลระบบเท่านั้นที่ตั้งเวลาเปิด–ปิดระบบได้" };
   const { error } = await db.rpc("update_schedule", {
     p_opens_at: range.opens_at,
     p_closes_at: range.closes_at,
@@ -299,6 +318,7 @@ export async function saveSchedule(input: {
   });
   if (error) return { error: error.message };
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/admin");
   return { success: true };
 }
 export async function importGrades(input: unknown) {
@@ -306,11 +326,17 @@ export async function importGrades(input: unknown) {
   const parsed = z.array(importSchema).min(1).max(2000).safeParse(input);
   if (!parsed.success) return { error: "ข้อมูลนำเข้าไม่ถูกต้อง" };
   const db = await supabase();
+  const { data: { user } } = await db.auth.getUser();
+  if (!user) return { error: "กรุณาเข้าสู่ระบบใหม่" };
+  const { data: profile } = await db.from("profiles").select("role").eq("id", user.id).single();
+  if (profile?.role !== "admin")
+    return { error: "เฉพาะผู้ดูแลระบบเท่านั้นที่นำเข้าข้อมูลได้" };
   const { data, error } = await db.rpc("import_grades", {
     p_rows: parsed.data,
   });
   if (error) return { error: error.message };
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/admin");
   return {
     success: true,
     inserted: data.inserted as number,

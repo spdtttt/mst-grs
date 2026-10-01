@@ -9,7 +9,7 @@ import {
 } from "@/lib/site";
 import { redirect } from "next/navigation";
 import { configured, supabase } from "@/lib/supabase";
-import { safeReturnPath } from "@/lib/navigation";
+import { roleReturnPath, safeReturnPath } from "@/lib/navigation";
 import { isRole } from "@/lib/domain";
 
 export const dynamic = "force-dynamic";
@@ -58,7 +58,7 @@ export default async function Page({
         .select("role")
         .eq("id", user.id)
         .single();
-      if (isRole(profile?.role)) redirect(next);
+      if (isRole(profile?.role)) redirect(roleReturnPath(profile.role, next));
     }
   }
 

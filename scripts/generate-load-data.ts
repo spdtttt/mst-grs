@@ -12,7 +12,7 @@ if (existsSync(liveState) && Object.keys(JSON.parse(readFileSync(liveState, "utf
 const dataset = syntheticSchool(count);
 mkdirSync(output, { recursive: true });
 const csv = (rows: unknown[][]) => "\uFEFF" + rows.map(row => row.map(v => `"${String(v ?? "").replaceAll('"', '""')}"`).join(",")).join("\r\n");
-const accounts = dataset.accounts.map(a => [a.role, a.identifier, a.citizen_id, a.full_name, a.classroom ?? "", a.role === "manager" ? `Mock!${randomBytes(12).toString("hex")}` : ""]);
+const accounts = dataset.accounts.map(a => [a.role, a.identifier, a.citizen_id, a.full_name, a.classroom ?? "", a.role === "manager" || a.role === "admin" ? `Mock!${randomBytes(12).toString("hex")}` : ""]);
 writeFileSync(resolve(output, "accounts.csv"), csv([["role", "identifier", "citizen_id", "full_name", "classroom", "password"], ...accounts]));
 for (let offset = 0; offset < count; offset += 2000) {
   const rows = dataset.imports.slice(offset, offset + 2000).map(r => Object.values(columns).map(k => k === "teacher_name" ? r[k].join(", ") : r[k]));

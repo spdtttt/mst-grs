@@ -57,7 +57,7 @@ async function inspect() {
 }
 async function seed() {
   const accounts = accountsCsv();
-  if (accounts.length !== 2520) throw new Error("Expected 2520 generated accounts");
+  if (accounts.length !== dataset.accounts.length) throw new Error(`Expected ${dataset.accounts.length} generated accounts`);
   const existing = new Map<string, string>();
   for (let page = 1; ; page++) {
     const r = await admin.auth.admin.listUsers({ page, perPage: 1000 }); check(r.error);
@@ -69,7 +69,7 @@ async function seed() {
     const email = loginEmail(accountKey(a as { role: string; identifier: string }), secret);
     let id = existing.get(email);
     if (!id) {
-      const r = await admin.auth.admin.createUser({ email, password: a.role === "manager" ? a.password : identityPassword(a.role, a.role === "student" ? a.citizen_id : a.identifier, secret), email_confirm: true, app_metadata: { synthetic_load_test: "mst-grs-1200" } });
+      const r = await admin.auth.admin.createUser({ email, password: a.role === "manager" || a.role === "admin" ? a.password : identityPassword(a.role, a.role === "student" ? a.citizen_id : a.identifier, secret), email_confirm: true, app_metadata: { synthetic_load_test: "mst-grs-1200" } });
       check(r.error); id = r.data.user!.id;
     }
     const old = await admin.from("profiles").select("id,role,full_name").eq("id", id).maybeSingle(); check(old.error);
@@ -86,12 +86,12 @@ async function login(a: Record<string, string>) {
   const cookies: { name: string; value: string }[] = [];
   const db = createServerClient(url, anon, { cookies: { getAll: () => cookies, setAll: values => { for (const value of values) { const i = cookies.findIndex(c => c.name === value.name); if (i >= 0) cookies[i] = value; else cookies.push(value); } } }, auth: { autoRefreshToken: false } });
   const t = performance.now();
-  const r = await db.auth.signInWithPassword({ email: loginEmail(accountKey(a as { role: string; identifier: string }), secret), password: a.role === "manager" ? a.password : identityPassword(a.role, a.role === "student" ? a.citizen_id : a.identifier, secret) }); check(r.error);
+  const r = await db.auth.signInWithPassword({ email: loginEmail(accountKey(a as { role: string; identifier: string }), secret), password: a.role === "manager" || a.role === "admin" ? a.password : identityPassword(a.role, a.role === "student" ? a.citizen_id : a.identifier, secret) }); check(r.error);
   return { db, cookies, role: a.role, name: a.full_name, userId: r.data.user!.id, loginMs: performance.now() - t };
 }
 async function grades() {
-  if (Object.keys(state.created).length !== 2520) throw new Error("Finish seeding accounts first");
-  const session = await login(accountsCsv().find(a => a.role === "academic")!);
+  if (Object.keys(state.created).length !== dataset.accounts.length) throw new Error("Finish seeding accounts first");
+  const session = await login(accountsCsv().find(a => a.role === "admin")!);
   const schedule = await admin.from("site_schedule").select("*").eq("id", 1).single(); check(schedule.error);
   if (!(Date.now() >= Date.parse(schedule.data.opens_at) && Date.now() < Date.parse(schedule.data.closes_at))) throw new Error("Schedule is closed. Need an authorized test window before importing.");
   const t = performance.now();
@@ -122,14 +122,14 @@ function summary(values: number[]) {
 }
 async function load() {
   const accounts = accountsCsv();
-  const chosen = [...accounts.filter(a => a.role === "student").slice(0, 40), ...accounts.filter(a => a.role === "teacher").slice(0, 6), ...accounts.filter(a => a.role === "academic").slice(0, 3), accounts.find(a => a.role === "manager")!];
+  const chosen = [...accounts.filter(a => a.role === "student").slice(0, 40), ...accounts.filter(a => a.role === "teacher").slice(0, 6), ...accounts.filter(a => a.role === "academic").slice(0, 3), accounts.find(a => a.role === "manager")!, accounts.find(a => a.role === "admin")!];
   const sessions: Awaited<ReturnType<typeof login>>[] = [];
   for (const a of chosen) {
     sessions.push(await login(a));
     if (sessions.length % 10 === 0) console.log(JSON.stringify({ sessions_ready: sessions.length }));
     await new Promise(r => setTimeout(r, 2200));
   }
-  const priority: Record<string, number> = { manager: 0, academic: 1, teacher: 2, student: 3 };
+  const priority: Record<string, number> = { admin: 0, manager: 1, academic: 2, teacher: 3, student: 4 };
   sessions.sort((a, b) => priority[a.role] - priority[b.role]);
   const results: unknown[] = [];
   for (const concurrency of [1, 5, 10, 25, 50]) {
@@ -138,7 +138,7 @@ async function load() {
     const started = performance.now();
     await pool(Array.from({ length: count }, (_, i) => i), concurrency, async i => {
       const session = sessions[i % sessions.length];
-      const path = session.role === "manager" ? "/dashboard/manager" : "/dashboard";
+      const path = session.role === "manager" ? "/dashboard/manager" : session.role === "admin" ? "/dashboard/admin" : "/dashboard";
       const t = performance.now();
       try {
         const r = await fetch(`${siteUrl}${path}`, { headers: { cookie: session.cookies.map(c => `${c.name}=${c.value}`).join("; ") }, redirect: "manual", signal: AbortSignal.timeout(30000) });
@@ -149,7 +149,7 @@ async function load() {
     });
     const result = { concurrency, ...summary(times), duration_ms: Math.round(performance.now() - started), failures: failures.length, failure_examples: failures.slice(0, 3) };
     results.push(result); console.log(JSON.stringify(result));
-    writeFileSync(resolve(dir, "live-load-results.json"), JSON.stringify({ at: new Date().toISOString(), site: siteUrl, authenticated_sessions: sessions.length, login: summary(sessions.map(s => s.loginMs)), stages: results, limitations: ["HTTP SSR requests with real session cookies, not full browser user journeys", "Single load-generator machine; not 2520 simultaneous users", "No archive or schedule mutation performed by load test"] }, null, 2));
+    writeFileSync(resolve(dir, "live-load-results.json"), JSON.stringify({ at: new Date().toISOString(), site: siteUrl, authenticated_sessions: sessions.length, login: summary(sessions.map(s => s.loginMs)), stages: results, limitations: ["HTTP SSR requests with real session cookies, not full browser user journeys", `Single load-generator machine; not ${dataset.accounts.length} simultaneous users`, "No archive or schedule mutation performed by load test"] }, null, 2));
     if (failures.length || result.p95_ms > 10000) { console.log("Stopped escalation: failure or p95 > 10 seconds"); break; }
     await new Promise(r => setTimeout(r, 1500));
   }
@@ -159,8 +159,8 @@ async function probe() {
   const probeCourse = process.argv[3] ?? "MOCK-E2E";
   if (!/^MOCK-E2E(?:-[0-9]+)?$/.test(probeCourse)) throw new Error("Use a MOCK-E2E test course code");
   const accounts = accountsCsv();
-  const sessions = await Promise.all(["student", "teacher", "academic", "manager"].map(role => login(accounts.find(a => a.role === role)!)));
-  const [student, teacher, academic, manager] = sessions;
+  const sessions = await Promise.all(["student", "teacher", "academic", "manager", "admin"].map(role => login(accounts.find(a => a.role === role)!)));
+  const [student, teacher, academic, manager, operator] = sessions;
   try {
     const own = await student.db.from("grade_records").select("id,student_id"); check(own.error);
     assert.ok(own.data!.length > 0 && own.data!.every(r => r.student_id === student.userId));
@@ -169,7 +169,7 @@ async function probe() {
     const denied = await student.db.rpc("manager_dashboard_stats"); assert.ok(denied.error);
     const stats = await manager.db.rpc("manager_dashboard_stats"); check(stats.error);
     const row = { ...dataset.imports[0], course_code: probeCourse, course_name: "วิชาจำลองทดสอบครบวงจร" };
-    const imported = await academic.db.rpc("import_grades", { p_rows: [row] }); check(imported.error);
+    const imported = await operator.db.rpc("import_grades", { p_rows: [row] }); check(imported.error);
     const selected = await academic.db.from("grade_records").select("id,status").eq("course_code", probeCourse).eq("student_code", row.student_code).single(); check(selected.error);
     const steps = ["pending", "requested", "assigned", "submitted", "teacher_approved"];
     let index = steps.indexOf(selected.data!.status);
@@ -183,7 +183,7 @@ async function probe() {
     const final = await student.db.from("grade_records").select("status,final_grade").eq("id", selected.data!.id).single(); check(final.error);
     assert.deepEqual(final.data, { status: "completed", final_grade: "1" });
     const history = await student.db.from("grade_record_history").select("id").eq("id", selected.data!.id); check(history.error); assert.equal(history.data!.length, 0);
-    const duplicate = await academic.db.rpc("import_grades", { p_rows: [row] }); check(duplicate.error); assert.deepEqual(duplicate.data, { inserted: 0, skipped: 1 });
+    const duplicate = await operator.db.rpc("import_grades", { p_rows: [row] }); check(duplicate.error); assert.deepEqual(duplicate.data, { inserted: 0, skipped: 1 });
     const result = { at: new Date().toISOString(), passed: true, course: probeCourse, own_student_records: own.data!.length, teacher_records: teaching.data!.length, workflow: timings, final: final.data, duplicate_import: duplicate.data, note: "Test course completed; live schedule and original data unchanged" };
     writeFileSync(resolve(dir, "live-probe.json"), JSON.stringify(result, null, 2)); console.log(JSON.stringify(result));
   } catch (e) {
@@ -193,11 +193,11 @@ async function probe() {
 }
 async function verify() {
   const counts: Record<string, number | null> = {};
-  for (const role of ["student", "teacher", "academic", "manager"]) {
-    const names: Record<string, string> = { student: "นักเรียนจำลอง", teacher: "ครูจำลอง", academic: "วิชาการจำลอง", manager: "ผู้บริหารจำลอง" };
+  for (const role of ["student", "teacher", "academic", "manager", "admin"]) {
+    const names: Record<string, string> = { student: "นักเรียนจำลอง", teacher: "ครูจำลอง", academic: "วิชาการจำลอง", manager: "ผู้บริหารจำลอง", admin: "ผู้ดูแลระบบจำลอง" };
     const r = await admin.from("profiles").select("id", { count: "exact", head: true }).eq("role", role).like("full_name", `${names[role]} %`); check(r.error); counts[role] = r.count;
   }
-  assert.deepEqual(counts, { student: 2300, teacher: 200, academic: 15, manager: 5 });
+  assert.deepEqual(counts, { student: 2300, teacher: 200, academic: 15, manager: 5, admin: 1 });
   const records = await admin.from("grade_records").select("id", { count: "exact", head: true }).like("student_code", "9900%"); check(records.error);
   const outstanding = await admin.from("grade_records").select("id", { count: "exact", head: true }).like("student_code", "9900%").neq("status", "completed"); check(outstanding.error);
   assert.ok((records.count ?? 0) >= 1200); assert.ok((outstanding.count ?? 0) > 500);
@@ -218,7 +218,7 @@ async function browserCheck() {
   const browser = await chromium.launch({ channel: "msedge" });
   const results: unknown[] = [];
   try {
-    for (const role of ["student", "teacher", "academic", "manager"]) {
+    for (const role of ["student", "teacher", "academic", "manager", "admin"]) {
       const a = accountsCsv().find(a => a.role === role)!;
       const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
       const page = await context.newPage();
@@ -227,7 +227,7 @@ async function browserCheck() {
       await page.goto(siteUrl);
       await page.locator(`input[name=role][value=${role}]`).check();
       await page.locator("#identifier").fill(a.identifier);
-      if (role === "student" || role === "manager") await page.locator("#password").fill(role === "student" ? a.citizen_id : a.password);
+      if (role === "student" || role === "manager" || role === "admin") await page.locator("#password").fill(role === "student" ? a.citizen_id : a.password);
       const started = performance.now();
       await page.locator("button[type=submit]").click();
       await page.waitForURL(/\/dashboard/, { timeout: 30000 });
@@ -244,6 +244,10 @@ async function browserCheck() {
         await expect(page.locator("tbody tr")).toHaveCount(20, { timeout: 20000 });
         await page.getByRole("button", { name: "หน้าถัดไป", exact: true }).click();
         await expect(page.locator("tbody tr")).toHaveCount(20, { timeout: 20000 });
+      } else if (role === "admin") {
+        await expect(page.getByRole("heading", { name: "นำเข้าข้อมูล" })).toBeVisible();
+        await page.getByRole("button", { name: "ตั้งค่าเวลาเปิด–ปิดระบบ" }).click();
+        await expect(page.getByLabel("วันที่เปิดระบบ")).toBeVisible();
       }
       await page.screenshot({ path: resolve(dir, `live-${role}.png`), fullPage: true });
       if (role === "student") {
@@ -306,7 +310,7 @@ async function cleanupStatus() {
   console.log(JSON.stringify(differences));
 }
 async function cleanup(apply: boolean) {
-  assert.equal(Object.keys(state.created).length, 2520);
+  assert.equal(Object.keys(state.created).length, dataset.accounts.length);
   const ids = new Set(Object.values(state.created));
   const accounts = new Map(accountsCsv().map(a => [state.created[accountKey(a as { role: string; identifier: string })], a]));
   const tables = ["profiles", "grade_records", "grade_record_history", "grade_assignments", "assignment_files", "audit_log", "push_subscriptions", "site_schedule"];
@@ -346,7 +350,8 @@ async function cleanup(apply: boolean) {
   const recordIds = new Set([...mockRecords, ...mockHistory].map(r => r.id));
   assert.deepEqual(snapshot.grade_records.filter(r => !recordIds.has(r.id)), state.originalRecords);
   assert.deepEqual(snapshot.grade_record_history.filter(r => !recordIds.has(r.id)), state.originalHistory);
-  assert.equal(snapshot.profiles.filter(p => !ids.has(p.id)).length, 7);
+  assert.equal(snapshot.profiles.filter(p => !ids.has(p.id)).length,
+    (state.baseline as { counts: { profiles: number } }).counts.profiles);
   const targets: Record<string, any[]> = {
     audit_log: snapshot.audit_log.filter(r => ids.has(r.actor_id) || recordIds.has(r.record_id) || recordIds.has(r.archived_record_id)),
     assignment_files: snapshot.assignment_files.filter(r => ids.has(r.uploaded_by) || recordIds.has(r.record_id) || recordIds.has(r.archived_record_id)),

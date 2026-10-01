@@ -1044,6 +1044,104 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
       "retained failed attempts must not block a later successful archive");
     assert.equal((await db.query("select * from grade_assignments where reset_history_id=$1", [snapshot.id])).rows.length, 1);
     assert.equal((await db.query("select * from assignment_files where reset_history_id=$1", [snapshot.id])).rows.length, 1);
+
+    // Teachers may correct approved grades during the open period, with an
+    // immutable history. Archived records can never be corrected.
+    await db.exec(readFileSync("supabase/migrations/022_grade_corrections.sql", "utf8"));
+    await db.exec(readFileSync("supabase/migrations/023_allow_all_new_grades.sql", "utf8"));
+    await as(academic);
+    await db.query("select update_schedule($1,$2,'open for corrections')", [bounds.opens_at, bounds.closes_at]);
+    const approvedId = resetRecords.find((record) => record.course_code === "RESET-teacher_approved")!.id;
+    const completedId = resetRecords.find((record) => record.course_code === "RESET-submitted")!.id;
+    const firstApprovalId = resetRecords.find((record) => record.course_code === "RESET-pending")!.id;
+    await db.exec("reset role");
+    await db.query("update grade_records set status='teacher_approved',final_grade='1',teacher_approved_at=now() where id=$1", [approvedId]);
+    await db.query("update grade_records set status='completed',final_grade='2',teacher_approved_at=now(),completed_at=now() where id=$1", [completedId]);
+    await db.query("update grade_records set status='submitted',submitted_at=now() where id=$1", [firstApprovalId]);
+    const correct = (recordId: string, expected: string, next: string) => db.query<{ result: {
+      record_id: string; previous_grade: string; new_grade: string; changed_by: string;
+    } }>("select correct_final_grade($1,$2,$3) as result", [recordId, expected, next]);
+    await as(student);
+    await assert.rejects(() => correct(approvedId, "1", "3"), /ไม่มีสิทธิ์/);
+    await as(academic);
+    await assert.rejects(() => correct(completedId, "2", "3"), /ไม่มีสิทธิ์/);
+    await as(otherTeacher);
+    await assert.rejects(() => correct(approvedId, "1", "3"), /ไม่มีสิทธิ์/);
+    await as(teacher);
+    await assert.rejects(() => correct(uploadId, "1", "3"), /เข้าประวัติแล้ว/);
+    await db.query("select advance_grade($1,'submitted',null,null,'0')", [firstApprovalId]);
+    assert.deepEqual((await db.query<{ status: string; final_grade: string }>(
+      "select status,final_grade from grade_records where id=$1", [firstApprovalId],
+    )).rows[0], { status: "teacher_approved", final_grade: "0" });
+    await correct(firstApprovalId, "0", "ร");
+    await correct(firstApprovalId, "ร", "มผ");
+    await assert.rejects(() => correct(approvedId, "1", "มส"), /ถูกต้อง/);
+    await assert.rejects(() => correct(approvedId, "1", "1"), /ต่างจากเดิม/);
+    const firstCorrection = (await correct(approvedId, "1", "3")).rows[0].result;
+    assert.deepEqual([firstCorrection.record_id, firstCorrection.previous_grade, firstCorrection.new_grade, firstCorrection.changed_by],
+      [approvedId, "1", "3", teacher]);
+    await assert.rejects(() => correct(approvedId, "1", "4"), /เปลี่ยนแปลงแล้ว/);
+    await correct(approvedId, "3", "4");
+    await correct(completedId, "2", "0");
+    assert.deepEqual((await db.query<{ status: string; final_grade: string }>(
+      "select status,final_grade from grade_records where id=$1", [completedId],
+    )).rows[0], { status: "completed", final_grade: "0" });
+    assert.deepEqual((await db.query<{ previous_grade: string; new_grade: string }>(
+      "select previous_grade,new_grade from grade_corrections where record_id=$1 order by changed_at,id", [firstApprovalId],
+    )).rows.map(({ previous_grade, new_grade }) => [previous_grade, new_grade]), [["0", "ร"], ["ร", "มผ"]]);
+    assert.deepEqual((await db.query<{ previous_grade: string; new_grade: string }>(
+      "select previous_grade,new_grade from grade_corrections where record_id=$1 order by changed_at,id", [approvedId],
+    )).rows.map(({ previous_grade, new_grade }) => [previous_grade, new_grade]), [["1", "3"], ["3", "4"]]);
+    await assert.rejects(() => db.query("insert into grade_corrections(record_id) values($1)", [approvedId]), /permission denied/);
+    await assert.rejects(() => db.query("delete from grade_corrections"), /permission denied/);
+    await as(otherTeacher);
+    assert.equal((await db.query("select * from grade_corrections where record_id=$1", [approvedId])).rows.length, 0);
+    await as(student);
+    assert.equal((await db.query("select * from grade_corrections where record_id=$1", [approvedId])).rows.length, 2);
+    await db.exec("reset role");
+    await expireWithoutTrigger(new Date(Date.parse(secondClose) + 1000).toISOString());
+    await as(teacher);
+    await assert.rejects(() => correct(approvedId, "4", "3"), /ระบบปิด/);
+    await db.exec("reset role");
+    await db.query("select archive_completed_grade_records()");
+    assert.equal((await db.query<{ final_grade: string }>("select final_grade from grade_record_history where id=$1", [completedId])).rows[0].final_grade, "0");
+    await as(teacher);
+    assert.equal((await db.query("select * from grade_corrections where record_id=$1", [completedId])).rows.length, 1,
+      "correction history remains readable after archiving");
+    await assert.rejects(() => correct(completedId, "0", "4"), /ระบบปิด/);
+
+    // Admin owns import and schedule operations; the other roles keep their
+    // existing record permissions and cannot invoke either operation.
+    await db.exec("reset role");
+    await db.exec(readFileSync("supabase/migrations/024_admin_role.sql", "utf8"));
+    await db.exec(readFileSync("supabase/migrations/025_admin_operations.sql", "utf8"));
+    await db.query("insert into auth.users values($1)", [admin]);
+    await db.query("insert into profiles(id,role,full_name) values($1,'admin','ผู้ดูแลระบบ')", [admin]);
+    assert.deepEqual((await db.query<{ role: string }>(
+      "select unnest(enum_range(null::public.app_role))::text as role",
+    )).rows.map((row) => row.role), ["student", "teacher", "academic", "manager", "admin"]);
+    await as(academic);
+    await assert.rejects(() => importRows([{ ...input, course_code: "ADMIN-ONLY", teacher_name: [input.teacher_name] }]), /ไม่มีสิทธิ์/);
+    await assert.rejects(() => db.query("select update_schedule(now()-interval '1 hour',now()+interval '1 day','forbidden')"), /ไม่มีสิทธิ์/);
+    await as(manager);
+    await assert.rejects(() => importRows([{ ...input, course_code: "ADMIN-ONLY", teacher_name: [input.teacher_name] }]), /ไม่มีสิทธิ์/);
+    await assert.rejects(() => db.query("select update_schedule(now()-interval '1 hour',now()+interval '1 day','forbidden')"), /ไม่มีสิทธิ์/);
+    await as(admin);
+    assert.equal((await db.query<{ role: string }>("select my_role()::text as role")).rows[0].role, "admin");
+    assert.equal((await db.query("select * from site_schedule")).rows.length, 1);
+    await db.query("select update_schedule(now()-interval '1 hour',now()+interval '1 day','admin period')");
+    const adminImport = await importRows([{ ...input, course_code: "ADMIN-ONLY", teacher_name: [input.teacher_name] }]);
+    assert.deepEqual(adminImport.rows[0].result, { inserted: 1, skipped: 0 });
+    assert.equal((await db.query("select * from grade_records")).rows.length, 0,
+      "admin cannot read academic records through the regular table");
+    await assert.rejects(() => db.query("select manager_dashboard_stats()"), /ไม่มีสิทธิ์/);
+    await as(academic);
+    const adminOnlyRows = (await db.query<{ id: string }>(
+      "select id from grade_records where course_code='ADMIN-ONLY'",
+    )).rows;
+    assert.equal(adminOnlyRows.length, 1);
+    await as(admin);
+    await assert.rejects(() => db.query("select advance_grade($1,'pending')", [adminOnlyRows[0].id]), /ไม่มีสิทธิ์/);
   } finally {
     await db.close();
   }

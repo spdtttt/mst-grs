@@ -2,6 +2,8 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { configured, supabase } from "@/lib/supabase";
 import type { Profile } from "@/lib/domain";
+import { isRole } from "@/lib/domain";
+import { roleHomePath } from "@/lib/navigation";
 
 export async function managerProfile(): Promise<Profile> {
   if (!configured()) redirect("/");
@@ -15,6 +17,7 @@ export async function managerProfile(): Promise<Profile> {
     .select("*")
     .eq("id", user.id)
     .single();
-  if (error || !profile || profile.role !== "manager") redirect("/dashboard");
+  if (error || !isRole(profile?.role)) redirect("/");
+  if (profile.role !== "manager") redirect(roleHomePath(profile.role));
   return profile as Profile;
 }

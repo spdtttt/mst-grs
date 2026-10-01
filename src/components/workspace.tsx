@@ -31,10 +31,11 @@ import {
   ClipboardList,
 } from "lucide-react";
 import LogoutOverlay from "@/components/logout-overlay";
-import { advance, saveSchedule, signOut, importGrades } from "@/app/actions";
+import { advance, correctFinalGrade, saveSchedule, signOut, importGrades } from "@/app/actions";
 import {
   type GradeRecord,
   type ArchivedGradeRecord,
+  type GradeCorrection,
   type Profile,
   type Schedule,
   type Role,
@@ -66,12 +67,14 @@ import { bangkokDate, normalizeSchedule, scheduleClosingDate, scheduleClosingDis
 
 type View = "overview" | "outstanding" | "history" | "export" | "import" | "schedule";
 const emptyHistory: ArchivedGradeRecord[] = [];
+const emptyCorrections: GradeCorrection[] = [];
+const validFinalGrades = ["0", "ร", "มผ", "1", "1.5", "2", "2.5", "3", "3.5", "4", "ผ"];
 const navTitles: Record<View, string> = {
   overview: "ภาพรวมผลการเรียน",
   outstanding: "รายการคงค้าง",
   history: "ประวัติแก้ไขผลการเรียน",
   export: "ส่งออกรายการผลการเรียน",
-  import: "นำเข้าผลการเรียน",
+  import: "นำเข้าข้อมูล",
   schedule: "ตั้งค่าเวลาเปิด–ปิดระบบ",
 };
 function localBangkok(value: string | null) {
@@ -100,6 +103,7 @@ export default function Workspace({
   records,
   schedule,
   historyRecords = emptyHistory,
+  gradeCorrections = emptyCorrections,
   initialView = "overview",
   demo = false,
 }: {
@@ -107,13 +111,15 @@ export default function Workspace({
   records: GradeRecord[];
   schedule: Schedule;
   historyRecords?: ArchivedGradeRecord[];
-  initialView?: "overview" | "history";
+  gradeCorrections?: GradeCorrection[];
+  initialView?: "overview" | "history" | "import";
   demo?: boolean;
 }) {
   const router = useRouter();
   const [actor, setActor] = useState(profile);
   const [items, setItems] = useState(records);
   const [archives, setArchives] = useState(historyRecords);
+  const [corrections, setCorrections] = useState(gradeCorrections);
   const [settings, setSettings] = useState(() => normalizeSchedule(schedule));
   const [view, setView] = useState<View>(initialView);
   const [query, setQuery] = useState("");
@@ -141,6 +147,7 @@ export default function Workspace({
   const [assignment, setAssignment] = useState("");
   const [due, setDue] = useState("");
   const [finalGrade, setFinalGrade] = useState("1");
+  const [editingFinalGrade, setEditingFinalGrade] = useState(false);
   const [opens, setOpens] = useState(bangkokDate(schedule.opens_at));
   const [closes, setCloses] = useState(scheduleClosingDate(schedule.closes_at));
   const [notice, setNotice] = useState(schedule.notice);
@@ -158,6 +165,9 @@ export default function Workspace({
   useEffect(() => {
     if (!demo) setArchives(historyRecords);
   }, [historyRecords, demo]);
+  useEffect(() => {
+    if (!demo) setCorrections(gradeCorrections);
+  }, [gradeCorrections, demo]);
   useEffect(() => {
     if (!demo) setSettings(normalizeSchedule(schedule));
   }, [schedule, demo]);
@@ -218,7 +228,9 @@ export default function Workspace({
       ? ["overview", "history"]
       : role === "teacher"
         ? ["overview", "history", "export"]
-        : ["overview", "outstanding", "history", "import", "export", "schedule"];
+        : role === "admin"
+          ? ["import", "schedule"]
+          : ["overview", "outstanding", "history", "export"];
   const filtered = useMemo(
     () => {
       const rows = visibleScope.filter((r) => {
@@ -277,7 +289,7 @@ export default function Workspace({
   }
   function switchRole(r: Role) {
     setActor(demoProfiles[r]);
-    setView("overview");
+    setView(r === "admin" ? "import" : "overview");
     setFilter("all");
     setYear("all");
     setSemester("all");
@@ -298,6 +310,7 @@ export default function Workspace({
     setAssignment(r.assignment ?? "");
     setDue(localBangkok(r.due_at));
     setFinalGrade(r.final_grade ?? "1");
+    setEditingFinalGrade(false);
     setProblem("");
   }
   function logout() {
@@ -333,9 +346,11 @@ export default function Workspace({
         ? "มอบหมายงาน"
         : r.status === "assigned"
           ? "ยืนยันรับงาน"
-          : r.status === "submitted"
-            ? "อนุมัติ"
-            : "รอฝ่ายวิชาการ";
+        : r.status === "submitted"
+          ? "อนุมัติ"
+          : ["teacher_approved", "completed"].includes(r.status)
+            ? "ดู/แก้ไขผลการเรียน"
+            : "ดูรายละเอียด";
     return r.status === "teacher_approved" ? "อนุมัติ" : "เรียบร้อย";
   }
   function act() {
@@ -403,6 +418,46 @@ export default function Workspace({
       );
     });
   }
+  function saveCorrectedGrade() {
+    if (!selected || role !== "teacher" || view !== "overview" ||
+      !["teacher_approved", "completed"].includes(selected.status)) return;
+    if (!open) {
+      setProblem("ระบบปิดรับดำเนินการแล้ว");
+      return;
+    }
+    if (finalGrade === selected.final_grade) {
+      setProblem("กรุณาเลือกผลการเรียนที่ต่างจากเดิม");
+      return;
+    }
+    setProblem("");
+    startTransition(async () => {
+      const previousGrade = selected.final_grade!;
+      const result = demo
+        ? { correction: {
+            id: crypto.randomUUID(), record_id: selected.id,
+            student_id: selected.student_id, teacher_id: selected.teacher_id,
+            previous_grade: previousGrade, new_grade: finalGrade,
+            changed_by: actor.id, changed_by_name: actor.full_name,
+            changed_at: new Date().toISOString(),
+          } satisfies GradeCorrection }
+        : await correctFinalGrade({
+            id: selected.id, expectedGrade: previousGrade, newGrade: finalGrade,
+          });
+      if (result.error) {
+        setProblem(result.error);
+        return;
+      }
+      const correction = result.correction!;
+      setItems((old) => old.map((r) => r.id === selected.id
+        ? { ...r, final_grade: correction.new_grade } : r));
+      setSelected((r) => r?.id === selected.id
+        ? { ...r, final_grade: correction.new_grade } : r);
+      setCorrections((old) => old.some((item) => item.id === correction.id)
+        ? old : [correction, ...old]);
+      setEditingFinalGrade(false);
+      setToast(demo ? "บันทึกการแก้ไขในโหมดทดลองแล้ว" : "บันทึกผลการเรียนใหม่และประวัติการแก้ไขแล้ว");
+    });
+  }
   function exportData() {
     const extra = role === "academic" || view === "history";
     saveCsv(
@@ -431,8 +486,6 @@ export default function Workspace({
     setFileErrors([]);
     setFileName(file.name);
     try {
-      if (file.size > 5 * 1024 * 1024)
-        throw new Error("ไฟล์ต้องมีขนาดไม่เกิน 5 MB");
       let table: unknown[][];
       if (/\.(csv|tsv)$/i.test(file.name)) {
         table = parseDelimited(await file.text());
@@ -457,6 +510,10 @@ export default function Workspace({
     }
   }
   function confirmImport() {
+    if (!open) {
+      setProblem("ระบบยังไม่เปิดรับการนำเข้าข้อมูล กรุณาตั้งวันที่เปิดระบบก่อน");
+      return;
+    }
     startTransition(async () => {
       setProblem("");
       if (demo) {
@@ -546,7 +603,7 @@ export default function Workspace({
         )}
       >
         <a
-          href={demo ? "/demo" : "/dashboard"}
+          href={demo ? "/demo" : role === "admin" ? "/dashboard/admin" : "/dashboard"}
           className="focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 mx-2 flex items-center gap-[11px] text-2xl leading-[1.2] font-[650] tracking-[-0.5px] [&_b]:font-normal [&_b]:text-brand [&_small]:mt-[7px] [&_small]:block [&_small]:text-[8px] [&_small]:font-medium [&_small]:tracking-[1.4px] [&_small]:text-[#9a90ac] max-wide:text-[21px] max-wide:[&_small]:text-[7px] max-desk:text-2xl"
         >
           <Image
@@ -761,9 +818,9 @@ export default function Workspace({
               </div>
             )}
           </div>
-          <div className={twMerge(styles.columns, role === "academic" && view === "schedule" && styles.scheduleColumns)}>
+          <div className={twMerge(styles.columns, role === "admin" && styles.adminColumns)}>
           <div className={styles.content}>
-          {!open && view !== "history" && !(role === "academic" && view === "schedule") ? (
+          {!open && role !== "admin" && view !== "history" ? (
             <div className="rounded-[14px] border border-line bg-white px-[25px] py-[60px] text-center text-[#9481aa] [&>svg]:mx-auto [&_h2]:m-[15px] [&_h2]:text-ink [&>div]:m-5 [&>div]:text-sm max-desk:px-4 max-desk:py-10 max-desk:[&_h2]:text-[19px]">
               <Clock3 size={42} />
               <h2 className="text-lg leading-normal font-[650]">
@@ -978,7 +1035,9 @@ export default function Workspace({
                           const disabled =
                             role === "student"
                               ? !["pending", "assigned"].includes(r.status)
-                              : !nextStatus[role]?.[r.status];
+                              : !nextStatus[role]?.[r.status] &&
+                                !(role === "teacher" && view === "overview" &&
+                                  ["teacher_approved", "completed"].includes(r.status));
                           return (
                             <tr key={r.id}>
                               <td data-label="รายวิชา" className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
@@ -1227,6 +1286,11 @@ export default function Workspace({
               )}
               {view === "import" && (
                 <>
+                  {!open && (
+                    <p className="mb-4 rounded-lg border border-[#f1dfb8] bg-[#fff8e9] p-4 text-sm text-[#886628]">
+                      ระบบยังไม่เปิดรับการนำเข้าข้อมูล ตั้งวันที่เปิดระบบในเมนูตั้งค่าเวลาเปิด–ปิดระบบก่อน
+                    </p>
+                  )}
                   <section className={styles.tableCard}>
                     <div className="flex items-center justify-between gap-[18px] px-6 pt-[23px] pb-[17px] [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-base [&_p]:mt-[5px] [&_p]:text-sm [&_p]:text-secondary max-desk:flex-col max-desk:items-start max-desk:px-[17px] max-desk:pt-5 max-desk:pb-[15px] max-desk:[&_h2]:text-[15px] max-desk:[&_p]:text-xs">
                       <div>
@@ -1234,8 +1298,7 @@ export default function Workspace({
                           นำเข้าจากไฟล์ผลการเรียน
                         </h2>
                         <p>
-                          รองรับ Excel (.xlsx), CSV และ TSV · ไม่เกิน 5 MB หรือ
-                          2,000 แถว
+                          รองรับ Excel (.xlsx), CSV และ TSV · ไม่เกิน 2,000 แถวต่อครั้ง
                         </p>
                       </div>
                       <button
@@ -1325,7 +1388,7 @@ export default function Workspace({
                           </div>
                           <button
                             className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border border-transparent px-[18px] py-[11px] font-[550] whitespace-nowrap bg-brand text-white shadow-[0_3px_6px_#713cd112] enabled:hover:bg-[#602cbc] enabled:hover:shadow-[0_3px_12px_#713cd126]"
-                            disabled={busy || reading || !!fileErrors.length}
+                            disabled={!open || busy || reading || !!fileErrors.length}
                             onClick={confirmImport}
                           >
                             <FileSpreadsheet size={17} />
@@ -1386,7 +1449,7 @@ export default function Workspace({
                   </div>
                 </>
               )}
-              {role === "academic" && view === "schedule" && (
+              {role === "admin" && view === "schedule" && (
                 <div className={`${styles.scheduleFormLayout} grid grid-cols-[1fr_280px] gap-[22px] max-roomy:grid-cols-1`}>
                   <section className={styles.tableCard}>
                     <div className="flex items-center justify-between gap-[18px] px-6 pt-[23px] pb-[17px] [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-base [&_p]:mt-[5px] [&_p]:text-sm [&_p]:text-secondary max-desk:flex-col max-desk:items-start max-desk:px-[17px] max-desk:pt-5 max-desk:pb-[15px] max-desk:[&_h2]:text-[15px] max-desk:[&_p]:text-xs">
@@ -1459,7 +1522,7 @@ export default function Workspace({
                           เมื่อพ้นวันที่ปิดระบบ รายการที่แก้สำเร็จจะย้ายเข้าประวัติอัตโนมัติ
                           {" "}รายการที่ยังไม่สำเร็จจะกลับเป็นสถานะยังไม่ยื่นคำร้อง และต้องเริ่มดำเนินการใหม่ในรอบถัดไป{" "}
                           นักเรียน ครู และฝ่ายวิชาการยังเปิดอ่านประวัติได้ตลอดเวลา แต่ดำเนินการแก้ผลการเรียนไม่ได้
-                          ฝ่ายวิชาการยังสามารถปรับช่วงเวลาได้จากเมนูตั้งค่าเวลาเปิด–ปิดระบบ
+                          ผู้ดูแลระบบสามารถปรับช่วงเวลาได้จากเมนูตั้งค่าเวลาเปิด–ปิดระบบ
                         </span>
                       </div>
                       <button
@@ -1493,7 +1556,7 @@ export default function Workspace({
                     <small className="text-xs">ปิดระบบ</small>
                     <p>{thaiDate(scheduleClosingDisplay(settings.closes_at))}</p>
                     <div className="text-muted">
-                      ฝ่ายวิชาการสามารถตั้งเวลาเปิด–ปิดระบบได้
+                      ผู้ดูแลระบบสามารถตั้งเวลาเปิด–ปิดระบบได้
                       แม้อยู่นอกช่วงเวลาให้บริการ
                     </div>
                   </section>
@@ -1518,9 +1581,11 @@ export default function Workspace({
             </span>
           </footer>
           </div>
-          <RecoveryRail records={scope} schedule={settings} open={open}>
-            {role === "teacher" && !demo && <PushNotificationControl />}
-          </RecoveryRail>
+          {role !== "admin" && (
+            <RecoveryRail records={scope} schedule={settings} open={open}>
+              {role === "teacher" && !demo && <PushNotificationControl />}
+            </RecoveryRail>
+          )}
           </div>
         </main>
       </div>
@@ -1650,7 +1715,7 @@ export default function Workspace({
                     value={finalGrade}
                     onChange={(e) => setFinalGrade(e.target.value)}
                   >
-                    {["0", "ร", "มผ", "1", "1.5", "2", "2.5", "3", "3.5", "4", "ผ"].map((v) => (
+                    {validFinalGrades.map((v) => (
                       <option key={v}>{v}</option>
                     ))}
                   </select>
@@ -1679,6 +1744,39 @@ export default function Workspace({
                     )}
                   </span>
                 </div>
+              )}
+              {role === "teacher" && view === "overview" &&
+                ["teacher_approved", "completed"].includes(selected.status) &&
+                editingFinalGrade && (
+                  <div className="my-5 rounded-lg border border-[#e8dff5] bg-[#faf7ff] p-4">
+                    <label className="mb-2 block font-semibold" htmlFor="corrected-final-grade">
+                      แก้ไขผลการเรียนใหม่
+                    </label>
+                    <select
+                      id="corrected-final-grade"
+                      className="w-full rounded-lg border border-[#e1dce9] bg-white px-[13px] py-[11px] text-ink outline-none focus:border-brand sm:w-40"
+                      value={finalGrade}
+                      onChange={(event) => setFinalGrade(event.target.value)}
+                      disabled={busy}
+                    >
+                      {validFinalGrades.map((grade) => <option key={grade} value={grade}>{grade}</option>)}
+                    </select>
+                  </div>
+                )}
+              {role === "teacher" && corrections.some((item) => item.record_id === selected.id) && (
+                <section className="my-5 rounded-lg border border-line p-4" aria-label="ประวัติการแก้ไขผลการเรียนใหม่">
+                  <h3 className="mb-3 font-semibold">ประวัติการแก้ไขผลการเรียนใหม่</h3>
+                  <ol className="space-y-3 text-sm text-secondary">
+                    {corrections.filter((item) => item.record_id === selected.id)
+                      .sort((a, b) => b.changed_at.localeCompare(a.changed_at))
+                      .map((item) => (
+                        <li key={item.id} className="rounded-lg bg-[#f8f5fc] p-3">
+                          <strong className="text-ink">{item.previous_grade} → {item.new_grade}</strong>
+                          <span className="block">{item.changed_by_name} · {thaiDate(item.changed_at, true)}</span>
+                        </li>
+                      ))}
+                  </ol>
+                </section>
               )}
               {selected.requested_at && (
                 <div className="mt-[23px] mb-[5px] [&>div]:flex [&>div]:items-center [&>div]:gap-2.5 [&>div]:py-[7px] [&>div]:text-sm [&>div]:text-[#8c799e] [&_strong]:font-[450] [&_small]:ml-auto [&_small]:text-[12px] [&_small]:text-[#ae9eba] [&_small]:font-[Sarabun] max-desk:[&_small]:text-[9px] max-desk:[&_strong]:text-[11px]">
@@ -1746,10 +1844,26 @@ export default function Workspace({
               <button
                 className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border px-[18px] py-[11px] font-[550] whitespace-nowrap border-[#e3ddea] bg-white text-[#625670] enabled:hover:bg-[#f8f5fc]"
                 disabled={busy}
-                onClick={() => setSelected(null)}
+                onClick={() => {
+                  if (editingFinalGrade) {
+                    setEditingFinalGrade(false);
+                    setFinalGrade(selected.final_grade ?? "1");
+                    setProblem("");
+                  } else setSelected(null);
+                }}
               >
-                ปิด
+                {editingFinalGrade ? "ยกเลิก" : "ปิด"}
               </button>
+              {role === "teacher" && view === "overview" && open &&
+                ["teacher_approved", "completed"].includes(selected.status) && (
+                  <button
+                    className="cursor-pointer rounded-lg bg-brand px-[18px] py-[11px] font-semibold text-white transition enabled:hover:bg-[#602cbc] disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={busy || (editingFinalGrade && finalGrade === selected.final_grade)}
+                    onClick={() => editingFinalGrade ? saveCorrectedGrade() : setEditingFinalGrade(true)}
+                  >
+                    {busy ? "กำลังบันทึก…" : editingFinalGrade ? "บันทึกผลการเรียนใหม่" : "แก้ไขผลการเรียนใหม่"}
+                  </button>
+                )}
               {role === "teacher" &&
                 ["assigned", "submitted"].includes(selected.status) && (
                   <button
