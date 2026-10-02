@@ -15,3 +15,8 @@ export function identityPassword(
       .digest("base64url") + "aA1!"
   );
 }
+
+/** Only students use a derived credential; staff supply their chosen password. */
+export function loginPassword(role: string, credential: string, secret: string) {
+  return role === "student" ? identityPassword("student", credential, secret) : credential;
+}

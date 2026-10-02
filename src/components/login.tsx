@@ -35,16 +35,20 @@ const roleFieldConfig: Record<Role, RoleFieldConfig> = {
   teacher: {
     identifierLabel: "เลขประจำตัวประชาชน",
     identifierPlaceholder: "กรอกเลขบัตรประชาชน 13 หลัก",
-    identifierMaxLength: 13,
+    identifierMaxLength: 17,
     identifierInputMode: "numeric",
-    showPassword: false,
+    showPassword: true,
+    passwordLabel: "รหัสผ่าน",
+    passwordPlaceholder: "กรอกรหัสผ่านที่ตั้งไว้",
   },
   academic: {
     identifierLabel: "เลขประจำตัวประชาชน",
     identifierPlaceholder: "กรอกเลขบัตรประชาชน 13 หลัก",
-    identifierMaxLength: 13,
+    identifierMaxLength: 17,
     identifierInputMode: "numeric",
-    showPassword: false,
+    showPassword: true,
+    passwordLabel: "รหัสผ่าน",
+    passwordPlaceholder: "กรอกรหัสผ่านที่ตั้งไว้",
   },
   manager: {
     identifierLabel: "ชื่อผู้ใช้งาน",
@@ -56,24 +60,32 @@ const roleFieldConfig: Record<Role, RoleFieldConfig> = {
     passwordPlaceholder: "กรอกรหัสผ่านสำหรับผู้บริหาร",
   },
   admin: {
-    identifierLabel: "ชื่อผู้ใช้งาน",
-    identifierPlaceholder: "กรอกชื่อผู้ใช้งานสำหรับผู้ดูแลระบบ",
-    identifierMaxLength: 40,
-    identifierInputMode: "text",
+    identifierLabel: "เลขประจำตัวประชาชน",
+    identifierPlaceholder: "กรอกเลขบัตรประชาชน 13 หลัก",
+    identifierMaxLength: 17,
+    identifierInputMode: "numeric",
     showPassword: true,
     passwordLabel: "รหัสผ่าน",
     passwordPlaceholder: "กรอกรหัสผ่านสำหรับผู้ดูแลระบบ",
   },
 };
 
-export default function Login({ next = "/dashboard" }: { next?: string }) {
-  const [role, setRole] = useState<Role>("student");
+export default function Login({
+  next = "/dashboard",
+  initialRole = "student",
+}: {
+  next?: string;
+  initialRole?: Role;
+}) {
+  const [role, setRole] = useState<Role>(initialRole);
   const [visible, setVisible] = useState(false);
+  const [identityVisible, setIdentityVisible] = useState(false);
   const [state, action, pending] = useActionState(signIn, { error: "" });
   const cfg = roleFieldConfig[role];
-  const citizenIdentifier = role === "teacher" || role === "academic";
+  const citizenIdentifier =
+    role === "teacher" || role === "academic" || role === "admin";
   const IdentifierIcon =
-    role === "student" ? IdCard : role === "manager" || role === "admin" ? UserRound : Fingerprint;
+    role === "student" ? IdCard : role === "manager" ? UserRound : Fingerprint;
   const CredentialIcon = role === "student" ? Fingerprint : KeyRound;
   const VisibilityIcon = visible ? Eye : EyeOff;
 
@@ -145,6 +157,7 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
                         onChange={() => {
                           setRole(value);
                           setVisible(false);
+                          setIdentityVisible(false);
                         }}
                         className="relative size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#62666a] bg-white after:absolute after:top-1/2 after:left-1/2 after:size-3 after:-translate-x-1/2 after:-translate-y-1/2 after:scale-0 after:rounded-full after:bg-[#62666a] after:content-[''] after:transition-transform after:duration-300 checked:after:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#62666a]"
                       />
@@ -178,19 +191,29 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
                     maxLength={cfg.identifierMaxLength}
                     placeholder={cfg.identifierPlaceholder}
                     className="max-w-full border px-[13px] outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115] w-full border-[#46464E] py-2.5 pr-10 pl-10 text-[#2F3038]"
-                    type={citizenIdentifier && !visible ? "password" : "text"}
+                    type={
+                      citizenIdentifier && !identityVisible
+                        ? "password"
+                        : "text"
+                    }
                   />
                   {citizenIdentifier && (
                     <button
                       type="button"
                       aria-label={
-                        visible ? "ซ่อนเลขบัตรประชาชน" : "แสดงเลขบัตรประชาชน"
+                        identityVisible
+                          ? "ซ่อนเลขบัตรประชาชน"
+                          : "แสดงเลขบัตรประชาชน"
                       }
-                      aria-pressed={visible}
-                      onClick={() => setVisible(!visible)}
-                      className="cursor-pointer enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 absolute top-1/2 right-3 -translate-y-1/2 text-[#46464E] transition-opacity duration-200 hover:opacity-70"
+                      aria-pressed={identityVisible}
+                      onClick={() => setIdentityVisible(!identityVisible)}
+                      className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 absolute top-1/2 right-3 z-10 -translate-y-1/2 text-[#46464E] transition-opacity duration-200 hover:opacity-70"
                     >
-                      <VisibilityIcon className="size-5" aria-hidden="true" />
+                      {identityVisible ? (
+                        <EyeOff className="size-5" aria-hidden="true" />
+                      ) : (
+                        <Eye className="size-5" aria-hidden="true" />
+                      )}
                     </button>
                   )}
                 </div>
@@ -209,12 +232,14 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
                       aria-hidden="true"
                     />
                     <input
+                      key={role}
                       id="password"
                       name="password"
                       required
                       type={visible ? "text" : "password"}
                       autoComplete="current-password"
                       maxLength={role === "student" ? 13 : 128}
+                      minLength={role === "student" ? 13 : 6}
                       inputMode={role === "student" ? "numeric" : "text"}
                       placeholder={cfg.passwordPlaceholder}
                       className="max-w-full border px-[13px] outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115] w-full border-[#46464E] py-2.5 pr-10 pl-10 text-[#2F3038]"
@@ -240,6 +265,15 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
               {pending ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
             </button>
           </form>
+          <p className="mt-5 text-center text-sm text-[#46464E]">
+            คุณครูยังไม่มีบัญชี?{" "}
+            <a
+              href="/register"
+              className="font-medium text-brand underline underline-offset-4"
+            >
+              สมัครสมาชิกครู
+            </a>
+          </p>
         </div>
       </div>
       <section
@@ -255,7 +289,9 @@ export default function Login({ next = "/dashboard" }: { next?: string }) {
             ช่วยให้นักเรียนและบุคลากรติดตามการแก้ไขผลการเรียนในแต่ละรายวิชาได้ในที่เดียว
           </p>
           <ul className="mt-3 list-disc space-y-2 pl-5">
-            <li>นักเรียนตรวจสอบรายวิชาคงค้าง ยื่นคำร้อง และติดตามงานที่ครูมอบหมาย</li>
+            <li>
+              นักเรียนตรวจสอบรายวิชาคงค้าง ยื่นคำร้อง และติดตามงานที่ครูมอบหมาย
+            </li>
             <li>ครูผู้สอนมอบหมายงาน ตรวจรับงาน และอนุมัติผลการแก้ไข</li>
             <li>ฝ่ายวิชาการและผู้บริหารติดตามความคืบหน้าและผลการดำเนินการ</li>
           </ul>

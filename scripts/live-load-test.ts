@@ -3,7 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { performance } from "node:perf_hooks";
-import { loginEmail, identityPassword } from "../src/lib/identity";
+import { loginEmail, loginPassword } from "../src/lib/identity";
 import { parseDelimited } from "../src/lib/import";
 import { syntheticSchool } from "../src/lib/synthetic-school";
 import { siteUrl } from "../src/lib/site";
@@ -69,7 +69,7 @@ async function seed() {
     const email = loginEmail(accountKey(a as { role: string; identifier: string }), secret);
     let id = existing.get(email);
     if (!id) {
-      const r = await admin.auth.admin.createUser({ email, password: a.role === "manager" || a.role === "admin" ? a.password : identityPassword(a.role, a.role === "student" ? a.citizen_id : a.identifier, secret), email_confirm: true, app_metadata: { synthetic_load_test: "mst-grs-1200" } });
+      const r = await admin.auth.admin.createUser({ email, password: loginPassword(a.role, a.role === "student" ? a.citizen_id : a.password, secret), email_confirm: true, app_metadata: { synthetic_load_test: "mst-grs-1200" } });
       check(r.error); id = r.data.user!.id;
     }
     const old = await admin.from("profiles").select("id,role,full_name").eq("id", id).maybeSingle(); check(old.error);
@@ -86,7 +86,7 @@ async function login(a: Record<string, string>) {
   const cookies: { name: string; value: string }[] = [];
   const db = createServerClient(url, anon, { cookies: { getAll: () => cookies, setAll: values => { for (const value of values) { const i = cookies.findIndex(c => c.name === value.name); if (i >= 0) cookies[i] = value; else cookies.push(value); } } }, auth: { autoRefreshToken: false } });
   const t = performance.now();
-  const r = await db.auth.signInWithPassword({ email: loginEmail(accountKey(a as { role: string; identifier: string }), secret), password: a.role === "manager" || a.role === "admin" ? a.password : identityPassword(a.role, a.role === "student" ? a.citizen_id : a.identifier, secret) }); check(r.error);
+  const r = await db.auth.signInWithPassword({ email: loginEmail(accountKey(a as { role: string; identifier: string }), secret), password: loginPassword(a.role, a.role === "student" ? a.citizen_id : a.password, secret) }); check(r.error);
   return { db, cookies, role: a.role, name: a.full_name, userId: r.data.user!.id, loginMs: performance.now() - t };
 }
 async function grades() {

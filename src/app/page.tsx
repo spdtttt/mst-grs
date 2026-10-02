@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string | string[] }>;
+  searchParams: Promise<{ next?: string | string[]; role?: string | string[] }>;
 }) {
   const params = await searchParams;
   const next = safeReturnPath(
@@ -78,7 +78,7 @@ export default async function Page({
           }).replace(/</g, "\\u003c"),
         }}
       />
-      <Login next={next} />
+      <Login next={next} initialRole={isRole(params.role) ? params.role : "student"} />
     </>
   );
 }

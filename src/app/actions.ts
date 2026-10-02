@@ -6,7 +6,8 @@ import { headers } from "next/headers";
 import { createHmac } from "node:crypto";
 import { randomUUID } from "node:crypto";
 import { supabase, configured } from "@/lib/supabase";
-import { loginEmail, identityPassword } from "@/lib/identity";
+import { loginEmail, loginPassword } from "@/lib/identity";
+import { loginSchema } from "@/lib/auth-input";
 import { importSchema } from "@/lib/import";
 import { roleReturnPath } from "@/lib/navigation";
 import { notifyTeacherOfNewRequest } from "@/lib/push";
@@ -15,24 +16,15 @@ import {
   assignmentFileMimeType, assignmentFileSchema, uploadedAssignmentFileSchema,
   parseAssignmentDetails, validateAssignmentFiles, type AssignmentUpload,
 } from "@/lib/assignment-files";
-import { isRole, type GradeCorrection } from "@/lib/domain";
+import type { GradeCorrection } from "@/lib/domain";
 import { scheduleDates } from "@/lib/schedule-dates";
 export async function signIn(_prev: { error: string }, form: FormData) {
-  if (!configured())
+  if (!configured() || (process.env.LOGIN_HMAC_SECRET?.length ?? 0) < 32)
     return { error: "ยังไม่ได้เชื่อมต่อฐานข้อมูล กรุณาติดต่อฝ่ายวิชาการ" };
-  const role = String(form.get("role")),
-    identifier = String(form.get("identifier") ?? "").trim(),
-    credential = String(form.get("password") ?? "");
-  if (!isRole(role)) return { error: "กรุณาเลือกประเภทผู้ใช้งาน" };
-  const valid =
-    role === "student"
-      ? /^\d{5,10}$/.test(identifier) && /^\d{13}$/.test(credential)
-      : role === "manager" || role === "admin"
-        ? /^[A-Za-z][A-Za-z0-9_.-]{2,39}$/.test(identifier) &&
-          credential.length >= 6
-        : /^\d{13}$/.test(identifier);
-  if (!valid || credential.length > 128)
+  const parsed = loginSchema.safeParse({ role: form.get("role"), identifier: form.get("identifier"), password: form.get("password") });
+  if (!parsed.success)
     return { error: "กรุณาตรวจสอบข้อมูลเข้าสู่ระบบ" };
+  const { role, identifier, password: credential } = parsed.data;
   const db = await supabase(),
     secret = process.env.LOGIN_HMAC_SECRET!;
   const bucket = createHmac("sha256", secret)
@@ -43,20 +35,12 @@ export async function signIn(_prev: { error: string }, form: FormData) {
     return { error: "ระบบยังไม่พร้อมให้บริการ กรุณาติดต่อฝ่ายวิชาการ" };
   if (!limit.data)
     return { error: "พยายามเข้าสู่ระบบมากเกินไป กรุณารอ 15 นาที" };
-  const password =
-    role === "manager" || role === "admin"
-      ? credential
-      : identityPassword(
-          role,
-          role === "student" ? credential : identifier,
-          secret,
-        );
-  const { error } = await db.auth.signInWithPassword({
+  const { data: auth, error } = await db.auth.signInWithPassword({
     email: loginEmail(role + ":" + identifier, secret),
-    password,
+    password: loginPassword(role, credential, secret),
   });
-  if (error) return { error: "ข้อมูลเข้าสู่ระบบไม่ถูกต้อง" };
-  const { data: profile } = await db.from("profiles").select("role").single();
+  if (error || !auth.user) return { error: "ข้อมูลเข้าสู่ระบบไม่ถูกต้อง" };
+  const { data: profile } = await db.from("profiles").select("role").eq("id", auth.user.id).single();
   if (profile?.role !== role) {
     await db.auth.signOut();
     return { error: "ประเภทบัญชีไม่ตรงกัน กรุณาติดต่อฝ่ายวิชาการ" };

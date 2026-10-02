@@ -23,7 +23,7 @@ export function syntheticSchool(recordCount = 1200) {
         id: uuid(serial), role, full_name: `${labels[role]} ${String(i + 1).padStart(4, "0")}`,
         student_code: role === "student" ? code : null,
         classroom: role === "student" ? `ม.${1 + Math.floor(i / 400)}/${1 + Math.floor((i % 400) / 40)}` : null,
-        identifier: role === "student" ? code : role === "manager" ? `loadtest_mgr_${i + 1}` : role === "admin" ? `loadtest_admin_${i + 1}` : citizen,
+        identifier: role === "student" ? code : role === "manager" ? `loadtest_mgr_${i + 1}` : citizen,
         citizen_id: role === "manager" || role === "admin" ? "" : citizen,
       });
     }
