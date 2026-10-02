@@ -410,6 +410,9 @@ export default function AdminAcademics({
         onDemoReset={(id) =>
           setDemoRows((rows) => rows.filter((row) => row.id !== id))
         }
+        onDemoEdit={(updated) =>
+          setDemoRows((rows) => rows.map((row) => row.id === updated.id ? updated : row))
+        }
         currentUserId={currentUserId}
         refreshKey={revision}
       />

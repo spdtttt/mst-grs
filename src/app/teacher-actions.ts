@@ -17,7 +17,8 @@ export async function listTeachers(
     .strict()
     .safeParse(input);
   if (!parsed.success) return { error: "ตัวกรองไม่ถูกต้อง" };
-  const { data, error } = await context.db.rpc("admin_teacher_list", {
+  const { data, error } = await context.db.rpc("admin_account_list", {
+    p_role: "teacher",
     p_search: parsed.data.search,
     p_page: parsed.data.page,
   });

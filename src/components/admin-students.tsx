@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Select from "react-select";
+import AdminAccountRow from "./admin-account-row";
 import {
   Download,
   FileSpreadsheet,
@@ -955,7 +956,7 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
             <table className="w-full text-left text-sm">
               <thead className="bg-[#f8f6fc] text-sm text-secondary">
                 <tr>
-                  {["รหัสนักเรียน", "ชื่อ-นามสกุล", "ชั้น/ห้อง", "เลขที่"].map(
+                  {["รหัสนักเรียน", "ชื่อ-นามสกุล", "ชั้น/ห้อง", "เลขที่", "ดำเนินการ"].map(
                     (h) => (
                       <th
                         className="whitespace-nowrap px-5 py-3 font-medium"
@@ -970,7 +971,7 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={4} className="p-10 text-center text-secondary">
+                    <td colSpan={5} className="p-10 text-center text-secondary">
                       <Loader2
                         className="mx-auto mb-2 animate-spin"
                         size={22}
@@ -980,23 +981,20 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
                   </tr>
                 ) : data.items.length ? (
                   data.items.map((s) => (
-                    <tr
-                      key={s.id}
-                      className="border-t border-line hover:bg-brand-soft/30"
-                    >
-                      <td className="px-5 py-4 font-medium text-brand">
-                        {s.student_code}
-                      </td>
-                      <td className="min-w-52 px-5 py-4">{s.full_name}</td>
-                      <td className="whitespace-nowrap px-5 py-4">
-                        {s.classroom || "—"}
-                      </td>
-                      <td className="px-5 py-4">{s.roll_number ?? "—"}</td>
-                    </tr>
+                    <AdminAccountRow key={s.id} row={s} role="student" demo={demo} disabled={busy || reading}
+                      onSaved={(updated) => {
+                        if (demo) setDemoRows(rows => rows.map(row => row.id === updated.id ? {...row,...updated,student_code:row.student_code} : row));
+                        else setRefresh(value => value + 1);
+                      }}
+                      onDeleted={(id) => {
+                        if (demo) setDemoRows(rows => rows.filter(row => row.id !== id));
+                        else setRefresh(value => value + 1);
+                        if (data.items.length === 1 && page > 1) setPage(value => value - 1);
+                      }} />
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="p-10 text-center text-secondary">
+                    <td colSpan={5} className="p-10 text-center text-secondary">
                       {search || level !== "all"
                         ? "ไม่พบนักเรียนตามตัวกรอง"
                         : "ยังไม่มีข้อมูลนักเรียน"}

@@ -22,7 +22,8 @@ export async function listAcademics(
     .strict()
     .safeParse(input);
   if (!parsed.success) return { error: "ตัวกรองไม่ถูกต้อง" };
-  const { data, error } = await context.db.rpc("admin_academic_list", {
+  const { data, error } = await context.db.rpc("admin_account_list", {
+    p_role: "academic",
     p_search: parsed.data.search,
     p_page: parsed.data.page,
   });

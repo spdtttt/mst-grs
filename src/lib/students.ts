@@ -52,6 +52,7 @@ export function studentFullName(v: {
   return `${v.name_prefix}${v.first_name} ${v.last_name}`;
 }
 export type StudentRow = {
+  account_revision?: number;
   id: string;
   student_code: string;
   full_name: string;
