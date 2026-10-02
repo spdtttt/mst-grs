@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { configured, supabase } from "@/lib/supabase";
 import Workspace from "@/components/workspace";
 import type { ArchivedGradeRecord, GradeCorrection, GradeRecord, Profile, Schedule } from "@/lib/domain";
-import { isRole } from "@/lib/domain";
+import { currentProfile } from "@/lib/current-profile";
 export const dynamic = "force-dynamic";
 export default async function Dashboard({ searchParams }: {
   searchParams: Promise<{ view?: string }>;
@@ -14,12 +14,8 @@ export default async function Dashboard({ searchParams }: {
     data: { user },
   } = await db.auth.getUser();
   if (!user) redirect("/");
-  const { data: profile, error: pe } = await db
-    .from("profiles")
-    .select("id,role,full_name,student_code,classroom")
-    .eq("id", user.id)
-    .single();
-  if (!isRole(profile?.role)) redirect("/");
+  const profile = await currentProfile(db, user.id);
+  if (!profile) redirect("/");
   if (profile.role === "manager") redirect("/dashboard/manager");
   if (profile.role === "admin") redirect("/dashboard/admin");
   const { data: schedule, error: se } = await db
@@ -27,7 +23,7 @@ export default async function Dashboard({ searchParams }: {
     .select("*")
     .eq("id", 1)
     .single();
-  if (pe || se || !profile || !schedule)
+  if (se || !schedule)
     throw new Error(
       "ไม่สามารถโหลดบัญชีหรือช่วงเวลาให้บริการ กรุณาติดต่อฝ่ายวิชาการ",
     );

@@ -77,7 +77,13 @@ const AdminStudents = dynamic(() => import("./admin-students"), {
     </div>
   ),
 });
-type View = "overview" | "outstanding" | "history" | "export" | "import" | "schedule" | "students";
+const AdminTeachers = dynamic(() => import("./admin-teachers"), {
+  ssr: false,
+  loading: () => <div role="status" className="rounded-xl border border-line bg-white p-6 text-sm text-secondary">กำลังโหลดรายชื่อคุณครู...</div>,
+});
+const AdminAcademics = dynamic(() => import("./admin-academics"), { ssr: false });
+
+type View = "overview" | "outstanding" | "history" | "export" | "import" | "schedule" | "students" | "teachers" | "academics";
 const emptyHistory: ArchivedGradeRecord[] = [];
 const emptyCorrections: GradeCorrection[] = [];
 const validFinalGrades = ["0", "ร", "มผ", "1", "1.5", "2", "2.5", "3", "3.5", "4", "ผ"];
@@ -89,6 +95,8 @@ const navTitles: Record<View, string> = {
   import: "นำเข้าข้อมูล",
   schedule: "ตั้งค่าเวลาเปิด–ปิดระบบ",
   students: "รายชื่อนักเรียน",
+  teachers: "รายชื่อคุณครู",
+  academics: "รายชื่อฝ่ายวิชาการ",
 };
 function localBangkok(value: string | null) {
   if (!value) return "";
@@ -125,7 +133,7 @@ export default function Workspace({
   schedule: Schedule;
   historyRecords?: ArchivedGradeRecord[];
   gradeCorrections?: GradeCorrection[];
-  initialView?: "overview" | "history" | "import" | "students";
+  initialView?: "overview" | "history" | "import" | "students" | "teachers" | "academics";
   demo?: boolean;
 }) {
   const router = useRouter();
@@ -242,7 +250,7 @@ export default function Workspace({
       : role === "teacher"
         ? ["overview", "history", "export"]
         : role === "admin"
-          ? ["students", "import", "schedule"]
+          ? ["students", "teachers", "academics", "import", "schedule"]
           : ["overview", "outstanding", "history", "export"];
   const filtered = useMemo(
     () => {
@@ -640,7 +648,7 @@ export default function Workspace({
         <nav aria-label="เมนูหลัก">
           {available.map((v) => {
             const Icon =
-              v === "students"
+              v === "students" || v === "teachers" || v === "academics"
                 ? UsersRound
                 : v === "overview"
                 ? LayoutDashboard
@@ -785,7 +793,7 @@ export default function Workspace({
                   : navTitles[view]}
               </h1>
             </div>
-            {view !== "schedule" && view !== "import" && view !== "students" && (
+            {view !== "schedule" && view !== "import" && view !== "students" && view !== "teachers" && view !== "academics" && (
               <div className="flex w-full flex-wrap items-center gap-3 desk:w-auto">
                 <div className="relative flex min-w-[174px] flex-1 items-center gap-2 rounded-lg border border-[#e5e0ec] bg-white px-[11px] py-2 text-gray-600 focus-within:outline-1 focus-within:outline-gray-500 desk:flex-none">
                   <CalendarDays className="shrink-0" size={17} />
@@ -860,7 +868,9 @@ export default function Workspace({
                 </div>
               )}
               {role === "admin" && view === "students" && <AdminStudents demo={demo} />}
-              {view !== "schedule" && view !== "import" && view !== "history" && view !== "students" && (
+              {role === "admin" && view === "teachers" && <AdminTeachers demo={demo} currentUserId={actor.id} />}
+              {role === "admin" && view === "academics" && <AdminAcademics demo={demo} currentUserId={actor.id} />}
+              {view !== "schedule" && view !== "import" && view !== "history" && view !== "students" && view !== "teachers" && view !== "academics" && (
                 <>
                   <section className={styles.hero}>
                     <div>

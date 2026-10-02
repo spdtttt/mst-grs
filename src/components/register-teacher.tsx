@@ -1,6 +1,7 @@
 "use client";
 import { useActionState, useEffect, useState } from "react";
 import Image from "next/image";
+import Select from "react-select";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -10,6 +11,11 @@ import {
   UserPlus,
 } from "lucide-react";
 import { registerTeacher } from "@/app/register/actions";
+
+const prefixOptions = ["นาย", "นาง", "นางสาว"].map((prefix) => ({
+  value: prefix,
+  label: prefix,
+}));
 
 const emptyValues = {
   citizen_id: "",
@@ -110,25 +116,60 @@ export default function RegisterTeacher() {
                       }
                     />
                   </label>
-                  <label
-                    className="block text-sm font-medium"
-                    htmlFor="register-prefix"
-                  >
-                    คำนำหน้า
-                    <input
-                      id="register-prefix"
+                  <div>
+                    <label
+                      className="block text-sm font-medium"
+                      htmlFor="register-prefix"
+                    >
+                      คำนำหน้า
+                    </label>
+                    <Select
+                      inputId="register-prefix"
+                      instanceId="register-prefix"
                       name="name_prefix"
                       required
-                      maxLength={40}
-                      autoComplete="honorific-prefix"
-                      placeholder="เช่น นาย นาง นางสาว"
-                      className={inputClass}
-                      value={values.name_prefix}
-                      onChange={(e) =>
-                        setValues({ ...values, name_prefix: e.target.value })
+                      isSearchable={false}
+                      isDisabled={pending}
+                      placeholder="เลือกคำนำหน้า"
+                      className="mt-2 text-sm"
+                      options={prefixOptions}
+                      value={
+                        prefixOptions.find(
+                          (option) => option.value === values.name_prefix,
+                        ) ?? null
                       }
+                      onChange={(option) =>
+                        setValues((current) => ({
+                          ...current,
+                          name_prefix: option?.value ?? "",
+                        }))
+                      }
+                      styles={{
+                        control: (base, state) => ({
+                          ...base,
+                          minHeight: 46,
+                          borderRadius: 12,
+                          borderColor: state.isFocused
+                            ? "var(--color-brand)"
+                            : "var(--color-line)",
+                          boxShadow: state.isFocused
+                            ? "0 0 0 2px rgb(125 30 138 / 15%)"
+                            : "none",
+                          "&:hover": { borderColor: "var(--color-brand)" },
+                        }),
+                      }}
+                      theme={(theme) => ({
+                        ...theme,
+                        colors: {
+                          ...theme.colors,
+                          primary: "var(--color-brand)",
+                          primary25: "var(--color-brand-soft)",
+                          primary50: "var(--color-brand-soft)",
+                          neutral80: "var(--color-ink)",
+                        },
+                      })}
                     />
-                  </label>
+                  </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <label
                       className="block text-sm font-medium"

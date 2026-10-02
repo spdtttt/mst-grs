@@ -6,7 +6,8 @@ import { headers } from "next/headers";
 import { createHmac } from "node:crypto";
 import { randomUUID } from "node:crypto";
 import { supabase, configured } from "@/lib/supabase";
-import { loginEmail, loginPassword } from "@/lib/identity";
+import { createClient } from "@supabase/supabase-js";
+import { signInForRole } from "@/lib/role-login";
 import { loginSchema } from "@/lib/auth-input";
 import { importSchema } from "@/lib/import";
 import { roleReturnPath } from "@/lib/navigation";
@@ -19,7 +20,7 @@ import {
 import type { GradeCorrection } from "@/lib/domain";
 import { scheduleDates } from "@/lib/schedule-dates";
 export async function signIn(_prev: { error: string }, form: FormData) {
-  if (!configured() || (process.env.LOGIN_HMAC_SECRET?.length ?? 0) < 32)
+  if (!configured() || !process.env.SUPABASE_SERVICE_ROLE_KEY || (process.env.LOGIN_HMAC_SECRET?.length ?? 0) < 32)
     return { error: "ยังไม่ได้เชื่อมต่อฐานข้อมูล กรุณาติดต่อฝ่ายวิชาการ" };
   const parsed = loginSchema.safeParse({ role: form.get("role"), identifier: form.get("identifier"), password: form.get("password") });
   if (!parsed.success)
@@ -28,23 +29,42 @@ export async function signIn(_prev: { error: string }, form: FormData) {
   const db = await supabase(),
     secret = process.env.LOGIN_HMAC_SECRET!;
   const bucket = createHmac("sha256", secret)
-    .update("rate:" + role + ":" + identifier.toLowerCase())
+    .update("rate:" + (["teacher", "academic", "admin"].includes(role) ? "staff" : role) + ":" + identifier.toLowerCase())
     .digest("hex");
   const limit = await db.rpc("consume_login_attempt", { p_bucket: bucket });
   if (limit.error)
     return { error: "ระบบยังไม่พร้อมให้บริการ กรุณาติดต่อฝ่ายวิชาการ" };
   if (!limit.data)
     return { error: "พยายามเข้าสู่ระบบมากเกินไป กรุณารอ 15 นาที" };
-  const { data: auth, error } = await db.auth.signInWithPassword({
-    email: loginEmail(role + ":" + identifier, secret),
-    password: loginPassword(role, credential, secret),
+  const service = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
   });
-  if (error || !auth.user) return { error: "ข้อมูลเข้าสู่ระบบไม่ถูกต้อง" };
-  const { data: profile } = await db.from("profiles").select("role").eq("id", auth.user.id).single();
-  if (profile?.role !== role) {
-    await db.auth.signOut();
-    return { error: "ประเภทบัญชีไม่ตรงกัน กรุณาติดต่อฝ่ายวิชาการ" };
-  }
+  const result = await signInForRole({ role, identifier, password: credential }, {
+    async resolveStaff(emails, selectedRole) {
+      const { data, error } = await service.rpc("resolve_staff_login", { p_emails: emails, p_role: selectedRole });
+      if (error) {
+        console.error("login: resolve staff failed", { code: error.code });
+        throw new Error("Staff login lookup failed");
+      }
+      return data as string | null;
+    },
+    async signIn(email, password) {
+      const { data, error } = await db.auth.signInWithPassword({ email, password });
+      if (error || !data.user || !data.session) return null;
+      return { userId: data.user.id, accessToken: data.session.access_token };
+    },
+    async activate(sessionId, userId, selectedRole) {
+      const { error } = await service.rpc("activate_login_role", {
+        p_session_id: sessionId, p_user_id: userId, p_role: selectedRole,
+      });
+      if (error) {
+        console.error("login: activate role failed", { code: error.code });
+        throw new Error("Login role activation failed");
+      }
+    },
+    async signOut() { await db.auth.signOut({ scope: "local" }); },
+  }, secret);
+  if (result.error) return result;
   redirect(roleReturnPath(role, form.get("next")));
 }
 export async function signOut() {
@@ -288,12 +308,8 @@ export async function saveSchedule(input: {
     data: { user },
   } = await db.auth.getUser();
   if (!user) return { error: "กรุณาเข้าสู่ระบบใหม่" };
-  const { data: profile } = await db
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  if (profile?.role !== "admin")
+  const { data: role, error: roleError } = await db.rpc("my_role");
+  if (roleError || role !== "admin")
     return { error: "เฉพาะผู้ดูแลระบบเท่านั้นที่ตั้งเวลาเปิด–ปิดระบบได้" };
   const { error } = await db.rpc("update_schedule", {
     p_opens_at: range.opens_at,
@@ -312,8 +328,8 @@ export async function importGrades(input: unknown) {
   const db = await supabase();
   const { data: { user } } = await db.auth.getUser();
   if (!user) return { error: "กรุณาเข้าสู่ระบบใหม่" };
-  const { data: profile } = await db.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin")
+  const { data: role, error: roleError } = await db.rpc("my_role");
+  if (roleError || role !== "admin")
     return { error: "เฉพาะผู้ดูแลระบบเท่านั้นที่นำเข้าข้อมูลได้" };
   const { data, error } = await db.rpc("import_grades_overwrite", {
     p_rows: parsed.data,

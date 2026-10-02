@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { loginEmail, loginPassword } from "../src/lib/identity";
 import { loginSchema } from "../src/lib/auth-input";
 import { migrateStaffLogins } from "../src/lib/staff-login-migration";
+import { signInForRole } from "../src/lib/role-login";
 import { parseDelimited } from "../src/lib/import";
 import { z } from "zod";
 try {
@@ -101,36 +102,46 @@ async function main() {
     if (apply) throw new Error("Login verification does not use --apply.");
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const secret = process.env.LOGIN_HMAC_SECRET;
-    if (!url || !key || !secret || secret.length < 32)
+    if (!url || !key || !serviceKey || !secret || secret.length < 32)
       throw new Error(
-        "Missing Supabase URL, publishable key or LOGIN_HMAC_SECRET.",
+        "Missing Supabase URL, publishable/service role keys or LOGIN_HMAC_SECRET.",
       );
     const db = createClient(url, key, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
-    const { data, error } = await db.auth.signInWithPassword({
-      email: loginEmail(`admin:${rows[0].identifier}`, secret),
-      password: rows[0].password!,
+    const service = createClient(url, serviceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
     });
-    if (error) {
-      console.error(
-        `Admin Auth login failed (${error.code ?? "auth error"}, HTTP ${error.status}).`,
-      );
+    const result = await signInForRole({ role: "admin", identifier: rows[0].identifier, password: rows[0].password! }, {
+      async resolveStaff(emails, role) {
+        const { data, error } = await service.rpc("resolve_staff_login", { p_emails: emails, p_role: role });
+        if (error) throw new Error("Staff login lookup failed");
+        return data;
+      },
+      async signIn(email, password) {
+        const { data, error } = await db.auth.signInWithPassword({ email, password });
+        return error || !data.user || !data.session ? null : { userId: data.user.id, accessToken: data.session.access_token };
+      },
+      async activate(sessionId, userId, role) {
+        const { error } = await service.rpc("activate_login_role", { p_session_id: sessionId, p_user_id: userId, p_role: role });
+        if (error) throw new Error("Login role activation failed");
+      },
+      async signOut() { await db.auth.signOut({ scope: "local" }); },
+    }, secret);
+    if (result.error) {
+      console.error(result.error);
       process.exitCode = 1;
       return;
     }
-    const profile = await db
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user.id)
-      .single();
-    await db.auth.signOut();
-    if (profile.error || profile.data?.role !== "admin")
+    const active = await db.rpc("my_role");
+    await db.auth.signOut({ scope: "local" });
+    if (active.error || active.data !== "admin")
       throw new Error(
         "Auth login succeeded, but the Admin profile did not match.",
       );
-    console.log("Admin Auth login and profile role verified.");
+    console.log("Admin Auth login and selected role verified.");
     return;
   }
   if (!apply) {

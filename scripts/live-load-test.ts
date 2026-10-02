@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { loginEmail, loginPassword } from "../src/lib/identity";
+import { sessionIdFromAuthResponse } from "../src/lib/role-login";
 import { parseDelimited } from "../src/lib/import";
 import { syntheticSchool } from "../src/lib/synthetic-school";
 import { siteUrl } from "../src/lib/site";
@@ -87,6 +88,10 @@ async function login(a: Record<string, string>) {
   const db = createServerClient(url, anon, { cookies: { getAll: () => cookies, setAll: values => { for (const value of values) { const i = cookies.findIndex(c => c.name === value.name); if (i >= 0) cookies[i] = value; else cookies.push(value); } } }, auth: { autoRefreshToken: false } });
   const t = performance.now();
   const r = await db.auth.signInWithPassword({ email: loginEmail(accountKey(a as { role: string; identifier: string }), secret), password: loginPassword(a.role, a.role === "student" ? a.citizen_id : a.password, secret) }); check(r.error);
+  const activated = await admin.rpc("activate_login_role", {
+    p_session_id: sessionIdFromAuthResponse(r.data.session!.access_token, r.data.user!.id),
+    p_user_id: r.data.user!.id, p_role: a.role,
+  }); check(activated.error);
   return { db, cookies, role: a.role, name: a.full_name, userId: r.data.user!.id, loginMs: performance.now() - t };
 }
 async function grades() {

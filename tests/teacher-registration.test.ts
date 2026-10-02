@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createDecipheriv, createHmac } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { loginSchema, teacherRegistrationSchema } from "../src/lib/auth-input";
 import {
   identityPassword,
@@ -29,6 +30,49 @@ const teacher = {
   last_name: " ระบบ ",
   password: "abc123",
 };
+
+test("repair migration restores registration when encrypted identity column is missing without removing profiles", async () => {
+  const db = await loadTestDatabase();
+  const repair = readFileSync(
+    "supabase/migrations/030_restore_profile_citizen_id_encrypted.sql",
+    "utf8",
+  );
+  const existingId = "00000000-0000-4000-8000-000000000002";
+  const profile = {
+    name_prefix: "นาย",
+    first_name: "ทดสอบ",
+    last_name: "ระบบ",
+    citizen_id_encrypted: encryptStaffCitizenId("1000000000001", id, secret),
+  };
+  const register = () =>
+    db.query("select public.register_teacher_profile($1,$2::jsonb)", [
+      id,
+      JSON.stringify(profile),
+    ]);
+  try {
+    await db.query("insert into auth.users values($1),($2)", [id, existingId]);
+    await db.query(
+      "insert into profiles(id,role,full_name) values($1,'teacher','Existing teacher')",
+      [existingId],
+    );
+    await db.exec("alter table profiles drop column citizen_id_encrypted; set role service_role");
+    await assert.rejects(register, /citizen_id_encrypted/);
+    await db.exec("reset role");
+    await db.exec(repair);
+    await db.exec(repair);
+    await db.exec("set role service_role");
+    await register();
+    await db.exec("reset role");
+    assert.equal((await db.query("select * from profiles")).rows.length, 2);
+    assert.equal((await db.query("select * from audit_log where actor_id=$1", [id])).rows.length, 1);
+    await assert.rejects(
+      () => db.query("update profiles set citizen_id_encrypted='plaintext' where id=$1", [id]),
+      /check constraint/,
+    );
+  } finally {
+    await db.close();
+  }
+});
 
 test("staff login requires citizen ID and chosen password; student and manager logins remain compatible", () => {
   for (const role of ["teacher", "academic", "admin"] as const) {

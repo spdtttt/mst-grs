@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import AssignmentDetail from "@/components/assignment-detail";
 import { configured, supabase } from "@/lib/supabase";
 import type { AssignmentFile, GradeAssignment, GradeRecord, Profile } from "@/lib/domain";
-import { isRole } from "@/lib/domain";
+import { currentProfile } from "@/lib/current-profile";
 import { roleHomePath } from "@/lib/navigation";
 
 export const dynamic = "force-dynamic";
@@ -28,8 +28,8 @@ export default async function AssignmentPage({
   if (!user)
     redirect(`/?next=${encodeURIComponent(`/dashboard/assignments/${id}`)}`);
 
-  const { data: profile } = await db.from("profiles").select("id,role,full_name,student_code,classroom").eq("id", user.id).single();
-  if (!isRole(profile?.role)) redirect("/");
+  const profile = await currentProfile(db, user.id);
+  if (!profile) redirect("/");
   if (profile.role === "admin" || profile.role === "manager")
     redirect(roleHomePath(profile.role));
   const activeResult = await db.from("grade_records").select("*").eq("id", id).maybeSingle();

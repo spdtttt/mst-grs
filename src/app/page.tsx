@@ -53,12 +53,8 @@ export default async function Page({
     } = await db.auth.getUser();
 
     if (user) {
-      const { data: profile } = await db
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-      if (isRole(profile?.role)) redirect(roleReturnPath(profile.role, next));
+      const { data: role, error } = await db.rpc("my_role");
+      if (!error && isRole(role)) redirect(roleReturnPath(role, next));
     }
   }
 
