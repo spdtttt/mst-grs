@@ -40,7 +40,7 @@ export async function registerTeacher(
   );
   if (!parsed.success)
     return {
-      error: parsed.error.issues[0]?.message || "กรุณาตรวจสอบข้อมูลสมัครสมาชิก",
+      error: parsed.error.issues[0]?.message || "กรุณาตรวจสอบข้อมูลที่ใช้สร้างบัญชี",
     };
   try {
     const requestHeaders = await headers();
@@ -65,7 +65,7 @@ export async function registerTeacher(
       };
     }
     if (!limit.data)
-      return { error: "สมัครสมาชิกบ่อยเกินไป กรุณารอ 15 นาทีแล้วลองใหม่" };
+      return { error: "สร้างบัญชีบ่อยเกินไป กรุณารอ 15 นาทีแล้วลองใหม่" };
     return await provisionTeacher(
       parsed.data,
       {
@@ -78,7 +78,7 @@ export async function registerTeacher(
             throw new RegistrationError("ระบบสมัครสมาชิกยังไม่พร้อมให้บริการ กรุณาติดต่อผู้ดูแลระบบ");
           }
           if (existing.data)
-            throw new RegistrationError("มีบัญชีบุคลากรนี้อยู่แล้ว กรุณาเข้าสู่ระบบหรือติดต่อผู้ดูแลระบบเพื่อเพิ่มสิทธิ์ครู");
+            throw new RegistrationError("มีบัญชีบุคลากรนี้อยู่แล้ว กรุณาเข้าสู่ระบบหรือติดต่อผู้ดูแลระบบเพื่อรีเซ็ทรหัสผ่าน");
           const { data, error } = await service.auth.admin.createUser({
             email,
             password,

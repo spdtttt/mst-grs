@@ -24,16 +24,16 @@ type RoleFieldConfig = {
 
 const roleFieldConfig: Record<Role, RoleFieldConfig> = {
   student: {
-    identifierLabel: "รหัสประจำตัวนักเรียน",
-    identifierPlaceholder: "กรอกเลขประจำตัวนักเรียน",
-    identifierMaxLength: 20,
+    identifierLabel: "รหัสนักเรียน",
+    identifierPlaceholder: "กรอกรหัสนักเรียน 5 หลัก",
+    identifierMaxLength: 5,
     identifierInputMode: "numeric",
     showPassword: true,
-    passwordLabel: "เลขประจำตัวประชาชน",
+    passwordLabel: "เลขบัตรประชาชน",
     passwordPlaceholder: "กรอกเลขบัตรประชาชน 13 หลัก",
   },
   teacher: {
-    identifierLabel: "เลขประจำตัวประชาชน",
+    identifierLabel: "เลขบัตรประชาชน",
     identifierPlaceholder: "กรอกเลขบัตรประชาชน 13 หลัก",
     identifierMaxLength: 17,
     identifierInputMode: "numeric",
@@ -42,7 +42,7 @@ const roleFieldConfig: Record<Role, RoleFieldConfig> = {
     passwordPlaceholder: "กรอกรหัสผ่านที่ตั้งไว้",
   },
   academic: {
-    identifierLabel: "เลขประจำตัวประชาชน",
+    identifierLabel: "เลขบัตรประชาชน",
     identifierPlaceholder: "กรอกเลขบัตรประชาชน 13 หลัก",
     identifierMaxLength: 17,
     identifierInputMode: "numeric",
@@ -60,7 +60,7 @@ const roleFieldConfig: Record<Role, RoleFieldConfig> = {
     passwordPlaceholder: "กรอกรหัสผ่านสำหรับผู้บริหาร",
   },
   admin: {
-    identifierLabel: "เลขประจำตัวประชาชน",
+    identifierLabel: "เลขบัตรประชาชน",
     identifierPlaceholder: "กรอกเลขบัตรประชาชน 13 หลัก",
     identifierMaxLength: 17,
     identifierInputMode: "numeric",
@@ -141,7 +141,7 @@ export default function Login({
             )}
             <fieldset className="mb-6 flex flex-col gap-0 text-[#46464E]">
               <p className="mb-1.5">โปรดเลือกสถานะผู้ใช้งาน</p>
-              <div className="flex flex-col gap-2 ml-2">
+              <div className="ml-2 flex flex-col sm:grid sm:grid-flow-col sm:grid-rows-3 gap-y-2">
                 {(Object.keys(roles) as Role[]).map((value) => {
                   const selected = role === value;
                   return (
@@ -190,7 +190,7 @@ export default function Login({
                     inputMode={cfg.identifierInputMode}
                     maxLength={cfg.identifierMaxLength}
                     placeholder={cfg.identifierPlaceholder}
-                    className="max-w-full border px-[13px] outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115] w-full border-[#46464E] py-2.5 pr-10 pl-10 text-[#2F3038]"
+                    className="max-w-full border px-[13px] outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115] bg-white  w-full border-[#46464E] py-2.5 pr-10 pl-10 text-[#2F3038]"
                     type={
                       citizenIdentifier && !identityVisible
                         ? "password"
@@ -242,7 +242,7 @@ export default function Login({
                       minLength={role === "student" ? 13 : 6}
                       inputMode={role === "student" ? "numeric" : "text"}
                       placeholder={cfg.passwordPlaceholder}
-                      className="max-w-full border px-[13px] outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115] w-full border-[#46464E] py-2.5 pr-10 pl-10 text-[#2F3038]"
+                      className="max-w-full border px-[13px] bg-white outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115] w-full border-[#46464E] py-2.5 pr-10 pl-10 text-[#2F3038]"
                     />
                     <button
                       type="button"
@@ -260,7 +260,7 @@ export default function Login({
             <button
               type="submit"
               disabled={pending}
-              className="cursor-pointer enabled:active:translate-y-px disabled:cursor-not-allowed focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 mt-6 w-full bg-[#6D5E00] py-3 text-center font-medium text-white transition-colors duration-300 enabled:hover:bg-[#7D6E00] disabled:opacity-50"
+              className="cursor-pointer enabled:active:translate-y-px disabled:cursor-not-allowed focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 mt-6 w-full bg-[#6D5E00] py-3 text-center font-medium text-white transition-colors duration-150 enabled:hover:bg-[#7D6E00] disabled:opacity-50"
             >
               {pending ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
             </button>

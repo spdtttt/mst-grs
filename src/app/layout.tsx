@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="th" className="scheme-light">
-      <body className="m-0 bg-canvas font-sans text-sm leading-[1.7] text-ink [-webkit-tap-highlight-color:transparent] motion-reduce:[&_*]:animate-none motion-reduce:[&_*]:scroll-auto motion-reduce:[&_*]:transition-none">
+      <body className="m-0 bg-canvas font-sans text-sm leading-[1.7] text-ink [-webkit-tap-highlight-color:transparent] motion-reduce:[&_*]:scroll-auto">
         {children}
       </body>
     </html>

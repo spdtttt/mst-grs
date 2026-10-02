@@ -25,7 +25,7 @@ const emptyValues = {
   password: "",
 };
 const inputClass =
-  "mt-2 w-full rounded-xl border border-line bg-white px-3 py-3 text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/15";
+  "mt-2 w-full border border-gray-400 bg-white px-3 py-3 text-ink outline-none focus:border-brand focus:ring-brand/15";
 
 export default function RegisterTeacher() {
   const [state, action, pending] = useActionState(registerTeacher, {
@@ -62,7 +62,7 @@ export default function RegisterTeacher() {
           {state.success ? (
             <div className="py-5 text-center" role="status">
               <CheckCircle2 size={44} className="mx-auto mb-4 text-green-600" />
-              <h1 className="text-xl font-semibold">สมัครสมาชิกสำเร็จ</h1>
+              <h1 className="text-xl font-semibold">สร้างบัญชีสำเร็จ</h1>
               <p className="mt-3 text-sm leading-7 text-secondary">
                 เข้าสู่ระบบในบทบาทคุณครู ด้วยเลขบัตรประชาชนและรหัสผ่านที่ตั้งไว้
               </p>
@@ -70,14 +70,14 @@ export default function RegisterTeacher() {
                 href="/?role=teacher"
                 className="mt-6 inline-flex w-full justify-center rounded-xl bg-brand px-5 py-3 font-medium text-white"
               >
-                เข้าสู่ระบบสำหรับครู
+                เข้าสู่ระบบ
               </a>
             </div>
           ) : (
             <>
               <div className="mb-6">
                 <UserPlus size={28} className="mb-3 text-brand" />
-                <h1 className="text-2xl font-semibold">สมัครสมาชิกครู</h1>
+                <h1 className="text-2xl font-semibold">สร้างบัญชีคุณครู</h1>
                 <p className="mt-2 text-sm leading-6 text-secondary">
                   กรอกข้อมูลเพื่อสร้างบัญชีสำหรับคุณครู
                 </p>
@@ -99,7 +99,7 @@ export default function RegisterTeacher() {
                     className="block text-sm font-medium"
                     htmlFor="register-citizen"
                   >
-                    เลขประจำตัวประชาชน
+                    เลขบัตรประชาชน
                     <input
                       id="register-citizen"
                       name="citizen_id"
@@ -121,7 +121,7 @@ export default function RegisterTeacher() {
                       className="block text-sm font-medium"
                       htmlFor="register-prefix"
                     >
-                      คำนำหน้า
+                      คำนำหน้าชื่อ
                     </label>
                     <Select
                       inputId="register-prefix"
@@ -148,13 +148,10 @@ export default function RegisterTeacher() {
                         control: (base, state) => ({
                           ...base,
                           minHeight: 46,
-                          borderRadius: 12,
+                          borderRadius: 0,
                           borderColor: state.isFocused
                             ? "var(--color-brand)"
-                            : "var(--color-line)",
-                          boxShadow: state.isFocused
-                            ? "0 0 0 2px rgb(125 30 138 / 15%)"
-                            : "none",
+                            : "var(--color-gray-400)",
                           "&:hover": { borderColor: "var(--color-brand)" },
                         }),
                       }}
@@ -236,7 +233,7 @@ export default function RegisterTeacher() {
                         aria-label={visible ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
                         aria-pressed={visible}
                         onClick={() => setVisible(!visible)}
-                        className="absolute right-3 top-1/2 -translate-y-1/3 rounded p-1 text-secondary focus-visible:ring-2 focus-visible:ring-brand"
+                        className="absolute right-3 cursor-pointer top-1/2 -translate-y-1/3 rounded p-1 text-secondary focus-visible:ring-2 focus-visible:ring-brand"
                       >
                         {visible ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
@@ -250,11 +247,11 @@ export default function RegisterTeacher() {
                   </div>
                   <button
                     type="submit"
-                    className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 font-medium text-white transition hover:bg-brand/90 disabled:cursor-wait"
+                    className="mt-2 cursor-pointer duration-150 transition-colors inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 font-medium text-white hover:bg-brand/90 disabled:cursor-wait"
                     disabled={pending}
                   >
                     {pending && <Loader2 size={18} className="animate-spin" />}
-                    {pending ? "กำลังสร้างบัญชี..." : "บันทึกและสมัครสมาชิก"}
+                    {pending ? "กำลังสร้างบัญชี..." : "บันทึกและสร้างบัญชี"}
                   </button>
                 </fieldset>
               </form>
