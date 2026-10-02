@@ -14,7 +14,7 @@ export async function managerProfile(): Promise<Profile> {
   if (!user) redirect("/");
   const { data: profile, error } = await db
     .from("profiles")
-    .select("*")
+    .select("id,role,full_name,student_code,classroom")
     .eq("id", user.id)
     .single();
   if (error || !isRole(profile?.role)) redirect("/");

@@ -2,7 +2,7 @@ import type { Worksheet } from "exceljs";
 import { columns } from "./import";
 
 /** Reads cached values only. Formulas are never evaluated or executed. */
-export function worksheetRows(sheet: Worksheet): unknown[][] {
+export function worksheetRows(sheet: Worksheet, requiredColumns: readonly string[] = Object.keys(columns)): unknown[][] {
   if (sheet.rowCount > 2001 || sheet.columnCount > 100)
     throw new Error("รองรับไม่เกิน 2,000 แถว และ 100 คอลัมน์");
   const table: unknown[][] = [];
@@ -10,7 +10,7 @@ export function worksheetRows(sheet: Worksheet): unknown[][] {
     const cells: unknown[] = [];
     for (let c = 1; c <= sheet.columnCount; c++) {
       const header = sheet.getRow(1).getCell(c).text.trim();
-      if (rowNumber > 1 && !(header in columns)) {
+      if (rowNumber > 1 && !requiredColumns.includes(header)) {
         cells.push("");
         continue;
       }

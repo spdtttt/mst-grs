@@ -13,6 +13,7 @@
   color: var(--color-surface);
   border: 0;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 .sidebar > a,
 .sidebar > div a {

@@ -170,7 +170,10 @@ async function probe() {
     const stats = await manager.db.rpc("manager_dashboard_stats"); check(stats.error);
     const row = { ...dataset.imports[0], course_code: probeCourse, course_name: "วิชาจำลองทดสอบครบวงจร" };
     const imported = await operator.db.rpc("import_grades", { p_rows: [row] }); check(imported.error);
+    const duplicate = await operator.db.rpc("import_grades", { p_rows: [row] }); check(duplicate.error);
+    assert.deepEqual(duplicate.data, { inserted: 0, updated: 1, skipped: 0 });
     const selected = await academic.db.from("grade_records").select("id,status").eq("course_code", probeCourse).eq("student_code", row.student_code).single(); check(selected.error);
+    assert.equal(selected.data!.status, "pending");
     const steps = ["pending", "requested", "assigned", "submitted", "teacher_approved"];
     let index = steps.indexOf(selected.data!.status);
     const timings: { from: string; ms: number }[] = [];
@@ -183,7 +186,6 @@ async function probe() {
     const final = await student.db.from("grade_records").select("status,final_grade").eq("id", selected.data!.id).single(); check(final.error);
     assert.deepEqual(final.data, { status: "completed", final_grade: "1" });
     const history = await student.db.from("grade_record_history").select("id").eq("id", selected.data!.id); check(history.error); assert.equal(history.data!.length, 0);
-    const duplicate = await operator.db.rpc("import_grades", { p_rows: [row] }); check(duplicate.error); assert.deepEqual(duplicate.data, { inserted: 0, skipped: 1 });
     const result = { at: new Date().toISOString(), passed: true, course: probeCourse, own_student_records: own.data!.length, teacher_records: teaching.data!.length, workflow: timings, final: final.data, duplicate_import: duplicate.data, note: "Test course completed; live schedule and original data unchanged" };
     writeFileSync(resolve(dir, "live-probe.json"), JSON.stringify(result, null, 2)); console.log(JSON.stringify(result));
   } catch (e) {

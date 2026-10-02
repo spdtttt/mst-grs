@@ -2,6 +2,7 @@
 import { twMerge } from "tailwind-merge";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import {
   GraduationCap,
   LayoutDashboard,
@@ -29,6 +30,7 @@ import {
   Info,
   FileSpreadsheet,
   ClipboardList,
+  UsersRound,
 } from "lucide-react";
 import LogoutOverlay from "@/components/logout-overlay";
 import { advance, correctFinalGrade, saveSchedule, signOut, importGrades } from "@/app/actions";
@@ -65,7 +67,17 @@ import {
 import Image from "next/image";
 import { bangkokDate, normalizeSchedule, scheduleClosingDate, scheduleClosingDisplay, scheduleDates } from "@/lib/schedule-dates";
 
-type View = "overview" | "outstanding" | "history" | "export" | "import" | "schedule";
+// Student data and import dialogs are loaded on the client. Keep the first
+// server response independent of this interactive component's browser bundle.
+const AdminStudents = dynamic(() => import("./admin-students"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-xl border border-line bg-white p-6 text-sm text-secondary" role="status">
+      กำลังโหลดรายชื่อนักเรียน...
+    </div>
+  ),
+});
+type View = "overview" | "outstanding" | "history" | "export" | "import" | "schedule" | "students";
 const emptyHistory: ArchivedGradeRecord[] = [];
 const emptyCorrections: GradeCorrection[] = [];
 const validFinalGrades = ["0", "ร", "มผ", "1", "1.5", "2", "2.5", "3", "3.5", "4", "ผ"];
@@ -76,6 +88,7 @@ const navTitles: Record<View, string> = {
   export: "ส่งออกรายการผลการเรียน",
   import: "นำเข้าข้อมูล",
   schedule: "ตั้งค่าเวลาเปิด–ปิดระบบ",
+  students: "รายชื่อนักเรียน",
 };
 function localBangkok(value: string | null) {
   if (!value) return "";
@@ -112,7 +125,7 @@ export default function Workspace({
   schedule: Schedule;
   historyRecords?: ArchivedGradeRecord[];
   gradeCorrections?: GradeCorrection[];
-  initialView?: "overview" | "history" | "import";
+  initialView?: "overview" | "history" | "import" | "students";
   demo?: boolean;
 }) {
   const router = useRouter();
@@ -229,7 +242,7 @@ export default function Workspace({
       : role === "teacher"
         ? ["overview", "history", "export"]
         : role === "admin"
-          ? ["import", "schedule"]
+          ? ["students", "import", "schedule"]
           : ["overview", "outstanding", "history", "export"];
   const filtered = useMemo(
     () => {
@@ -528,7 +541,7 @@ export default function Workspace({
         return;
       }
       setToast(
-        `นำเข้าสำเร็จ ${result.inserted} รายการ ข้ามรายการเดิม ${result.skipped} รายการ`,
+        `เพิ่มใหม่ ${result.inserted} รายการ เขียนทับและเริ่มใหม่ ${result.updated} รายการ${result.skipped ? ` ข้ามรายการในประวัติ ${result.skipped} รายการ` : ""}`,
       );
       setPreview([]);
       setFileName("");
@@ -627,7 +640,9 @@ export default function Workspace({
         <nav aria-label="เมนูหลัก">
           {available.map((v) => {
             const Icon =
-              v === "overview"
+              v === "students"
+                ? UsersRound
+                : v === "overview"
                 ? LayoutDashboard
                 : v === "outstanding"
                   ? ClipboardList
@@ -770,7 +785,7 @@ export default function Workspace({
                   : navTitles[view]}
               </h1>
             </div>
-            {view !== "schedule" && view !== "import" && (
+            {view !== "schedule" && view !== "import" && view !== "students" && (
               <div className="flex w-full flex-wrap items-center gap-3 desk:w-auto">
                 <div className="relative flex min-w-[174px] flex-1 items-center gap-2 rounded-lg border border-[#e5e0ec] bg-white px-[11px] py-2 text-gray-600 focus-within:outline-1 focus-within:outline-gray-500 desk:flex-none">
                   <CalendarDays className="shrink-0" size={17} />
@@ -844,7 +859,8 @@ export default function Workspace({
                   <button className="mt-2 text-brand underline" onClick={() => { setNow(Date.now()); if (!demo) router.refresh(); }}>รีเฟรชประวัติ</button>
                 </div>
               )}
-              {view !== "schedule" && view !== "import" && view !== "history" && (
+              {role === "admin" && view === "students" && <AdminStudents demo={demo} />}
+              {view !== "schedule" && view !== "import" && view !== "history" && view !== "students" && (
                 <>
                   <section className={styles.hero}>
                     <div>
@@ -1351,7 +1367,13 @@ export default function Workspace({
                           ต้องมีบัญชีนักเรียนและครูในระบบก่อนนำเข้า
                           ชื่อครูทุกคนต้องตรงกับบัญชีและไม่ซ้ำ หากมีหลายคนให้ใช้รูปแบบ
                           1.ชื่อครูคนแรก, 2.ชื่อครูคนที่สอง รองรับผลการเรียน 0, ร,
-                          มส, มผ รายการเดิมจะถูกข้ามโดยไม่เปลี่ยนสถานะ
+                          มส, มผ
+                        </p>
+                        <p>
+                          เมื่อเลขนักเรียน รหัสวิชา ปีการศึกษา และภาคเรียนตรงกัน
+                          จะเขียนทับรายการปัจจุบัน กลับเป็น Pending และล้างคำร้อง
+                          งาน ไฟล์แนบ และผลการเรียนใหม่จากรอบปัจจุบัน
+                          โดยเก็บข้อมูลเดิมไว้ย้อนหลัง รายการในหน้าประวัติจะถูกข้าม
                         </p>
                       </div>
                     </div>

@@ -331,7 +331,7 @@ export async function importGrades(input: unknown) {
   const { data: profile } = await db.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "admin")
     return { error: "เฉพาะผู้ดูแลระบบเท่านั้นที่นำเข้าข้อมูลได้" };
-  const { data, error } = await db.rpc("import_grades", {
+  const { data, error } = await db.rpc("import_grades_overwrite", {
     p_rows: parsed.data,
   });
   if (error) return { error: error.message };
@@ -340,6 +340,7 @@ export async function importGrades(input: unknown) {
   return {
     success: true,
     inserted: data.inserted as number,
+    updated: data.updated as number,
     skipped: data.skipped as number,
   };
 }

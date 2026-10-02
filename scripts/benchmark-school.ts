@@ -28,12 +28,12 @@ async function main() {
     await as(dataset.actors.admin.id);
     await db.query("select update_schedule(now()-interval '1 day',now()+interval '1 day','synthetic local benchmark')");
     await time("import_1200", async () => {
-      const r = await db.query<{ result: { inserted: number; skipped: number } }>("select import_grades($1::jsonb) result", [JSON.stringify(dataset.imports)]);
-      assert.deepEqual(r.rows[0].result, { inserted: 1200, skipped: 0 });
+      const r = await db.query<{ result: { inserted: number; updated: number; skipped: number } }>("select import_grades($1::jsonb) result", [JSON.stringify(dataset.imports)]);
+      assert.deepEqual(r.rows[0].result, { inserted: 1200, updated: 0, skipped: 0 });
     });
-    await time("duplicate_import_1200", async () => {
-      const r = await db.query<{ result: { inserted: number; skipped: number } }>("select import_grades($1::jsonb) result", [JSON.stringify(dataset.imports)]);
-      assert.deepEqual(r.rows[0].result, { inserted: 0, skipped: 1200 });
+    await time("overwrite_import_1200", async () => {
+      const r = await db.query<{ result: { inserted: number; updated: number; skipped: number } }>("select import_grades($1::jsonb) result", [JSON.stringify(dataset.imports)]);
+      assert.deepEqual(r.rows[0].result, { inserted: 0, updated: 1200, skipped: 0 });
     });
     await db.exec("reset role");
     await db.query(`update grade_records g set status=(r->>'status')::public.grade_status,

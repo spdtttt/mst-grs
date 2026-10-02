@@ -16,7 +16,7 @@ export default async function Dashboard({ searchParams }: {
   if (!user) redirect("/");
   const { data: profile, error: pe } = await db
     .from("profiles")
-    .select("*")
+    .select("id,role,full_name,student_code,classroom")
     .eq("id", user.id)
     .single();
   if (!isRole(profile?.role)) redirect("/");

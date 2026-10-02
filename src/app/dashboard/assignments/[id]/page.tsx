@@ -28,7 +28,7 @@ export default async function AssignmentPage({
   if (!user)
     redirect(`/?next=${encodeURIComponent(`/dashboard/assignments/${id}`)}`);
 
-  const { data: profile } = await db.from("profiles").select("*").eq("id", user.id).single();
+  const { data: profile } = await db.from("profiles").select("id,role,full_name,student_code,classroom").eq("id", user.id).single();
   if (!isRole(profile?.role)) redirect("/");
   if (profile.role === "admin" || profile.role === "manager")
     redirect(roleHomePath(profile.role));

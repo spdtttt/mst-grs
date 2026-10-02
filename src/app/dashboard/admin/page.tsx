@@ -6,13 +6,14 @@ import { configured, supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
+  const initialView = (await searchParams).view === "import" ? "import" : "students";
   if (!configured()) redirect("/");
   const db = await supabase();
   const { data: { user } } = await db.auth.getUser();
   if (!user) redirect("/");
   const { data: profile, error: profileError } = await db.from("profiles")
-    .select("*").eq("id", user.id).single();
+    .select("id,role,full_name,student_code,classroom").eq("id", user.id).single();
   if (profileError || !isRole(profile?.role)) redirect("/");
   if (profile.role !== "admin") redirect(roleHomePath(profile.role));
   const { data: schedule, error: scheduleError } = await db.from("site_schedule")
@@ -23,6 +24,6 @@ export default async function AdminPage() {
     profile={profile as Profile}
     records={[]}
     schedule={schedule as Schedule}
-    initialView="import"
+    initialView={initialView}
   />;
 }
