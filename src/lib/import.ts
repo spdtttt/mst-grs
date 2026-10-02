@@ -20,6 +20,15 @@ function parseTeacherNames(value: unknown) {
     .map((name) => name.trim().replace(/^\d+\s*[.)]\s*/, "").trim());
 }
 
+function expandStudentNamePrefix(name: string) {
+  // Student profiles join the full prefix directly to the first name.
+  // Anchor replacements so abbreviations elsewhere in a name stay untouched.
+  return name
+    .replace(/^น\s*\.\s*ส\s*\.\s*/, "นางสาว")
+    .replace(/^ด\s*\.\s*ช\s*\.\s*/, "เด็กชาย")
+    .replace(/^ด\s*\.\s*ญ\s*\.\s*/, "เด็กหญิง");
+}
+
 export const importSchema = z.object({
   course_code: z.string().trim().min(1).max(40),
   course_name: z.string().trim().min(1).max(200),
@@ -43,7 +52,9 @@ export const importSchema = z.object({
     .string()
     .trim()
     .regex(/^\d{1,20}$/),
-  student_name: z.string().trim().min(1).max(150),
+  student_name: z.string().trim()
+    .transform(expandStudentNamePrefix)
+    .pipe(z.string().min(1).max(150)),
   roll_number: z.coerce.number().int().min(1).max(999),
   academic_year: z.coerce.number().int().min(2500).max(2700),
   semester: z.coerce.number().int().min(1).max(3),

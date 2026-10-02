@@ -125,7 +125,7 @@ export default function Workspace({
   schedule,
   historyRecords = emptyHistory,
   gradeCorrections = emptyCorrections,
-  initialView = "overview",
+  initialView = profile.role === "admin" ? "students" : "overview",
   demo = false,
 }: {
   profile: Profile;
@@ -310,7 +310,7 @@ export default function Workspace({
   }
   function switchRole(r: Role) {
     setActor(demoProfiles[r]);
-    setView(r === "admin" ? "import" : "overview");
+    setView(r === "admin" ? "students" : "overview");
     setFilter("all");
     setYear("all");
     setSemester("all");
@@ -862,9 +862,7 @@ export default function Workspace({
             <>
               {view === "history" && (
                 <div className="mb-5 rounded-xl border border-line bg-white p-4 text-sm text-secondary">
-                  <p>ประวัติการแก้ไขที่เก็บเมื่อถึงเวลาปิดระบบ · เปิดอ่านได้ตลอดเวลา</p>
-                  <p className="mt-1">{role === "student" ? "แสดงเฉพาะรายการของคุณ" : role === "teacher" ? "แสดงเฉพาะรายวิชาที่คุณเป็นครูผู้สอน" : "แสดงประวัติของนักเรียนทั้งหมด"} · รายการที่เพิ่งแก้สำเร็จจะเข้าประวัติเมื่อปิดรอบถัดไป</p>
-                  <button className="mt-2 text-brand underline" onClick={() => { setNow(Date.now()); if (!demo) router.refresh(); }}>รีเฟรชประวัติ</button>
+                  <p>ประวัติการแก้ไขจะเก็บเมื่อถึงเวลาปิดระบบ · เปิดอ่านได้ตลอดเวลา</p>
                 </div>
               )}
               {role === "admin" && view === "students" && <AdminStudents demo={demo} />}
@@ -984,7 +982,7 @@ export default function Workspace({
                             : "ตรวจสอบรายละเอียดและดำเนินการตามสถานะของแต่ละรายวิชา"}
                       </p>
                     </div>
-                    {(view === "export" || view === "history") && (
+                    {(view === "export" || view === "history" && role !== "student") && (
                       <button
                         className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border border-transparent px-[18px] py-[11px] font-[550] whitespace-nowrap bg-brand text-white shadow-[0_3px_6px_#713cd112] enabled:hover:bg-[#602cbc] enabled:hover:shadow-[0_3px_12px_#713cd126]"
                         onClick={exportData}

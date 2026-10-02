@@ -433,22 +433,6 @@
   border-color: var(--color-line);
   box-shadow: var(--shadow-card);
 }
-.pieLayout {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  margin-top: 24px;
-}
-@media (min-width: 1280px) {
-  .managerDashboard {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  }
-  .managerDashboard > div:first-child,
-  .managerDashboard > section:last-child {
-    grid-column: 1 / -1;
-  }
-}
 .login {
   min-height: 100vh;
   background: var(--color-canvas);

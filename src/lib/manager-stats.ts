@@ -49,6 +49,18 @@ export type ManagerStudentCourse = Pick<
 
 export const managerStudentPageSize = 20;
 
+export const remainingRecordGroups = [
+  { key: "one", label: "เหลือ 1 รายการ" },
+  { key: "two_to_three", label: "เหลือ 2–3 รายการ" },
+  { key: "four_to_five", label: "เหลือ 4–5 รายการ" },
+  { key: "more_than_five", label: "เหลือมากกว่า 5 รายการ" },
+] as const;
+
+export type RemainingRecordDistribution = Record<
+  (typeof remainingRecordGroups)[number]["key"],
+  number
+>;
+
 export type ManagerStats = {
   total_records: number;
   incomplete_records: number;
@@ -57,6 +69,7 @@ export type ManagerStats = {
   total_students: number;
   completed_students?: number;
   incomplete_students?: number;
+  students_by_remaining_records?: RemainingRecordDistribution;
   unclassified_students: number;
   by_level: {
     level: number;
@@ -150,7 +163,7 @@ export function summarizeManagerStats(records: GradeRecord[]): ManagerStats {
   };
   const students = new Map<
     string,
-    { latest: GradeRecord; allCompleted: boolean }
+    { latest: GradeRecord; incomplete: number }
   >();
   for (const record of records) {
     if (record.status !== "completed") outstandingByStatus[record.status]++;
@@ -158,11 +171,11 @@ export function summarizeManagerStats(records: GradeRecord[]): ManagerStats {
     if (!existing) {
       students.set(record.student_id, {
         latest: record,
-        allCompleted: record.status === "completed",
+        incomplete: record.status === "completed" ? 0 : 1,
       });
       continue;
     }
-    existing.allCompleted &&= record.status === "completed";
+    if (record.status !== "completed") existing.incomplete++;
     if (laterRecord(record, existing.latest) > 0) existing.latest = record;
   }
 
@@ -173,8 +186,18 @@ export function summarizeManagerStats(records: GradeRecord[]): ManagerStats {
   }));
   let unclassifiedStudents = 0;
   let completedStudents = 0;
+  const studentsByRemainingRecords: RemainingRecordDistribution = {
+    one: 0,
+    two_to_three: 0,
+    four_to_five: 0,
+    more_than_five: 0,
+  };
   for (const student of students.values()) {
-    if (student.allCompleted) completedStudents++;
+    if (student.incomplete === 0) completedStudents++;
+    else if (student.incomplete === 1) studentsByRemainingRecords.one++;
+    else if (student.incomplete <= 3) studentsByRemainingRecords.two_to_three++;
+    else if (student.incomplete <= 5) studentsByRemainingRecords.four_to_five++;
+    else studentsByRemainingRecords.more_than_five++;
     const level = Number(
       student.latest.classroom.match(/ม[.]\s*([1-6])(?:\s*\/|$)/)?.[1],
     );
@@ -183,7 +206,7 @@ export function summarizeManagerStats(records: GradeRecord[]): ManagerStats {
       continue;
     }
     const row = byLevel[level - 1];
-    if (student.allCompleted) row.completed_students++;
+    if (student.incomplete === 0) row.completed_students++;
     else row.incomplete_students++;
   }
 
@@ -198,6 +221,7 @@ export function summarizeManagerStats(records: GradeRecord[]): ManagerStats {
     total_students: students.size,
     completed_students: completedStudents,
     incomplete_students: students.size - completedStudents,
+    students_by_remaining_records: studentsByRemainingRecords,
     unclassified_students: unclassifiedStudents,
     by_level: byLevel,
   };

@@ -162,7 +162,7 @@ export default function AdminAcademics({
         aria-label="เพิ่มฝ่ายวิชาการ"
         className="rounded-xl border border-line bg-white p-5 max-desk:p-4"
       >
-        <h2 className="flex items-center gap-2 text-base font-semibold">
+        <h2 className="flex items-center gap-2 text-lg font-semibold">
           <UserPlus size={20} className="text-brand" />
           เพิ่มฝ่ายวิชาการ
         </h2>
@@ -198,38 +198,46 @@ export default function AdminAcademics({
                   เลือกบัญชีคุณครูเพื่อเพิ่มสิทธิ์ฝ่ายวิชาการ โดยคงชื่อ รหัสผ่าน
                   และสิทธิ์เดิมไว้
                 </p>
-                <label className="block text-sm">
-                  ค้นหาครูเพื่อเพิ่มสิทธิ์
-                  <input
-                    className={inputClass}
-                    value={search}
-                    maxLength={150}
-                    placeholder="พิมพ์ชื่อหรือนามสกุล"
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      setPage(1);
-                      setLoading(true);
-                    }}
-                  />
-                </label>
                 <label className="block text-sm" htmlFor="academic-teacher">
                   บัญชีคุณครู
                 </label>
                 <Select<TeacherRow>
                   inputId="academic-teacher"
                   instanceId="academic-teacher"
-                  options={teachers.items}
+                  options={loading ? [] : teachers.items}
                   value={selected}
+                  inputValue={search}
+                  onInputChange={(value, meta) => {
+                    if (meta.action !== "input-change") return;
+                    const query = value.slice(0, 150);
+                    if (query === search) return;
+                    setSearch(query);
+                    setPage(1);
+                    setLoading(true);
+                  }}
+                  filterOption={null}
                   getOptionValue={(row) => row.id}
                   getOptionLabel={(row) =>
                     `${row.full_name} (${row.id.slice(-8)})`
                   }
-                  onChange={setSelected}
-                  isDisabled={busy || loading || !!lookupError}
+                  onChange={(teacher) => {
+                    setSelected(teacher);
+                    if (search || page !== 1) {
+                      setSearch("");
+                      setPage(1);
+                      setLoading(true);
+                    }
+                  }}
+                  isDisabled={busy}
                   isLoading={loading}
-                  isSearchable={false}
-                  placeholder="เลือกบัญชีคุณครู"
-                  noOptionsMessage={() => "ไม่พบคุณครูตามคำค้นหา"}
+                  isSearchable
+                  placeholder="พิมพ์ชื่อหรือนามสกุลเพื่อค้นหาคุณครู"
+                  loadingMessage={() => "กำลังค้นหาคุณครู..."}
+                  noOptionsMessage={() =>
+                    lookupError
+                      ? "ไม่สามารถโหลดรายชื่อคุณครูได้"
+                      : "ไม่พบคุณครูตามคำค้นหา"
+                  }
                 />
                 {selected && (
                   <p className="text-sm text-brand">
@@ -248,7 +256,7 @@ export default function AdminAcademics({
                     </button>
                   </p>
                 )}
-                <div className="flex flex-wrap items-center gap-3 text-xs text-secondary">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-secondary">
                   <span>
                     {loading
                       ? "กำลังโหลดครู..."
@@ -378,7 +386,7 @@ export default function AdminAcademics({
             <button
               type="submit"
               disabled={busy || (mode === "existing" && !selected)}
-              className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+              className="inline-flex cursor-pointer hover:bg-brand/90 duration-150 items-center gap-2 rounded-lg bg-brand px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
             >
               {busy && <Loader2 size={16} className="animate-spin" />}
               {busy ? "กำลังบันทึก..." : "บันทึกฝ่ายวิชาการ"}

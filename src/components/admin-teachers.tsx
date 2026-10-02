@@ -21,7 +21,7 @@ const demoTeachers = [
   { id: "demo-teacher-3", full_name: "นางกมลพร รักเรียน" },
 ];
 const buttonStyle =
-  "rounded-lg border border-line px-4 py-2.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50";
+  "rounded-lg border border-line cursor-pointer px-4 py-2.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50";
 
 export default function AdminTeachers({
   demo = false,
@@ -158,12 +158,12 @@ export default function AdminTeachers({
         onClose={() => {
           if (!resetting.current) setSelected(null);
         }}
-        className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-line bg-white p-6 text-ink shadow-xl backdrop:bg-black/40"
+        className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md border border-line bg-white p-6 text-ink shadow-xl backdrop:bg-black/40"
       >
-        <h2 id="teacher-reset-title" className="text-lg font-semibold">
+        <h2 id="teacher-reset-title" className="text-xl font-semibold">
           ยืนยันรีเซ็ทรหัสผ่าน
         </h2>
-        <p className="mt-3 break-words font-medium">{selected?.full_name}</p>
+        <p className="mt-3 text-lg break-words font-medium">{selected?.full_name}</p>
         <p className="mt-3 text-sm leading-7 text-secondary">
           การรีเซ็ตนี้จะลบข้อมูล{staffLabel}และบัญชีเข้าสู่ระบบ
           พร้อมสิทธิ์ทุกบทบาทของบัญชีนี้
@@ -194,7 +194,7 @@ export default function AdminTeachers({
             type="button"
             disabled={busy}
             onClick={reset}
-            className="inline-flex items-center gap-2 rounded-lg bg-red-700 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-lg duration-150 bg-red-700 hover:bg-red-600 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
           >
             {busy && <Loader2 size={16} className="animate-spin" />}
             {busy ? "กำลังลบบัญชี..." : "ยืนยันลบบัญชี"}
@@ -203,8 +203,8 @@ export default function AdminTeachers({
       </dialog>
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line p-5 max-desk:p-4">
         <div>
-          <h2 className="text-base font-semibold">รายชื่อ{staffLabel}</h2>
-          <p className="mt-1 text-xs text-secondary">
+          <h2 className="text-lg font-semibold">รายชื่อ{staffLabel}</h2>
+          <p className="mt-1 text-sm text-secondary">
             {loading
               ? "กำลังโหลด..."
               : `ทั้งหมด ${data.total.toLocaleString("th-TH")} คน`}
@@ -249,7 +249,7 @@ export default function AdminTeachers({
       ) : (
         <div className="overflow-x-auto" aria-busy={loading}>
           <table className="w-full text-left text-sm">
-            <thead className="bg-[#f8f6fc] text-xs text-secondary">
+            <thead className="bg-[#f8f6fc] text-sm text-secondary">
               <tr>
                 {["ชื่อ-สกุล", "ดำเนินการ"].map((heading) => (
                   <th
@@ -288,7 +288,7 @@ export default function AdminTeachers({
                             ? "ไม่สามารถลบบัญชีที่กำลังใช้งานอยู่ได้"
                             : undefined
                         }
-                        className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-brand/25 px-3 py-2 text-xs font-medium text-brand hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border duration-150 cursor-pointer border-brand/25 px-3 py-2 text-xs font-medium text-brand hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
                         onClick={() => {
                           setResetError("");
                           setSelected(teacher);
@@ -313,7 +313,7 @@ export default function AdminTeachers({
           </table>
         </div>
       )}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line p-4 text-xs text-secondary">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line p-4 text-sm text-secondary">
         <span>
           หน้า {page} / {pages}
         </span>

@@ -19,13 +19,13 @@ import {
   Loader2,
   LogOut,
   Menu,
-  PieChart as PieChartIcon,
   RefreshCw,
   Search,
   X,
 } from "lucide-react";
 import styles from "./dashboard.module.css";
 import LogoutOverlay from "@/components/logout-overlay";
+import ManagerCompletionSummary from "@/components/manager-completion-summary";
 import { signOut } from "@/app/actions";
 import { loadManagerStudentCourses, loadManagerStudents } from "@/app/manager-actions";
 import {
@@ -56,21 +56,6 @@ const BarChart = dynamic(
       <div
         role="status"
         className="flex h-[360px] items-center justify-center rounded-xl bg-[#faf8fd] text-sm text-[#8c7e99]"
-      >
-        กำลังโหลดกราฟ…
-      </div>
-    ),
-  },
-);
-
-const PieChart = dynamic(
-  () => import("@mui/x-charts/PieChart").then((module) => module.PieChart),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        role="status"
-        className="flex size-[260px] items-center justify-center rounded-full bg-[#faf8fd] text-sm text-[#8c7e99]"
       >
         กำลังโหลดกราฟ…
       </div>
@@ -867,6 +852,11 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
         />
       </div>
 
+      <ManagerCompletionSummary
+        stats={stats}
+        completedStudents={completedStudents}
+      />
+
       <section className="mt-6 font-sans rounded-2xl border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -990,94 +980,6 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
             ))}
           </tbody>
         </table>
-      </section>
-
-      <section className="mt-6 font-sans rounded-2xl border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">
-        <div className="flex items-center gap-2 text-[#6e45a8]">
-          <PieChartIcon size={21} aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-[#3d2d52]">
-            สัดส่วนนักเรียนตามสถานะการแก้ไข
-          </h2>
-        </div>
-        <p className="mt-1 text-[15px] text-[#8c7e99]">
-          เปรียบเทียบนักเรียนที่แก้ไขครบทุกวิชา กับนักเรียนที่ยังมีวิชาค้าง
-        </p>
-        {completedStudents === null || incompleteStudents === null ? (
-          <p className="mt-8 rounded-xl bg-[#faf8fd] px-5 py-10 text-center text-sm text-[#8c7e99]">
-            ยังไม่สามารถแสดงจำนวนนักเรียนแยกตามสถานะได้
-          </p>
-        ) : stats.total_students === 0 ? (
-          <p className="mt-8 rounded-xl bg-[#faf8fd] px-5 py-10 text-center text-sm text-[#8c7e99]">
-            ยังไม่มีข้อมูลนักเรียนสำหรับแสดงแผนภูมิ
-          </p>
-        ) : (
-          <div className={styles.pieLayout}>
-            <PieChart
-              width={260}
-              height={260}
-              hideLegend
-              series={[
-                {
-                  id: "student-completion",
-                  data: [
-                    {
-                      id: "completed",
-                      value: completedStudents,
-                      label: "แก้ไขเรียบร้อยแล้ว",
-                      color: "var(--color-status-green)",
-                    },
-                    {
-                      id: "incomplete",
-                      value: incompleteStudents,
-                      label: "ยังแก้ไขไม่เรียบร้อย",
-                      color: "var(--color-status-amber)",
-                    },
-                  ],
-                  arcLabel: (item) =>
-                    item.value > 0
-                      ? `${Math.round((item.value / stats.total_students) * 100)}%`
-                      : "",
-                  arcLabelMinAngle: 18,
-                  valueFormatter: (item) => `${format(item.value)} คน`,
-                },
-              ]}
-              className="[&_.MuiPieChart-arcLabel]:fill-white! [&_.MuiPieChart-arcLabel]:font-[inherit]! [&_.MuiPieChart-arcLabel]:text-sm! [&_.MuiPieChart-arcLabel]:font-semibold!"
-            />
-            <div className="grid w-full max-w-[360px] gap-3">
-              {[
-                {
-                  label: "แก้ไขเรียบร้อยแล้ว",
-                  value: completedStudents,
-                  color: "bg-status-green",
-                },
-                {
-                  label: "ยังแก้ไขไม่เรียบร้อย",
-                  value: incompleteStudents,
-                  color: "bg-status-amber",
-                },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-center justify-between gap-4 rounded-xl border border-[#f0ebf5] bg-[#fcfbfe] px-4 py-3"
-                >
-                  <span className="flex items-center gap-2 text-[15px] text-[#665978]">
-                    <span
-                      className={`size-3 shrink-0 rounded-sm ${item.color}`}
-                    />
-                    {item.label}
-                  </span>
-                  <strong className="whitespace-nowrap text-base font-semibold tabular-nums text-[#3d2d52]">
-                    {format(item.value)} คน
-                  </strong>
-                </div>
-              ))}
-              <p className="px-1 text-sm leading-6 text-[#8e819a]">
-                นับนักเรียนหนึ่งคนเพียงครั้งเดียว
-                และนับว่าเสร็จสิ้นเมื่อแก้ไขครบทุกรายวิชา
-              </p>
-            </div>
-          </div>
-        )}
       </section>
 
       <section className="mt-6 rounded-2xl font-sans border border-[#e9e1f2] bg-white px-4 py-6 shadow-[0_8px_24px_#40206f08] desk:px-7 desk:py-7">

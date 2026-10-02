@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
+import Select from "react-select";
 import {
   Download,
   FileSpreadsheet,
@@ -28,18 +29,24 @@ import {
 } from "@/lib/student-import";
 
 const fields = Object.entries(studentColumns);
+const prefixOptions = ["เด็กชาย", "เด็กหญิง", "นาย", "นางสาว"].map(
+  (prefix) => ({
+    value: prefix,
+    label: prefix,
+  }),
+);
 const inputStyle =
-  "mt-1 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/10";
+  "mt-1 w-full border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/10";
 const buttonStyle =
-  "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50";
 const emptyList: StudentList = { total: 0, items: [], levels: [] };
 const demoStudents: StudentRow[] = [
   {
     id: "demo-student-1",
     student_code: "10001",
     full_name: "เด็กชายศุภพล แดงประทีป",
-    classroom: "ม.4/9",
-    roll_number: 9,
+    classroom: "ม.3/8",
+    roll_number: 17,
     name_prefix: "เด็กชาย",
     first_name: "ศุภพล",
     last_name: "แดงประทีป",
@@ -69,6 +76,7 @@ const demoStudents: StudentRow[] = [
 export default function AdminStudents({ demo = false }: { demo?: boolean }) {
   const [data, setData] = useState<StudentList>(emptyList);
   const [demoRows, setDemoRows] = useState(demoStudents);
+  const [namePrefix, setNamePrefix] = useState("");
   const [search, setSearch] = useState(""),
     [level, setLevel] = useState("all"),
     [page, setPage] = useState(1);
@@ -597,17 +605,14 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
       </dialog>
       <div className="grid gap-5 min-[1100px]:grid-cols-2">
         <section className="rounded-xl border border-line bg-white p-5 max-desk:p-4">
-          <h2 className="flex items-center gap-2 text-base font-semibold">
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
             <UserPlus size={20} className="text-brand" />
             เพิ่มข้อมูลนักเรียน
           </h2>
-          <p className="mt-2 text-xs leading-relaxed text-secondary">
-            บัญชีใหม่เข้าสู่ระบบด้วยรหัสนักเรียนและเลขบัตรประชาชน
-            บัญชีเดิมอัปเดตข้อมูลรายชื่อโดยคงรหัสผ่านเดิม
-          </p>
           <form
             ref={formRef}
             onSubmit={addStudent}
+            onReset={() => setNamePrefix("")}
             className="mt-4 grid grid-cols-2 gap-3"
             autoComplete="off"
           >
@@ -616,50 +621,92 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
               className="col-span-2 grid grid-cols-2 gap-3"
             >
               {fields.map(([label, key]) => (
-                <label
+                <div
                   key={key}
                   className={`text-xs font-medium ${key === "citizen_id" ? "col-span-2" : ""}`}
                 >
-                  {label}
-                  <input
-                    className={inputStyle}
-                    name={key}
-                    required
-                    inputMode={
-                      ["citizen_id", "student_code", "roll_number"].includes(
-                        key,
-                      )
-                        ? "numeric"
-                        : "text"
-                    }
-                    maxLength={
-                      key === "citizen_id"
-                        ? 17
-                        : key === "student_code"
-                          ? 10
-                          : key === "roll_number"
-                            ? 3
-                            : key === "classroom"
-                              ? 40
-                              : key === "name_prefix"
+                  <label htmlFor={`student-${key}`}>{label}</label>
+                  {key === "name_prefix" ? (
+                    <Select
+                      inputId={`student-${key}`}
+                      instanceId="student-name-prefix"
+                      name={key}
+                      required
+                      options={prefixOptions}
+                      value={
+                        prefixOptions.find(
+                          (option) => option.value === namePrefix,
+                        ) ?? null
+                      }
+                      onChange={(option) => setNamePrefix(option?.value ?? "")}
+                      isSearchable={false}
+                      isDisabled={busy || reading}
+                      placeholder="เลือกคำนำหน้าชื่อ"
+                      menuPlacement="auto"
+                      className="mt-1 text-sm font-normal"
+                      styles={{
+                        control: (base, state) => ({
+                          ...base,
+                          minHeight: 42,
+                          borderRadius: 0,
+                          borderColor: state.isFocused
+                            ? "var(--color-brand)"
+                            : "var(--color-line)",
+                          boxShadow: state.isFocused
+                            ? "0 0 0 2px rgb(125 30 138 / 10%)"
+                            : "none",
+                          "&:hover": { borderColor: "var(--color-brand)" },
+                        }),
+                      }}
+                      theme={(theme) => ({
+                        ...theme,
+                        colors: {
+                          ...theme.colors,
+                          primary: "var(--color-brand)",
+                          primary25: "var(--color-brand-soft)",
+                          primary50: "var(--color-brand-soft)",
+                          neutral80: "var(--color-ink)",
+                        },
+                      })}
+                    />
+                  ) : (
+                    <input
+                      id={`student-${key}`}
+                      className={inputStyle}
+                      name={key}
+                      required
+                      inputMode={
+                        ["citizen_id", "student_code", "roll_number"].includes(
+                          key,
+                        )
+                          ? "numeric"
+                          : "text"
+                      }
+                      maxLength={
+                        key === "citizen_id"
+                          ? 17
+                          : key === "student_code"
+                            ? 10
+                            : key === "roll_number"
+                              ? 3
+                              : key === "classroom"
                                 ? 40
                                 : 80
-                    }
-                    placeholder={
-                      key === "citizen_id"
-                        ? "1-0000-00000-00-1 หรือเลข 13 หลัก"
-                        : key === "classroom"
-                          ? "ม.4/9"
-                          : key === "name_prefix"
-                            ? "เด็กชาย"
+                      }
+                      placeholder={
+                        key === "citizen_id"
+                          ? "1-0000-00000-00-1 หรือเลข 13 หลัก"
+                          : key === "classroom"
+                            ? "ม.4/9"
                             : undefined
-                    }
-                  />
-                </label>
+                      }
+                    />
+                  )}
+                </div>
               ))}
             </fieldset>
             <button
-              className={`${buttonStyle} col-span-2 mt-1 bg-brand text-white hover:bg-brand/90`}
+              className={`${buttonStyle} col-span-2 mt-1 bg-brand text-white hover:bg-brand/90 cursor-pointer`}
               disabled={busy || reading}
               type="submit"
             >
@@ -672,16 +719,15 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
             </button>
           </form>
         </section>
-        <section className="rounded-xl border border-line bg-white p-5 max-desk:p-4">
-          <h2 className="flex items-center gap-2 text-base font-semibold">
+        <section className="flex min-w-0 flex-col rounded-xl border border-line bg-white p-5 max-desk:p-4">
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
             <FileSpreadsheet size={20} className="text-brand" />
             นำเข้านักเรียนจาก XLSX
           </h2>
-          <p className="mt-2 text-xs leading-relaxed text-secondary">
+          <p className="mt-2 text-sm leading-relaxed text-secondary">
             อ่านครบทุกชีท รวม ม.1–ม.6 ตรวจข้อมูลก่อนบันทึก รองรับชีทละ 2,000 แถว
-            เก็บรหัสนักเรียนและเลขบัตรเป็นข้อความเพื่อรักษาศูนย์นำหน้า
           </p>
-          <div className="mt-4 rounded-lg border border-dashed border-brand/30 bg-brand-soft/40 p-5">
+          <div className="mt-4 flex flex-1 flex-col justify-start rounded-lg border border-dashed border-brand/30 bg-brand-soft/40 p-5">
             <label
               htmlFor="student-xlsx"
               className="mb-3 block text-sm font-medium"
@@ -693,7 +739,7 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
               type="file"
               accept=".xlsx"
               disabled={busy || reading}
-              className="block w-full text-xs file:mr-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-2 file:text-brand"
+              className="block w-full text-sm cursor-pointer file:mr-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-2 file:text-brand"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 e.target.value = "";
@@ -714,7 +760,7 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
           </div>
           <button
             type="button"
-            className={`${buttonStyle} mt-3 border border-line text-brand`}
+            className={`${buttonStyle} cursor-pointer mt-3 self-start border border-line text-brand`}
             onClick={template}
             disabled={busy}
           >
@@ -723,10 +769,6 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
           </button>
           <p className="mt-4 text-xs leading-6 text-secondary">
             คอลัมน์: {Object.keys(studentColumns).join(" · ")}
-          </p>
-          <p className="mt-3 rounded-lg bg-brand-soft p-3 text-xs leading-6 text-brand">
-            รวมคำนำหน้า ชื่อ และนามสกุล เช่น เด็กชายศุภพล แดงประทีป และลบ “-”
-            จากเลขบัตรก่อนสร้างบัญชี เลขบัตรใช้สำหรับบัญชีใหม่และไม่แสดงในตาราง
           </p>
         </section>
       </div>
@@ -763,16 +805,16 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
         <section className="overflow-hidden rounded-xl border border-line bg-white">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line p-4">
             <div>
-              <h2 className="text-sm font-semibold">
+              <h2 className="text-lg font-semibold">
                 ตรวจสอบก่อนนำเข้า · {preview.length.toLocaleString()} รายการ ·{" "}
                 {sheetCount} ชีท
               </h2>
-              <p className="mt-1 text-xs text-secondary">
+              <p className="mt-1 text-sm text-secondary">
                 รหัสซ้ำกับระบบจะอัปเดตข้อมูลรายชื่อ คงรหัสผ่านเดิม
               </p>
             </div>
             <button
-              className={`${buttonStyle} bg-brand text-white`}
+              className={`${buttonStyle} cursor-pointer hover:bg-brand/90 bg-brand text-white`}
               onClick={importStudents}
               disabled={busy || reading || fileErrors.length > 0}
             >
@@ -785,7 +827,7 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
             </button>
           </div>
           <div className="max-h-64 overflow-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-sm">
               <thead className="sticky top-0 bg-[#f8f6fc]">
                 <tr>
                   {["รหัสนักเรียน", "ชื่อ-นามสกุล", "ชั้น/ห้อง", "เลขที่"].map(
@@ -813,7 +855,7 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
             </table>
           </div>
           {preview.length > 50 && (
-            <p className="p-3 text-xs text-secondary">
+            <p className="p-3 text-sm text-secondary">
               แสดงตัวอย่าง 50 รายการแรก · นำเข้าทุกรายการที่ตรวจผ่าน
             </p>
           )}
@@ -856,8 +898,8 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
       >
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line p-4">
           <div>
-            <h2 className="text-base font-semibold">รายชื่อนักเรียนทั้งหมด</h2>
-            <p className="mt-1 text-xs text-secondary">
+            <h2 className="text-lg font-semibold">รายชื่อนักเรียนทั้งหมด</h2>
+            <p className="mt-1 text-sm text-secondary">
               พบ {data.total.toLocaleString()} คน · แสดงหน้าละ 50 คน
             </p>
           </div>
@@ -869,7 +911,7 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
                 value={search}
                 maxLength={150}
                 placeholder="ค้นหาชื่อหรือรหัสนักเรียน"
-                className="w-full bg-transparent py-2.5 text-xs outline-none"
+                className="w-full bg-transparent py-2.5 text-sm outline-none"
                 onChange={(e) => {
                   setSearch(e.target.value);
                   setPage(1);
@@ -880,7 +922,7 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
               <Filter size={16} className="text-secondary" />
               <select
                 aria-label="กรองระดับชั้น"
-                className="bg-transparent py-2.5 text-xs outline-none"
+                className="bg-transparent py-2.5 text-sm outline-none"
                 value={level}
                 onChange={(e) => {
                   setLevel(e.target.value);
@@ -911,7 +953,7 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
         ) : (
           <div className="overflow-x-auto" aria-busy={loading}>
             <table className="w-full text-left text-sm">
-              <thead className="bg-[#f8f6fc] text-xs text-secondary">
+              <thead className="bg-[#f8f6fc] text-sm text-secondary">
                 <tr>
                   {["รหัสนักเรียน", "ชื่อ-นามสกุล", "ชั้น/ห้อง", "เลขที่"].map(
                     (h) => (
@@ -965,7 +1007,7 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
             </table>
           </div>
         )}
-        <div className="flex items-center justify-between gap-2 border-t border-line p-4 text-xs text-secondary">
+        <div className="flex items-center justify-between gap-2 border-t border-line p-4 text-sm text-secondary">
           <span>
             หน้า {page} / {pages}
           </span>
