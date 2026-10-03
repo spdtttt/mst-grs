@@ -67,11 +67,12 @@ export function useSwipeSidebar(width: number) {
   }
 
   function onTouchStart(event: TouchEvent<HTMLDivElement>) {
-    startRef.current = null;
+    onTouchCancel();
     if ((event.target as Element).closest("[data-swipe-ignore]")) return;
     if (
       phase !== "idle" ||
       event.touches.length !== 1 ||
+      (window.visualViewport?.scale ?? 1) > 1 ||
       window.matchMedia("(min-width: 48rem)").matches
     )
       return;
@@ -86,8 +87,12 @@ export function useSwipeSidebar(width: number) {
   }
 
   function onTouchMove(event: TouchEvent<HTMLDivElement>) {
+    if (event.touches.length !== 1 || (window.visualViewport?.scale ?? 1) > 1) {
+      onTouchCancel();
+      return;
+    }
     const start = startRef.current;
-    if (!start || event.touches.length !== 1) return;
+    if (!start) return;
     const touch = event.touches[0];
     const dx = touch.clientX - start.x;
     const dy = touch.clientY - start.y;
@@ -111,7 +116,7 @@ export function useSwipeSidebar(width: number) {
     const start = startRef.current;
     startRef.current = null;
     if (!start?.dragging) return;
-    if (event.changedTouches.length !== 1) {
+    if (event.touches.length > 0 || event.changedTouches.length !== 1) {
       settle(start.wasOpen);
       return;
     }

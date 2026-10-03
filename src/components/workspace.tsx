@@ -597,7 +597,7 @@ export default function Workspace({
   }
   return (
     <div
-      className={`${styles.app} min-h-screen touch-pan-y desk:touch-auto`}
+      className={`${styles.app} min-h-screen touch-auto`}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
