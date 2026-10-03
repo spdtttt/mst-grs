@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
   const requestedView = (await searchParams).view;
-  const initialView = requestedView === "import" || requestedView === "teachers" || requestedView === "academics" || requestedView === "managers" ? requestedView : "students";
+  const initialView = requestedView === "import" || requestedView === "teachers" || requestedView === "academics" || requestedView === "managers" || requestedView === "student-lifecycle" ? requestedView : "students";
   if (!configured()) redirect("/");
   const db = await supabase();
   const { data: { user } } = await db.auth.getUser();

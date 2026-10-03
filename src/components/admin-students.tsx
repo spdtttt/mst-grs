@@ -11,6 +11,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { listStudents, saveStudents } from "@/app/student-actions";
+import { previewStudentImport } from "@/app/student-lifecycle-actions";
 import { readStudentWorkbook } from "@/lib/student-workbook";
 import {
   studentColumns,
@@ -74,7 +75,13 @@ const demoStudents: StudentRow[] = [
   },
 ];
 
-export default function AdminStudents({ demo = false }: { demo?: boolean }) {
+export default function AdminStudents({
+  demo = false,
+  onManageYear,
+}: {
+  demo?: boolean;
+  onManageYear?: () => void;
+}) {
   const [data, setData] = useState<StudentList>(emptyList);
   const [demoRows, setDemoRows] = useState(demoStudents);
   const [namePrefix, setNamePrefix] = useState("");
@@ -89,6 +96,13 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
     [reading, setReading] = useState(false);
   const [preview, setPreview] = useState<StudentInput[]>([]),
     [fileName, setFileName] = useState("");
+  const [importSummary, setImportSummary] = useState<{
+    created: number;
+    updated: number;
+    archived: number;
+  } | null>(null);
+  const [summaryError, setSummaryError] = useState("");
+  const [summaryRefresh, setSummaryRefresh] = useState(0);
   const [fileErrors, setFileErrors] = useState<string[]>([]),
     [results, setResults] = useState<StudentSaveResult[]>([]);
   const [progress, setProgress] = useState(0);
@@ -115,6 +129,38 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
   );
   const processDialog = useRef<HTMLDialogElement>(null);
   const processing = busy || reading;
+
+  useEffect(() => {
+    let cancelled = false;
+    setImportSummary(null);
+    setSummaryError("");
+    if (!preview.length) return;
+    async function summarize() {
+      try {
+        const existing = new Set(demoRows.map((row) => row.student_code));
+        const updated = preview.filter((row) =>
+          existing.has(row.student_code),
+        ).length;
+        const result = demo
+          ? {
+              data: { created: preview.length - updated, updated, archived: 0 },
+            }
+          : await previewStudentImport(preview.map((row) => row.student_code));
+        if (!cancelled) {
+          if (result.error || !result.data)
+            setSummaryError(result.error ?? "ตรวจสอบบัญชีก่อนนำเข้าไม่สำเร็จ");
+          else setImportSummary(result.data);
+        }
+      } catch {
+        if (!cancelled)
+          setSummaryError("ตรวจสอบบัญชีก่อนนำเข้าไม่สำเร็จ กรุณาลองใหม่");
+      }
+    }
+    void summarize();
+    return () => {
+      cancelled = true;
+    };
+  }, [preview, demo, demoRows, summaryRefresh]);
 
   useEffect(() => {
     const dialog = processDialog.current;
@@ -526,6 +572,24 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
       : 0;
   return (
     <section className="space-y-6" aria-label="จัดการรายชื่อนักเรียน">
+      {onManageYear && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-white p-4">
+          <div>
+            <h2 className="font-semibold">เตรียมรายชื่อสำหรับปีการศึกษาใหม่</h2>
+            <p className="mt-1 text-sm text-secondary">
+              จัดการนักเรียนจบการศึกษา ย้ายออก และดูรายชื่อย้อนหลัง
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onManageYear}
+            disabled={processing}
+            className={`${buttonStyle} cursor-pointer rounded-lg border border-line text-brand hover:bg-brand-soft`}
+          >
+            จัดการนักเรียนปีใหม่
+          </button>
+        </div>
+      )}
       <dialog
         ref={processDialog}
         aria-labelledby="student-process-title"
@@ -812,12 +876,46 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
               </h2>
               <p className="mt-1 text-sm text-secondary">
                 รหัสซ้ำกับระบบจะอัปเดตข้อมูลรายชื่อ คงรหัสผ่านเดิม
+                และคงสถานะการศึกษาเดิม หากนักเรียนกลับมาเรียน ให้คืนสถานะในหน้า
+                “จัดการนักเรียนปีใหม่”
               </p>
+              <p className="mt-2 text-sm text-brand" role="status">
+                {importSummary
+                  ? `คาดว่าจะเพิ่มใหม่ ${importSummary.created.toLocaleString()} คน · อัปเดต ${importSummary.updated.toLocaleString()} คน · เปลี่ยนสถานะ 0 คน`
+                  : summaryError
+                    ? "ยังตรวจสอบบัญชีก่อนนำเข้าไม่สำเร็จ"
+                    : "กำลังตรวจสอบบัญชีก่อนนำเข้า..."}
+              </p>
+              {!!importSummary?.archived && (
+                <p className="mt-1 text-sm text-amber-800">
+                  ในกลุ่มอัปเดตมีนักเรียนที่ไม่ได้อยู่ในสถานะกำลังศึกษา{" "}
+                  {importSummary.archived} คน
+                  ซึ่งจะคงสถานะเดิมและอยู่ในรายชื่อย้อนหลัง
+                </p>
+              )}
+              {summaryError && (
+                <div role="alert" className="mt-2 text-sm text-red-700">
+                  {summaryError}
+                  <button
+                    type="button"
+                    className="ml-2 cursor-pointer underline"
+                    onClick={() => setSummaryRefresh((value) => value + 1)}
+                  >
+                    ลองตรวจสอบใหม่
+                  </button>
+                </div>
+              )}
             </div>
             <button
               className={`${buttonStyle} cursor-pointer hover:bg-brand/90 bg-brand text-white`}
               onClick={importStudents}
-              disabled={busy || reading || fileErrors.length > 0}
+              disabled={
+                busy ||
+                reading ||
+                fileErrors.length > 0 ||
+                !importSummary ||
+                !!summaryError
+              }
             >
               {busy ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -899,13 +997,13 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
       >
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line p-4">
           <div>
-            <h2 className="text-lg font-semibold">รายชื่อนักเรียนทั้งหมด</h2>
+            <h2 className="text-lg font-semibold">รายชื่อนักเรียนปัจจุบัน</h2>
             <p className="mt-1 text-sm text-secondary">
               พบ {data.total.toLocaleString()} คน · แสดงหน้าละ 50 คน
             </p>
           </div>
           <div className="flex w-full flex-wrap gap-2 min-[800px]:w-auto">
-            <label className="flex min-w-40 flex-1 items-center gap-2 rounded-lg border border-line px-3">
+            <label className="flex min-w-40 flex-1 items-center gap-2 border border-line px-3">
               <Search size={16} className="text-secondary" />
               <input
                 aria-label="ค้นหาชื่อนักเรียน"
@@ -919,7 +1017,7 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
                 }}
               />
             </label>
-            <label className="flex items-center gap-2 rounded-lg border border-line px-3">
+            <label className="flex items-center gap-2 border border-line px-3">
               <Filter size={16} className="text-secondary" />
               <select
                 aria-label="กรองระดับชั้น"
@@ -956,16 +1054,20 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
             <table className="w-full text-left text-sm">
               <thead className="bg-[#f8f6fc] text-sm text-secondary">
                 <tr>
-                  {["รหัสนักเรียน", "ชื่อ-นามสกุล", "ชั้น/ห้อง", "เลขที่", "ดำเนินการ"].map(
-                    (h) => (
-                      <th
-                        className="whitespace-nowrap px-5 py-3 font-medium"
-                        key={h}
-                      >
-                        {h}
-                      </th>
-                    ),
-                  )}
+                  {[
+                    "รหัสนักเรียน",
+                    "ชื่อ-นามสกุล",
+                    "ชั้น/ห้อง",
+                    "เลขที่",
+                    "ดำเนินการ",
+                  ].map((h) => (
+                    <th
+                      className="whitespace-nowrap px-5 py-3 font-medium"
+                      key={h}
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -981,16 +1083,37 @@ export default function AdminStudents({ demo = false }: { demo?: boolean }) {
                   </tr>
                 ) : data.items.length ? (
                   data.items.map((s) => (
-                    <AdminAccountRow key={s.id} row={s} role="student" demo={demo} disabled={busy || reading}
+                    <AdminAccountRow
+                      key={s.id}
+                      row={s}
+                      role="student"
+                      demo={demo}
+                      disabled={busy || reading}
                       onSaved={(updated) => {
-                        if (demo) setDemoRows(rows => rows.map(row => row.id === updated.id ? {...row,...updated,student_code:row.student_code} : row));
-                        else setRefresh(value => value + 1);
+                        if (demo)
+                          setDemoRows((rows) =>
+                            rows.map((row) =>
+                              row.id === updated.id
+                                ? {
+                                    ...row,
+                                    ...updated,
+                                    student_code: row.student_code,
+                                  }
+                                : row,
+                            ),
+                          );
+                        else setRefresh((value) => value + 1);
                       }}
                       onDeleted={(id) => {
-                        if (demo) setDemoRows(rows => rows.filter(row => row.id !== id));
-                        else setRefresh(value => value + 1);
-                        if (data.items.length === 1 && page > 1) setPage(value => value - 1);
-                      }} />
+                        if (demo)
+                          setDemoRows((rows) =>
+                            rows.filter((row) => row.id !== id),
+                          );
+                        else setRefresh((value) => value + 1);
+                        if (data.items.length === 1 && page > 1)
+                          setPage((value) => value - 1);
+                      }}
+                    />
                   ))
                 ) : (
                   <tr>

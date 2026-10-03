@@ -122,7 +122,7 @@ export default function AdminTeachers({
               : `ทั้งหมด ${data.total.toLocaleString("th-TH")} คน`}
           </p>
         </div>
-        <label className="flex w-full items-center gap-2 rounded-lg border border-line px-3 sm:w-72">
+        <label className="flex w-full items-center gap-2 border border-line px-3 sm:w-72">
           <Search size={16} className="shrink-0 text-secondary" />
           <input
             aria-label={`ค้นหาชื่อ${staffLabel}`}

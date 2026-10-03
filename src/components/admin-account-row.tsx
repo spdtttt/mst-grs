@@ -94,11 +94,11 @@ export default function AdminAccountRow({ row, role, demo=false, disabled=false,
       </>}
       <td className="min-w-56 px-5 py-4">
         {mode==="view" ? <div className="flex flex-wrap gap-2">
-          <button type="button" className={`${buttonClass} text-brand hover:bg-brand-soft`} disabled={unavailable}
+          <button type="button" className={`${buttonClass} text-brand duration-150 hover:bg-brand-soft`} disabled={unavailable}
             onClick={()=>begin(role==="manager" ? "password" : "edit")}>
             {role==="manager" ? "ตั้งรหัสผ่านใหม่" : "แก้ไข"}
           </button>
-          <button type="button" className={`${buttonClass} text-red-700 hover:bg-red-50`} disabled={unavailable} onClick={()=>begin("delete")}>ลบ</button>
+          <button type="button" className={`${buttonClass} text-red-700 duration-150 hover:bg-red-50`} disabled={unavailable} onClick={()=>begin("delete")}>ลบและรีเซ็ทรหัสผ่าน</button>
         </div> : <div className="space-y-3">
           {mode==="delete" && <p className="max-w-sm text-sm leading-6 text-red-700">ยืนยันลบบัญชี {row.full_name} รวมบัญชีเข้าสู่ระบบและสิทธิ์ทุกบทบาท? บัญชีที่มีข้อมูลอ้างอิงอยู่จะลบไม่ได้</p>}
           {mode==="password" && <div className="grid gap-2">
