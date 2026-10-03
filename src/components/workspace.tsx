@@ -725,7 +725,7 @@ export default function Workspace({
         <button className={styles.tabletLogout} onClick={logout} disabled={loggingOut} aria-label="ออกจากระบบ" title="ออกจากระบบ"><LogOut size={20} /></button>
       </aside>
       <div className={styles.shell}>
-        <header className={`${styles.topbar} flex h-[77px] items-center justify-between gap-5 border-b border-line bg-white px-9 max-roomy:px-6 max-desk:h-[66px] max-desk:gap-2.5 max-desk:px-4`}>
+        <header className={`${styles.topbar} ${styles.mobileTopbar} flex h-[77px] items-center justify-between gap-5 border-b border-line bg-white px-9 max-roomy:px-6 max-desk:h-[66px] max-desk:gap-2.5 max-desk:px-4`}>
           <div className="flex items-center gap-3 text-xs text-[#a49bad] [&_strong]:font-[450] [&_strong]:text-[#776b87] max-desk:gap-1.5 max-desk:text-[11px] max-desk:[&>span]:hidden max-desk:[&>svg]:hidden">
             <button
               className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 size-[34px] shrink-0 items-center justify-center rounded-[7px] border-0 bg-transparent p-1.5 text-muted enabled:hover:bg-brand-soft enabled:hover:text-brand hidden max-desk:inline-flex"

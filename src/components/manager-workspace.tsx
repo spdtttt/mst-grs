@@ -247,8 +247,8 @@ export default function ManagerWorkspace({
         <button className={styles.tabletLogout} onClick={logout} disabled={pending || loggingOut} aria-label="ออกจากระบบ" title="ออกจากระบบ"><LogOut size={20} /></button>
       </aside>
 
-      <div className={styles.shell}>
-        <header className="flex h-[76px] items-center justify-between gap-4 border-b border-[#e8e0f1] bg-white px-5 desk:px-9">
+      <div className={`${styles.shell} ${styles.managerShell}`}>
+        <header className={`${styles.mobileTopbar} flex h-[76px] items-center justify-between gap-4 border-b border-[#e8e0f1] bg-white px-5 desk:px-9`}>
           <button
             type="button"
             aria-label="เปิดเมนู"

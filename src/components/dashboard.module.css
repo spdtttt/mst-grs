@@ -563,10 +563,20 @@
   }
   .shell {
     margin-left: 0;
+    padding-top: 64px;
+  }
+  .managerShell {
+    padding-top: 76px;
   }
   .topbar {
     height: 64px;
     padding: 0 16px;
+  }
+  .mobileTopbar {
+    position: fixed;
+    top: 0;
+    inset-inline: 0;
+    z-index: 20;
   }
   .page {
     padding: 20px 16px;
