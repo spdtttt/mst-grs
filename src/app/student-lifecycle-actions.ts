@@ -3,6 +3,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { adminContext } from "@/lib/admin-auth";
 import {
+  STUDENT_PREVIEW_BATCH_SIZE,
+  type StudentImportSummary,
+} from "@/lib/student-import-preview";
+import {
   lifecycleChangeSchema,
   lifecycleChangeResultSchema,
   type LifecycleChangeResult,
@@ -21,7 +25,7 @@ function message(error: { message: string }) {
 }
 
 export async function previewStudentImport(input: unknown): Promise<{
-  data?: { created: number; updated: number; archived: number };
+  data?: StudentImportSummary;
   error?: string;
 }> {
   const context = await adminContext();
@@ -29,7 +33,7 @@ export async function previewStudentImport(input: unknown): Promise<{
   const parsed = z
     .array(z.string().regex(/^\d{5,10}$/))
     .min(1)
-    .max(2000)
+    .max(STUDENT_PREVIEW_BATCH_SIZE)
     .safeParse(input);
   if (!parsed.success) return { error: "รหัสนักเรียนไม่ถูกต้อง" };
   const { data, error } = await context.db.rpc("admin_student_import_summary", {

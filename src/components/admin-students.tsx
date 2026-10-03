@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { listStudents, saveStudents } from "@/app/student-actions";
 import { previewStudentImport } from "@/app/student-lifecycle-actions";
+import { summarizeStudentImport } from "@/lib/student-import-preview";
 import { readStudentWorkbook } from "@/lib/student-workbook";
 import {
   studentColumns,
@@ -138,14 +139,17 @@ export default function AdminStudents({
     async function summarize() {
       try {
         const existing = new Set(demoRows.map((row) => row.student_code));
-        const updated = preview.filter((row) =>
-          existing.has(row.student_code),
-        ).length;
-        const result = demo
-          ? {
-              data: { created: preview.length - updated, updated, archived: 0 },
-            }
-          : await previewStudentImport(preview.map((row) => row.student_code));
+        const result = await summarizeStudentImport(
+          preview.map((row) => row.student_code),
+          async (codes) => {
+            if (!demo) return previewStudentImport(codes);
+            const updated = codes.filter((code) => existing.has(code)).length;
+            return {
+              data: { created: codes.length - updated, updated, archived: 0 },
+            };
+          },
+          () => !cancelled,
+        );
         if (!cancelled) {
           if (result.error || !result.data)
             setSummaryError(result.error ?? "ตรวจสอบบัญชีก่อนนำเข้าไม่สำเร็จ");
@@ -470,7 +474,14 @@ export default function AdminStudents({
   }
 
   async function importStudents() {
-    if (!preview.length || fileErrors.length || operationLock.current) return;
+    if (
+      !preview.length ||
+      fileErrors.length ||
+      !importSummary ||
+      summaryError ||
+      operationLock.current
+    )
+      return;
     prepareSave(preview.length);
     setProblem("");
     setResults([]);
