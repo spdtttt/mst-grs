@@ -103,7 +103,7 @@ test("account administration creates managers, enforces active Admin, searches, 
     await db.exec("reset role");
     assert.deepEqual((await db.query("select user_id from auth.sessions")).rows, [{user_id: id(5)}]);
     assert.equal((await db.query("select * from audit_log where action=$1", [`manager_password_changed:${id(4)}`])).rows.length, 1);
-    assert.equal((await db.query("select role from profiles where id=$1", [id(4)])).rows[0].role, "manager");
+    assert.equal((await db.query<{ role: string }>("select role from profiles where id=$1", [id(4)])).rows[0].role, "manager");
   } finally { await db.close(); }
 });
 
@@ -125,6 +125,7 @@ test("inline edits follow IDs, preserve login identity and history, reject stale
     await db.query("select set_staff_roles($1,ARRAY['teacher','admin']::app_role[])", [id(6)]);
     await db.query(`insert into grade_records(id,course_code,course_name,credits,classroom,teacher_name,student_code,student_name,roll_number,academic_year,semester,original_grade,student_id,teacher_id)
       values($1,'C1','Course',1,'ม.4/1',ARRAY['Account 2','Account 3'],'10004','Account 4',1,2569,1,'0',$2,ARRAY[$3,$4]::uuid[])`, [id(100),id(4),id(2),id(3)]);
+    await db.exec("update grade_records set status='completed',final_grade='1',completed_at=now()");
     await db.exec("insert into grade_record_history select g.*,now(),now() from grade_records g");
     await asAdmin();
     const updated = await edit(4,"student",0,{...names,classroom:"ม.5/2",roll_number:20});
@@ -146,7 +147,7 @@ test("inline edits follow IDs, preserve login identity and history, reject stale
     assert.deepEqual(active,{student_name:"นางสาวทดสอบ ระบบ",teacher_name:["นางสาวทดสอบ ระบบ","นางสาวทดสอบ ระบบ"]});
     const history = (await db.query("select student_name,teacher_name from grade_record_history")).rows[0];
     assert.deepEqual(history,{student_name:"Account 4",teacher_name:["Account 2","Account 3"]});
-    assert.equal((await db.query("select email from auth.users where id=$1", [id(4)])).rows[0].email,"identity4@example.test");
+    assert.equal((await db.query<{ email: string | null }>("select email from auth.users where id=$1", [id(4)])).rows[0].email,"identity4@example.test");
     // A remaining historical reference must still block deletion after active grades are removed.
     await db.exec("delete from grade_records");
     await asAdmin();
@@ -159,7 +160,7 @@ test("inline edits follow IDs, preserve login identity and history, reject stale
     await assert.rejects(() => remove(5,"manager"), /foreign key/);
     await db.exec("reset role");
     assert.equal((await db.query("select * from profiles where id=$1",[id(5)])).rows.length,1);
-    assert.equal((await db.query("select actor_id from audit_log where action='test_actor'")).rows[0].actor_id,id(5));
+    assert.equal((await db.query<{ actor_id: string | null }>("select actor_id from audit_log where action='test_actor'")).rows[0].actor_id,id(5));
     await db.exec("delete from account_auth_blocker");
     await asAdmin();
     for (const [n,role] of [[5,"manager"],[7,"student"],[8,"academic"]] as const) { await remove(n,role); await remove(n,role); }
