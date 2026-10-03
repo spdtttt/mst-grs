@@ -32,6 +32,7 @@ export async function listStudents(
       search: z.string().trim().max(150),
       level: z.number().int().min(1).max(6).nullable(),
       page: z.number().int().min(1).max(100000),
+      classroom: z.string().trim().min(1).max(40).nullable().default(null),
     })
     .safeParse(input);
   if (!parsed.success) return { error: "ตัวกรองไม่ถูกต้อง" };
@@ -39,11 +40,12 @@ export async function listStudents(
     p_search: parsed.data.search,
     p_level: parsed.data.level,
     p_page: parsed.data.page,
+    p_classroom: parsed.data.classroom,
   });
   if (error)
     return {
       error:
-        "ไม่สามารถโหลดรายชื่อนักเรียนได้ กรุณาตรวจสอบว่าได้ติดตั้ง migration 027 แล้ว",
+        "ไม่สามารถโหลดรายชื่อนักเรียนได้ กรุณาตรวจสอบว่าได้ติดตั้ง migration 041 แล้ว",
     };
   return { data: data as StudentList };
 }

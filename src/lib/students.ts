@@ -66,6 +66,7 @@ export type StudentList = {
   total: number;
   items: StudentRow[];
   levels: number[];
+  classrooms: string[];
 };
 export type StudentSaveResult = {
   student_code: string;

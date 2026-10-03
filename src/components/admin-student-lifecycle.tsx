@@ -19,7 +19,7 @@ import {
   type LifecycleChangeResult,
   type StudentStatus,
 } from "@/lib/student-lifecycle";
-import { studentLevel } from "@/lib/students";
+import { compareStudents, studentLevel } from "@/lib/students";
 
 const empty: LifecycleList = {
   items: [],
@@ -130,12 +130,7 @@ export default function AdminStudentLifecycle({
           (row.full_name.toLowerCase().includes(search.trim().toLowerCase()) ||
             row.student_code.includes(search.trim())),
       )
-      .sort(
-        (a, b) =>
-          (a.classroom ?? "").localeCompare(b.classroom ?? "", "th") ||
-          (a.roll_number ?? 999) - (b.roll_number ?? 999) ||
-          a.student_code.localeCompare(b.student_code),
-      );
+      .sort(compareStudents);
     return {
       items: rows.slice(
         (requestedPage - 1) * pageSize,
@@ -150,7 +145,12 @@ export default function AdminStudentLifecycle({
             )
             .flatMap((row) => (row.classroom ? [row.classroom] : [])),
         ),
-      ].sort(),
+      ].sort((a, b) =>
+        compareStudents(
+          { classroom: a, roll_number: null, student_code: "" },
+          { classroom: b, roll_number: null, student_code: "" },
+        ),
+      ),
       counts: {
         not_graduated: demoRows.filter(
           (row) => row.student_status === "not_graduated",
@@ -393,7 +393,7 @@ export default function AdminStudentLifecycle({
                 ? "…"
                 : loadError
                   ? "—"
-                  : data.counts[key]?.toLocaleString("th-TH") ?? "—"}
+                  : (data.counts[key]?.toLocaleString("th-TH") ?? "—")}
             </strong>
           </button>
         ))}

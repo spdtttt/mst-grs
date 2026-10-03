@@ -94,7 +94,7 @@ test("graduation classifies all unfinished statuses as not graduated and allows 
         data: { total: number; items: unknown[]; levels: number[] };
       }>("select admin_student_list() data")
     ).rows[0].data;
-    assert.deepEqual(current, { total: 0, items: [], levels: [] });
+    assert.deepEqual(current, { total: 0, items: [], levels: [], classrooms: [] });
     assert.equal(
       (
         await db.query<{ data: { total: number } }>(

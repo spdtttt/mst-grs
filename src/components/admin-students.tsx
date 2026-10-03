@@ -42,7 +42,12 @@ const inputStyle =
   "mt-1 w-full border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/10";
 const buttonStyle =
   "inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50";
-const emptyList: StudentList = { total: 0, items: [], levels: [] };
+const emptyList: StudentList = {
+  total: 0,
+  items: [],
+  levels: [],
+  classrooms: [],
+};
 const demoStudents: StudentRow[] = [
   {
     id: "demo-student-1",
@@ -89,6 +94,7 @@ export default function AdminStudents({
   const [search, setSearch] = useState(""),
     [level, setLevel] = useState("all"),
     [page, setPage] = useState(1);
+  const [classroom, setClassroom] = useState("");
   const [refresh, setRefresh] = useState(0),
     [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(""),
@@ -184,6 +190,7 @@ export default function AdminStudents({
               (s) =>
                 (level === "all" ||
                   studentLevel(s.classroom) === Number(level)) &&
+                (!classroom || s.classroom === classroom) &&
                 (s.full_name
                   .toLowerCase()
                   .includes(search.trim().toLowerCase()) ||
@@ -194,6 +201,22 @@ export default function AdminStudents({
             setData({
               total: rows.length,
               items: rows.slice((page - 1) * 50, page * 50),
+              classrooms: [
+                ...new Set(
+                  demoRows
+                    .filter(
+                      (row) =>
+                        level === "all" ||
+                        studentLevel(row.classroom) === Number(level),
+                    )
+                    .flatMap((row) => (row.classroom ? [row.classroom] : [])),
+                ),
+              ].sort((a, b) =>
+                compareStudents(
+                  { classroom: a, roll_number: null, student_code: "" },
+                  { classroom: b, roll_number: null, student_code: "" },
+                ),
+              ),
               levels: [
                 ...new Set(
                   demoRows
@@ -206,6 +229,7 @@ export default function AdminStudents({
           const response = await listStudents({
             search,
             level: level === "all" ? null : Number(level),
+            classroom: classroom || null,
             page,
           });
           if (!cancelled) {
@@ -228,7 +252,7 @@ export default function AdminStudents({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [demo, demoRows, search, level, page, refresh]);
+  }, [demo, demoRows, search, level, classroom, page, refresh]);
 
   useEffect(() => {
     if (
@@ -1025,6 +1049,7 @@ export default function AdminStudents({
                 onChange={(e) => {
                   setSearch(e.target.value);
                   setPage(1);
+                  setLoading(true);
                 }}
               />
             </label>
@@ -1036,13 +1061,39 @@ export default function AdminStudents({
                 value={level}
                 onChange={(e) => {
                   setLevel(e.target.value);
+                  setClassroom("");
                   setPage(1);
+                  setLoading(true);
                 }}
               >
                 <option value="all">ทุกระดับชั้น</option>
                 {[1, 2, 3, 4, 5, 6].map((n) => (
                   <option key={n} value={n}>
                     ม.{n}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-2 border border-line px-3">
+              <Filter size={16} className="text-secondary" />
+              <select
+                aria-label="กรองห้อง"
+                className="bg-transparent py-2.5 text-sm outline-none"
+                value={classroom}
+                disabled={loading || busy || reading}
+                onChange={(event) => {
+                  setClassroom(event.target.value);
+                  setPage(1);
+                  setLoading(true);
+                }}
+              >
+                <option value="">ทุกห้อง</option>
+                {classroom && !data.classrooms.includes(classroom) && (
+                  <option value={classroom}>{classroom}</option>
+                )}
+                {data.classrooms.map((room) => (
+                  <option key={room} value={room}>
+                    {room}
                   </option>
                 ))}
               </select>
@@ -1129,7 +1180,7 @@ export default function AdminStudents({
                 ) : (
                   <tr>
                     <td colSpan={5} className="p-10 text-center text-secondary">
-                      {search || level !== "all"
+                      {search || level !== "all" || classroom
                         ? "ไม่พบนักเรียนตามตัวกรอง"
                         : "ยังไม่มีข้อมูลนักเรียน"}
                     </td>
