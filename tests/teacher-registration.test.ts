@@ -1,4 +1,4 @@
-import { test } from "node:test";
+﻿import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createDecipheriv, createHmac } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -8,12 +8,6 @@ import {
   loginEmail,
   loginPassword,
 } from "../src/lib/identity";
-import {
-  provisionTeacher,
-  RegistrationError,
-  type TeacherRegistrationStore,
-  type TeacherProfile,
-} from "../src/lib/teacher-registration";
 import { encryptStaffCitizenId } from "../src/lib/staff-identity";
 import {
   migrateStaffLogins,
@@ -31,8 +25,8 @@ const teacher = {
   password: "abc123",
 };
 
-test("repair migration restores registration when encrypted identity column is missing without removing profiles", async () => {
-  const db = await loadTestDatabase();
+test("historical repair migration restores the legacy registration schema without removing profiles", async () => {
+  const db = await loadTestDatabase({ through: "041" });
   const repair = readFileSync(
     "supabase/migrations/030_restore_profile_citizen_id_encrypted.sql",
     "utf8",
@@ -55,7 +49,9 @@ test("repair migration restores registration when encrypted identity column is m
       "insert into profiles(id,role,full_name) values($1,'teacher','Existing teacher')",
       [existingId],
     );
-    await db.exec("alter table profiles drop column citizen_id_encrypted; set role service_role");
+    await db.exec(
+      "alter table profiles drop column citizen_id_encrypted; set role service_role",
+    );
     await assert.rejects(register, /citizen_id_encrypted/);
     await db.exec("reset role");
     await db.exec(repair);
@@ -64,9 +60,17 @@ test("repair migration restores registration when encrypted identity column is m
     await register();
     await db.exec("reset role");
     assert.equal((await db.query("select * from profiles")).rows.length, 2);
-    assert.equal((await db.query("select * from audit_log where actor_id=$1", [id])).rows.length, 1);
+    assert.equal(
+      (await db.query("select * from audit_log where actor_id=$1", [id])).rows
+        .length,
+      1,
+    );
     await assert.rejects(
-      () => db.query("update profiles set citizen_id_encrypted='plaintext' where id=$1", [id]),
+      () =>
+        db.query(
+          "update profiles set citizen_id_encrypted='plaintext' where id=$1",
+          [id],
+        ),
       /check constraint/,
     );
   } finally {
@@ -114,104 +118,6 @@ test("staff login requires citizen ID and chosen password; student and manager l
     }).success,
     false,
   );
-});
-
-function registrationStore() {
-  const profiles = new Map<string, TeacherProfile>();
-  const calls: string[] = [];
-  const store: TeacherRegistrationStore = {
-    async createAuth(email, password) {
-      calls.push("create");
-      assert.equal(email, loginEmail("teacher:1000000000001", secret));
-      assert.equal(password, "abc123");
-      return id;
-    },
-    async saveProfile(profile, citizenId) {
-      calls.push("save");
-      assert.equal(citizenId, "1000000000001");
-      assert.equal("password" in profile, false);
-      assert.equal("citizen_id" in profile, false);
-      profiles.set(profile.id, profile);
-    },
-    async findProfile(profileId) {
-      calls.push("verify");
-      return profiles.get(profileId) ?? null;
-    },
-    async deleteAuth() {
-      calls.push("delete");
-    },
-  };
-  return { store, profiles, calls };
-}
-
-test("teacher registration creates Auth first, joins names, and rejects invalid input before any writes", async () => {
-  const { store, profiles, calls } = registrationStore();
-  assert.deepEqual(await provisionTeacher(teacher, store, secret), {
-    error: "",
-    success: true,
-  });
-  assert.deepEqual(calls, ["create", "save"]);
-  assert.equal(profiles.get(id)?.role, "teacher");
-  assert.equal(profiles.get(id)?.full_name, "นางสาวทดสอบ ระบบ");
-  calls.length = 0;
-  for (const input of [
-    { ...teacher, password: "12345" },
-    { ...teacher, citizen_id: "123" },
-    { ...teacher, first_name: " " },
-    { ...teacher, role: "admin" },
-    { ...teacher, first_name: "ก".repeat(80), last_name: "ก".repeat(80) },
-  ])
-    assert.ok((await provisionTeacher(input, store, secret)).error);
-  assert.deepEqual(calls, []);
-  assert.equal(
-    teacherRegistrationSchema.parse({ ...teacher, password: " a123 " })
-      .password,
-    " a123 ",
-  );
-});
-
-test("duplicate signup never updates an existing account or password", async () => {
-  const { store, calls } = registrationStore();
-  store.createAuth = async () => {
-    throw new RegistrationError("มีบัญชีครูนี้อยู่แล้ว");
-  };
-  const result = await provisionTeacher(teacher, store, secret);
-  assert.equal(result.error, "มีบัญชีครูนี้อยู่แล้ว");
-  assert.deepEqual(calls, []);
-});
-
-test("registration rolls Auth back only after confirming profile did not commit", async () => {
-  const failed = registrationStore();
-  failed.store.saveProfile = async () => {
-    throw new Error("database failed");
-  };
-  assert.ok((await provisionTeacher(teacher, failed.store, secret)).error);
-  assert.deepEqual(failed.calls, ["create", "verify", "delete"]);
-
-  const committed = registrationStore();
-  const save = committed.store.saveProfile;
-  committed.store.saveProfile = async (profile, citizenId) => {
-    await save(profile, citizenId);
-    throw new Error("response lost");
-  };
-  assert.equal(
-    (await provisionTeacher(teacher, committed.store, secret)).success,
-    true,
-  );
-  assert.deepEqual(committed.calls, ["create", "save", "verify"]);
-
-  const unknown = registrationStore();
-  unknown.store.saveProfile = async () => {
-    throw new Error("request lost");
-  };
-  unknown.store.findProfile = async () => {
-    throw new Error("connection lost");
-  };
-  assert.match(
-    (await provisionTeacher(teacher, unknown.store, secret)).error,
-    /ไม่สามารถยืนยัน/,
-  );
-  assert.deepEqual(unknown.calls, ["create"]);
 });
 
 test("staff citizen ID encryption is randomized and bound to the profile", () => {
@@ -300,8 +206,8 @@ test("staff login migration preserves account IDs, checks roles and refuses conf
   assert.equal(updates.length, 0);
 });
 
-test("registration database functions allow only service_role, fix role to teacher, and enforce limits", async () => {
-  const db = await loadTestDatabase();
+test("historical registration functions allow only service_role, fix role to teacher, and enforce limits", async () => {
+  const db = await loadTestDatabase({ through: "041" });
   const profile = {
     name_prefix: "นาย",
     first_name: "ทดสอบ",

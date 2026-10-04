@@ -23,6 +23,7 @@ export type Profile = {
   full_name: string;
   student_code: string | null;
   classroom: string | null;
+  learning_subject_group?: string | null;
 };
 export type GradeRecord = {
   id: string;

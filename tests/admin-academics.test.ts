@@ -158,8 +158,8 @@ test("academic administration preserves teacher roles, requires active Admin and
   }
 });
 
-test("academic reset deletes one complete account, preserves audit and cannot target non-academics or self", async () => {
-  const db = await loadTestDatabase();
+test("historical academic reset before the registry deleted shared accounts atomically", async () => {
+  const db = await loadTestDatabase({through: "041"});
   const as = async (n: number) => {
     await db.exec("reset role");
     await db.query("select set_config('request.jwt.claim.sub',$1,false)", [

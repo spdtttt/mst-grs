@@ -141,7 +141,8 @@ export default function Workspace({
   demo?: boolean;
 }) {
   const router = useRouter();
-  const [actor, setActor] = useState(profile);
+  const [demoActor, setActor] = useState(profile);
+  const actor = demo ? demoActor : profile;
   const [items, setItems] = useState(records);
   const [archives, setArchives] = useState(historyRecords);
   const [corrections, setCorrections] = useState(gradeCorrections);
@@ -707,6 +708,7 @@ export default function Workspace({
           </span>
           <div>
             <strong className="font-semibold font-[Sarabun]">{actor.full_name}</strong>
+            {role === "teacher" && <small className="block leading-5" title={actor.learning_subject_group || "ยังไม่ระบุกลุ่มสาระการเรียนรู้"}>{actor.learning_subject_group || "ยังไม่ระบุกลุ่มสาระการเรียนรู้"}</small>}
             <small className="text-md font-[Sarabun]">{roles[role]}</small>
           </div>
           <button
@@ -756,6 +758,7 @@ export default function Workspace({
             <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#ece3f9] font-semibold text-brand size-8">
               {actor.full_name.slice(0, 1)}
             </span>
+            {role === "teacher" && <div className="hidden max-desk:block max-w-40 text-right"><strong className="block truncate text-xs">{actor.full_name}</strong><small className="block text-[10px] text-secondary">{actor.learning_subject_group || "ยังไม่ระบุกลุ่มสาระการเรียนรู้"}</small></div>}
           </div>
         </header>
         {demo && (

@@ -2,6 +2,85 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { loadTestDatabase } from "../scripts/load-test-bootstrap";
 import type { TeacherList } from "../src/lib/teachers";
+import { TEACHER_SUBJECT_GROUPS } from "../src/lib/teachers";
+
+test("teacher subject filter counts before pagination, combines search, includes unregistered and shared-role teachers, and enforces Admin", async () => {
+  const db = await loadTestDatabase();
+  const id = (n: number) =>
+    `88000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+  const list = async (group = "", search = "", page = 1) =>
+    (
+      await db.query<{ result: TeacherList }>(
+        "select admin_teacher_registry_list($1,$2,$3) result",
+        [search, page, group],
+      )
+    ).rows[0].result;
+  try {
+    await db.query("insert into auth.users(id) values($1)", [id(1)]);
+    await db.query(
+      "insert into profiles(id,role,full_name) values($1,'admin','Admin')",
+      [id(1)],
+    );
+    for (let n = 2; n <= 64; n++) {
+      await db.query(
+        "insert into profiles(id,role,full_name,learning_subject_group) values($1,'teacher',$2,$3)",
+        [
+          id(n),
+          `Teacher ${String(n).padStart(2, "0")}`,
+          n <= 53
+            ? TEACHER_SUBJECT_GROUPS[1]
+            : n <= 62
+              ? TEACHER_SUBJECT_GROUPS[n - 54]
+              : null,
+        ],
+      );
+    }
+    await db.query(
+      "select set_staff_roles($1,ARRAY['teacher','academic']::app_role[])",
+      [id(53)],
+    );
+    await db.query("select set_config('request.jwt.claim.sub',$1,false)", [
+      id(1),
+    ]);
+    await db.exec("set role authenticated");
+    assert.equal((await list()).total, 63);
+    const first = await list(TEACHER_SUBJECT_GROUPS[1]);
+    const second = await list(TEACHER_SUBJECT_GROUPS[1], "", 2);
+    assert.equal(first.total, 53);
+    assert.equal(first.items.length, 50);
+    assert.equal(second.items.length, 3);
+    assert.ok(
+      [...first.items, ...second.items].every(
+        (row) =>
+          row.learning_subject_group === TEACHER_SUBJECT_GROUPS[1] &&
+          row.has_auth === false,
+      ),
+    );
+    assert.ok(second.items.some((row) => row.id === id(53)));
+    assert.equal(
+      (await list(TEACHER_SUBJECT_GROUPS[1], "Teacher 02")).total,
+      1,
+    );
+    assert.equal(
+      (await list(TEACHER_SUBJECT_GROUPS[0], "Teacher 02")).total,
+      0,
+    );
+    for (const group of TEACHER_SUBJECT_GROUPS)
+      assert.ok((await list(group)).total > 0);
+    assert.equal((await list("", "%_")).total, 0);
+    await assert.rejects(() => list("", "", 0), /ACCOUNT_INVALID/);
+    await db.exec("reset role");
+    await db.query("select set_config('request.jwt.claim.sub',$1,false)", [
+      id(2),
+    ]);
+    await db.exec("set role authenticated");
+    await assert.rejects(() => list(), /ACCOUNT_FORBIDDEN/);
+    await db.exec("reset role; set role anon");
+    await assert.rejects(() => list(), /permission denied/);
+  } finally {
+    await db.close();
+  }
+});
 
 test("teacher list is Admin-only, includes additional teacher roles, pages and searches without exposing credentials", async () => {
   const db = await loadTestDatabase();
@@ -74,8 +153,8 @@ test("teacher list is Admin-only, includes additional teacher roles, pages and s
   }
 });
 
-test("reset deletes the teacher profile and Auth atomically, retains audit attribution and rejects unsafe targets", async () => {
-  const db = await loadTestDatabase();
+test("historical reset before the registry deleted profile and Auth atomically", async () => {
+  const db = await loadTestDatabase({ through: "041" });
   const id = (n: number) =>
     `20000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
   const as = async (n: number) => {
@@ -208,8 +287,8 @@ test("reset deletes the teacher profile and Auth atomically, retains audit attri
   }
 });
 
-test("reset preserves teachers referenced by grades, historical attempts, corrections or Storage", async () => {
-  const db = await loadTestDatabase();
+test("historical reset before the registry rejected referenced teachers", async () => {
+  const db = await loadTestDatabase({ through: "041" });
   const admin = "30000000-0000-4000-8000-000000000001";
   const teacher = "30000000-0000-4000-8000-000000000002";
   const student = "30000000-0000-4000-8000-000000000003";

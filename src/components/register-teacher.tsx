@@ -10,7 +10,6 @@ import {
   Loader2,
   UserPlus,
 } from "lucide-react";
-import { registerTeacher } from "@/app/register/actions";
 
 const prefixOptions = ["นาย", "นาง", "นางสาว"].map((prefix) => ({
   value: prefix,
@@ -28,7 +27,14 @@ const inputClass =
   "mt-2 w-full border border-gray-400 bg-white px-3 py-3 text-ink outline-none focus:border-brand focus:ring-brand/15";
 
 export default function RegisterTeacher() {
-  const [state, action, pending] = useActionState(registerTeacher, {
+  const [state, action, pending] = useActionState(async (_previous: {error: string; success?: boolean}, form: FormData) => {
+    try {
+      const response = await fetch("/api/register/teacher", {method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(Object.fromEntries(["citizen_id", "name_prefix", "first_name", "last_name", "password"].map(field => [field, form.get(field)])))});
+      const result = await response.json();
+      return response.ok && result.success === true ? {error: "", success: true} : {error: result.error || "สร้างบัญชีไม่สำเร็จ"};
+    } catch { return {error: "ไม่สามารถยืนยันสถานะบัญชีได้ กรุณาติดต่อผู้ดูแลระบบก่อนลองใหม่"}; }
+  }, {
     error: "",
   });
   const [values, setValues] = useState(emptyValues);
@@ -79,7 +85,7 @@ export default function RegisterTeacher() {
                 <UserPlus size={28} className="mb-3 text-brand" />
                 <h1 className="text-2xl font-semibold">สร้างบัญชีคุณครู</h1>
                 <p className="mt-2 text-sm leading-6 text-secondary">
-                  กรอกข้อมูลเพื่อสร้างบัญชีสำหรับคุณครู
+                  กรอกเลขบัตรประชาชนและชื่อ–นามสกุลให้ตรงกับทะเบียนคุณครูที่ผู้ดูแลเพิ่มไว้
                 </p>
               </div>
               {state.error && (

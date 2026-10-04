@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 
-export async function loadTestDatabase() {
+export async function loadTestDatabase(options: {through?: string} = {}) {
   const db = new PGlite();
   await db.exec(`
     create role anon; create role authenticated; create role service_role;
@@ -19,7 +19,7 @@ export async function loadTestDatabase() {
     create function storage.foldername(text) returns text[] language sql immutable as $$ select string_to_array(regexp_replace($1,'/[^/]+$',''),'/') $$;
     grant execute on function storage.foldername(text) to authenticated;
   `);
-  for (const file of readdirSync("supabase/migrations").filter(f => f.endsWith(".sql") && !f.includes("history_cron")).sort()) {
+  for (const file of readdirSync("supabase/migrations").filter(f => f.endsWith(".sql") && !f.includes("history_cron") && (!options.through || f.slice(0,3) <= options.through)).sort()) {
     await db.exec(readFileSync(`supabase/migrations/${file}`, "utf8"));
   }
   return db;

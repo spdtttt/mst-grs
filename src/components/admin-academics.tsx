@@ -238,6 +238,30 @@ export default function AdminAcademics({
                       ? "ไม่สามารถโหลดรายชื่อคุณครูได้"
                       : "ไม่พบคุณครูตามคำค้นหา"
                   }
+                  styles={{
+                        control: (base, state) => ({
+                          ...base,
+                          minHeight: 42,
+                          borderRadius: 0,
+                          borderColor: state.isFocused
+                            ? "var(--color-brand)"
+                            : "var(--color-line)",
+                          boxShadow: state.isFocused
+                            ? "0 0 0 2px rgb(125 30 138 / 10%)"
+                            : "none",
+                          "&:hover": { borderColor: "var(--color-brand)" },
+                        }),
+                      }}
+                      theme={(theme) => ({
+                        ...theme,
+                        colors: {
+                          ...theme.colors,
+                          primary: "var(--color-brand)",
+                          primary25: "var(--color-brand-soft)",
+                          primary50: "var(--color-brand-soft)",
+                          neutral80: "var(--color-ink)",
+                        },
+                      })}
                 />
                 {selected && (
                   <p className="text-sm text-brand">
@@ -315,6 +339,30 @@ export default function AdminAcademics({
                         name_prefix: option?.value ?? "",
                       }))
                     }
+                    styles={{
+                        control: (base, state) => ({
+                          ...base,
+                          minHeight: 42,
+                          borderRadius: 0,
+                          borderColor: state.isFocused
+                            ? "var(--color-brand)"
+                            : "var(--color-line)",
+                          boxShadow: state.isFocused
+                            ? "0 0 0 2px rgb(125 30 138 / 10%)"
+                            : "none",
+                          "&:hover": { borderColor: "var(--color-brand)" },
+                        }),
+                      }}
+                      theme={(theme) => ({
+                        ...theme,
+                        colors: {
+                          ...theme.colors,
+                          primary: "var(--color-brand)",
+                          primary25: "var(--color-brand-soft)",
+                          primary50: "var(--color-brand-soft)",
+                          neutral80: "var(--color-ink)",
+                        },
+                      })}
                   />
                 </div>
                 <label className="text-sm">

@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "accounts": "tsx scripts/provision-accounts.ts",
+    "teachers:backfill": "tsx scripts/backfill-teacher-registry.ts",
     "load:generate": "tsx scripts/generate-load-data.ts",
     "load:local": "tsx scripts/benchmark-school.ts",
     "load:live": "tsx scripts/live-load-test.ts"

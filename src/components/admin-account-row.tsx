@@ -14,7 +14,7 @@ export default function AdminAccountRow({ row, role, demo=false, disabled=false,
   onSaved: (row: AccountRow) => void; onDeleted: (id: string) => void;
 }) {
   const [mode,setMode]=useState<"view"|"edit"|"delete"|"password">("view");
-  const [draft,setDraft]=useState(() => ({...accountNameParts(row),classroom:row.classroom ?? "",roll_number:String(row.roll_number ?? "")}));
+  const [draft,setDraft]=useState(() => ({...accountNameParts(row),classroom:row.classroom ?? "",roll_number:String(row.roll_number ?? ""),learning_subject_group:row.learning_subject_group ?? ""}));
   const [password,setPassword]=useState("");
   const [confirmPassword,setConfirmPassword]=useState("");
   const [error,setError]=useState("");
@@ -27,7 +27,7 @@ export default function AdminAccountRow({ row, role, demo=false, disabled=false,
     .concat(draft.name_prefix && !(student ? ["เด็กชาย","เด็กหญิง","นาย","นางสาว"] : ["นาย","นาง","นางสาว"]).includes(draft.name_prefix) ? [draft.name_prefix] : [])
     .map(value=>({value,label:value}));
   function begin(next: typeof mode) {
-    setDraft({...accountNameParts(row),classroom:row.classroom ?? "",roll_number:String(row.roll_number ?? "")});
+    setDraft({...accountNameParts(row),classroom:row.classroom ?? "",roll_number:String(row.roll_number ?? ""),learning_subject_group:row.learning_subject_group ?? ""});
     setPassword("");setConfirmPassword("");setError("");setNotice("");setMode(next);
   }
   async function perform() {
@@ -36,9 +36,10 @@ export default function AdminAccountRow({ row, role, demo=false, disabled=false,
     if(!demo && row.account_revision===undefined) {setError("กรุณาโหลดรายชื่อใหม่ก่อนดำเนินการ");return;}
     const target={id:row.id,role,expected_revision:row.account_revision ?? 0};
     const changes={name_prefix:draft.name_prefix,first_name:draft.first_name,last_name:draft.last_name,
+      ...(role === "teacher" && (row.learning_subject_group || draft.learning_subject_group.trim()) ? {learning_subject_group:draft.learning_subject_group.trim()} : {}),
       ...(student ? {classroom:draft.classroom,roll_number:Number(draft.roll_number)} : {})};
     if(mode==="edit") {
-      const checked=accountEditSchema.safeParse({...target,id:demo ? "00000000-0000-0000-0000-000000000001" : row.id,...changes});
+      const checked=accountEditSchema.safeParse({...target,id:demo ? "00000000-0000-4000-8000-000000000001" : row.id,...changes});
       if(!checked.success) {setError(checked.error.issues[0]?.message ?? "ข้อมูลไม่ถูกต้อง");return;}
     }
     if(mode==="password") {
@@ -55,9 +56,12 @@ export default function AdminAccountRow({ row, role, demo=false, disabled=false,
         if(result.error || !result.data) {setError(result.error ?? "บันทึกไม่สำเร็จ");return;}
         onSaved(result.data);setNotice("บันทึกข้อมูลแล้ว");
       } else if(mode==="delete") {
-        const result=demo ? {success:true} : await deleteAccount(target);
+          const result=demo ? {success:true,account_revision:(row.account_revision ?? 0)+(row.has_auth === false ? 0 : 1)} : await deleteAccount(target);
         if(result.error || !result.success) {setError(result.error ?? "ลบไม่สำเร็จ");return;}
-        onDeleted(row.id);
+        if (role === "teacher") {
+            onSaved({...row,has_auth:false,account_revision:result.account_revision ?? row.account_revision});
+          setNotice("รีเซ็ตบัญชีแล้ว เก็บทะเบียนไว้ คุณครูสามารถสมัครใหม่ได้");
+        } else onDeleted(row.id);
       } else if(mode==="password") {
         const result=demo ? {success:true} : await resetManagerPassword({...target,password});
         if(result.error || !result.success) {setError(result.error ?? "ตั้งรหัสผ่านไม่สำเร็จ");return;}
@@ -86,6 +90,11 @@ export default function AdminAccountRow({ row, role, demo=false, disabled=false,
         </div> : <span className="font-medium">{row.full_name}</span>}
       </td>
       {role==="manager" && <td className="px-5 py-4">{row.username ?? "—"}</td>}
+      {role === "teacher" && <>
+        <td className="min-w-48 px-5 py-4">{mode === "edit" ? <input aria-label="กลุ่มสาระการเรียนรู้" className={inputClass} maxLength={200} disabled={busy} value={draft.learning_subject_group}
+          onChange={event=>setDraft(value=>({...value,learning_subject_group:event.target.value}))} /> : row.learning_subject_group || "ยังไม่ระบุกลุ่มสาระการเรียนรู้"}</td>
+        <td className="whitespace-nowrap px-5 py-4">{row.has_auth === false ? "ยังไม่สมัคร" : "มีบัญชีแล้ว"}</td>
+      </>}
       {student && <>
         <td className="px-5 py-4">{mode==="edit" ? <input aria-label="ชั้น/ห้อง" className={inputClass} disabled={busy} value={draft.classroom} maxLength={40}
           onChange={event=>setDraft(value=>({...value,classroom:event.target.value}))} /> : row.classroom || "—"}</td>
@@ -100,7 +109,7 @@ export default function AdminAccountRow({ row, role, demo=false, disabled=false,
           </button>
           <button type="button" className={`${buttonClass} text-red-700 duration-150 hover:bg-red-50`} disabled={unavailable} onClick={()=>begin("delete")}>ลบและรีเซ็ทรหัสผ่าน</button>
         </div> : <div className="space-y-3">
-          {mode==="delete" && <p className="max-w-sm text-sm leading-6 text-red-700">ยืนยันลบบัญชี {row.full_name} รวมบัญชีเข้าสู่ระบบและสิทธิ์ทุกบทบาท? บัญชีที่มีข้อมูลอ้างอิงอยู่จะลบไม่ได้</p>}
+          {mode==="delete" && <p className="max-w-sm text-sm leading-6 text-red-700">{role === "teacher" ? `ยืนยันลบบัญชีเข้าสู่ระบบของ ${row.full_name}? เก็บทะเบียน ข้อมูลเดิม และทุกบทบาทไว้ คุณครูต้องสมัครใหม่เพื่อตั้งรหัสผ่าน` : `ยืนยันลบบัญชี ${row.full_name} รวมบัญชีเข้าสู่ระบบและสิทธิ์ทุกบทบาท? บัญชีที่มีข้อมูลอ้างอิงอยู่จะลบไม่ได้`}</p>}
           {mode==="password" && <div className="grid gap-2">
             <label className="text-xs">รหัสผ่านใหม่<input className={inputClass} type="password" autoComplete="new-password" minLength={6} maxLength={128}
               disabled={busy} value={password} onChange={event=>setPassword(event.target.value)} /></label>

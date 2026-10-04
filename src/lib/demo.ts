@@ -13,6 +13,7 @@ export const demoProfiles: Record<Role, Profile> = {
     full_name: "สุภาวดี ศรีสุข",
     student_code: null,
     classroom: null,
+    learning_subject_group: "กลุ่มสาระการเรียนรู้คณิตศาสตร์",
   },
   academic: {
     id: "academic-demo",

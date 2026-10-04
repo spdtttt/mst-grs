@@ -10,7 +10,7 @@ export async function currentProfile(
   const [profile, role] = await Promise.all([
     db
       .from("profiles")
-      .select("id,full_name,student_code,classroom")
+      .select("id,full_name,student_code,classroom,learning_subject_group")
       .eq("id", userId)
       .single(),
     db.rpc("my_role"),

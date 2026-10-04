@@ -1,4 +1,4 @@
-// Isolated attack simulations against all local migrations. Never connects to Supabase.
+﻿// Isolated attack simulations against all local migrations. Never connects to Supabase.
 // Reproductions describe current weaknesses; they are evidence, not passing security gates.
 import assert from "node:assert/strict";
 import { createECDH, randomBytes } from "node:crypto";
@@ -7,7 +7,7 @@ import { createRequire } from "node:module";
 import { loadTestDatabase } from "./load-test-bootstrap";
 import { teacherRegistrationSchema } from "../src/lib/auth-input";
 import { provisionTeacher } from "../src/lib/teacher-registration";
-import { encryptStaffCitizenId } from "../src/lib/staff-identity";
+import { RegistryRegistrationError } from "../src/lib/registered-teacher";
 
 async function main() {
   const db = await loadTestDatabase();
@@ -325,7 +325,7 @@ async function main() {
       result: "passed",
     });
 
-    // Reproduction 1: public registration has no invitation/approval; imported names grant ownership.
+    // Registry gate: unlisted teachers cannot create Auth or receive school data.
     await db.exec("reset role");
     const secret = "synthetic-security-audit-secret-at-least-32";
     const input = {
@@ -339,80 +339,56 @@ async function main() {
     const registered = await provisionTeacher(
       input,
       {
-        async createAuth(email) {
-          await db.query("insert into auth.users(id,email) values($1,$2)", [
-            id(9),
-            email,
-          ]);
-          return id(9);
+        async consume() {
+          return true;
         },
-        async saveProfile(profile, citizen) {
-          await db.query("select register_teacher_profile($1,$2)", [
-            profile.id,
-            {
-              name_prefix: profile.name_prefix,
-              first_name: profile.first_name,
-              last_name: profile.last_name,
-              citizen_id_encrypted: encryptStaffCitizenId(
-                citizen,
-                profile.id,
-                secret,
-              ),
-            },
-          ]);
+        async claim(hash, first, last, token, emails) {
+          try {
+            return (
+              await db.query<{
+                result: { id: string; token: string; pending: boolean };
+              }>("select claim_teacher_registration($1,$2,$3,$4,$5) result", [
+                hash,
+                first,
+                last,
+                token,
+                emails,
+              ])
+            ).rows[0].result;
+          } catch {
+            throw new RegistryRegistrationError("REGISTRATION_DENIED");
+          }
         },
-        async findProfile() {
-          return null;
+        async create() {
+          throw new Error("Unlisted teacher must never reach Auth creation");
         },
-        async deleteAuth() {
-          throw new Error("unexpected rollback");
+        async authToken() {
+          throw new Error("Unexpected Auth lookup");
+        },
+        async finish() {
+          throw new Error("Unexpected registration finish");
         },
       },
       secret,
+      "local-audit",
     );
-    assert.equal(registered.success, true);
-    await db.query("insert into auth.sessions(id,user_id) values($1,$2)", [
-      session(9),
-      id(9),
-    ]);
-    await db.query("select activate_login_role($1,$2,'teacher')", [
-      session(9),
-      id(9),
-    ]);
-    await as(7);
-    await db.query("select import_grades_overwrite($1)", [
-      [
-        {
-          course_code: "UNVERIFIED",
-          course_name: "Audit subject",
-          credits: 1,
-          classroom: "ม.1/1",
-          teacher_name: ["MrUnverified Teacher"],
-          student_code: "90001",
-          student_name: "Audit 1",
-          roll_number: 1,
-          academic_year: 2569,
-          semester: 1,
-          original_grade: "0",
-        },
-      ],
-    ]);
-    await as(9);
+    assert.equal(registered.status, 403);
     assert.equal(
-      (
-        await db.query(
-          "select id from grade_records where course_code='UNVERIFIED'",
-        )
-      ).rows.length,
-      1,
+      (await db.query("select id from profiles where id=$1", [id(9)])).rows
+        .length,
+      0,
+    );
+    assert.equal(
+      (await db.query("select id from auth.users where id=$1", [id(9)])).rows
+        .length,
+      0,
     );
     results.push({
-      name: "F1: self-registered, unverified teacher receives record by matching import name",
-      result: "reproduced",
+      name: "F1: unlisted teacher registration is denied before Auth creation",
+      result: "blocked",
       evidence:
-        "Synthetic Auth adapter; real registration/provisioning/SQL logic. Admin import of that name is required.",
+        "Real registry SQL lookup rejected the unknown identity; Auth adapter was never invoked.",
     });
-
     // Reproduction 2: arbitrary HTTPS push destination is accepted by SQL and the actual sender.
     const require = createRequire(import.meta.url);
     const webpush = require("web-push");

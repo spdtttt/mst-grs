@@ -14,6 +14,8 @@ export type AccountRow = {
   student_code?: string;
   classroom?: string | null;
   roll_number?: number | null;
+  learning_subject_group?: string | null;
+  has_auth?: boolean;
 };
 export type AccountList = { total: number; items: AccountRow[] };
 export const accountNameFields = {
@@ -40,6 +42,7 @@ export const accountEditSchema = accountTargetSchema.extend({
   ...accountNameFields,
   classroom: z.string().trim().regex(/^ม\.[1-6]\/[1-9]\d{0,2}$/, "ระบุชั้น/ห้อง เช่น ม.4/9").optional(),
   roll_number: z.number().int().min(1).max(999).optional(),
+  learning_subject_group: z.string().trim().min(1, "กรุณากรอกกลุ่มสาระการเรียนรู้").max(200).optional(),
 }).refine((value) => accountFullName(value).length <= 150, {
   message: "ชื่อรวมต้องไม่เกิน 150 ตัวอักษร", path: ["first_name"],
 }).refine((value) => value.role !== "student" || (value.classroom !== undefined && value.roll_number !== undefined), {

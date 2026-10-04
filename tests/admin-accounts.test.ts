@@ -119,7 +119,7 @@ test("inline edits follow IDs, preserve login identity and history, reject stale
   try {
     for (const [n, role] of [[1,"admin"],[2,"teacher"],[3,"academic"],[4,"student"],[5,"manager"],[6,"teacher"],[7,"student"],[8,"academic"]] as const) {
       await db.query("insert into auth.users(id,email) values($1,$2)", [id(n), `identity${n}@example.test`]);
-      await db.query("insert into profiles(id,role,full_name,student_code) values($1,$2,$3,$4)", [id(n),role,`Account ${n}`,role==="student" ? `1000${n}` : null]);
+      await db.query("insert into profiles(id,role,full_name,student_code,staff_citizen_hash) values($1,$2,$3,$4,$5)", [id(n),role,`Account ${n}`,role==="student" ? `1000${n}` : null, [2,3,6].includes(n) ? String(n).repeat(64) : null]);
     }
     await db.query("select set_staff_roles($1,ARRAY['teacher','academic']::app_role[])", [id(3)]);
     await db.query("select set_staff_roles($1,ARRAY['teacher','admin']::app_role[])", [id(6)]);
@@ -139,7 +139,7 @@ test("inline edits follow IDs, preserve login identity and history, reject stale
     await edit(2,"teacher");
     await edit(3,"academic");
     await assert.rejects(() => remove(4,"student",0), /ACCOUNT_CHANGED/);
-    for (const [n,role] of [[2,"teacher"],[3,"academic"],[4,"student"]] as const) await assert.rejects(() => remove(n,role,1), /ACCOUNT_REFERENCED/);
+    await assert.rejects(() => remove(4,"student",1), /ACCOUNT_REFERENCED/);
     await assert.rejects(() => remove(6,"teacher"), /ACCOUNT_PROTECTED/);
     await assert.rejects(() => remove(1,"admin"), /ACCOUNT_INVALID/);
     await db.exec("reset role");
@@ -147,6 +147,12 @@ test("inline edits follow IDs, preserve login identity and history, reject stale
     assert.deepEqual(active,{student_name:"นางสาวทดสอบ ระบบ",teacher_name:["นางสาวทดสอบ ระบบ","นางสาวทดสอบ ระบบ"]});
     const history = (await db.query("select student_name,teacher_name from grade_record_history")).rows[0];
     assert.deepEqual(history,{student_name:"Account 4",teacher_name:["Account 2","Account 3"]});
+    await asAdmin();
+    await remove(2,"teacher",1);
+    await remove(3,"academic",1); // A shared teacher identity remains permanent from any staff page.
+    await db.exec("reset role");
+    assert.equal((await db.query("select * from profiles where id=any($1::uuid[])",[[id(2),id(3)]])).rows.length,2);
+    assert.equal((await db.query("select * from auth.users where id=any($1::uuid[])",[[id(2),id(3)]])).rows.length,0);
     assert.equal((await db.query<{ email: string | null }>("select email from auth.users where id=$1", [id(4)])).rows[0].email,"identity4@example.test");
     // A remaining historical reference must still block deletion after active grades are removed.
     await db.exec("delete from grade_records");
