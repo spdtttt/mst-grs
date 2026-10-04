@@ -29,9 +29,9 @@ const demoTeachers: TeacherRow[] = [
   { id: "demo-teacher-3", full_name: "นางกมลพร รักเรียน" },
 ];
 const inputClass =
-  "mt-2 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm outline-none focus:border-brand";
+  "mt-2 w-full border border-line bg-white px-3 py-2.5 text-sm outline-none focus:border-brand";
 const buttonClass =
-  "rounded-lg border border-line px-3 py-2 text-sm disabled:opacity-50";
+  "border border-line px-3 py-2 text-sm disabled:opacity-50";
 
 export default function AdminAcademics({
   demo = false,

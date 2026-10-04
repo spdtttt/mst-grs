@@ -1513,7 +1513,7 @@ export default function Workspace({
                             วันที่เปิดระบบ
                           </label>
                           <input
-                            className="max-w-full rounded-lg border border-[#e1dce9] bg-white px-[13px] py-[11px] text-ink outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115]"
+                            className="max-w-full border border-[#e1dce9] bg-white px-[13px] py-[11px] text-ink outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115]"
                             required
                             id="opens"
                             type="date"
@@ -1530,7 +1530,7 @@ export default function Workspace({
                             วันที่ปิดระบบ
                           </label>
                           <input
-                            className="max-w-full rounded-lg border border-[#e1dce9] bg-white px-[13px] py-[11px] text-ink outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115]"
+                            className="max-w-full border border-[#e1dce9] bg-white px-[13px] py-[11px] text-ink outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115]"
                             required
                             id="closes"
                             type="date"
@@ -1548,7 +1548,7 @@ export default function Workspace({
                         ข้อความแจ้งผู้ใช้งาน
                       </label>
                       <textarea
-                        className="max-w-full rounded-lg border border-[#e1dce9] bg-white px-[13px] py-[11px] text-ink outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115] min-h-[110px] resize-y"
+                        className="max-w-full border border-[#e1dce9] bg-white px-[13px] py-[11px] text-ink outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115] min-h-[110px] resize-y"
                         id="notice"
                         rows={4}
                         maxLength={1000}
@@ -1566,7 +1566,7 @@ export default function Workspace({
                       </div>
                       <button
                         type="submit"
-                        className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border border-transparent px-[18px] py-[11px] font-[550] whitespace-nowrap bg-brand text-white shadow-[0_3px_6px_#713cd112] enabled:hover:bg-[#602cbc] enabled:hover:shadow-[0_3px_12px_#713cd126]"
+                        className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] border border-transparent px-[18px] py-[11px] font-[550] whitespace-nowrap bg-brand text-white shadow-[0_3px_6px_#713cd112] enabled:hover:bg-brand/90 enabled:hover:shadow-[0_3px_12px_#713cd126]"
                         disabled={busy}
                       >
                         <Check size={18} />
