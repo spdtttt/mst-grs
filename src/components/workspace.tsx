@@ -374,7 +374,7 @@ export default function Workspace({
           ? "ยืนยันรับงาน"
         : r.status === "submitted"
           ? "อนุมัติ"
-          : ["teacher_approved", "completed"].includes(r.status)
+          : r.status === "teacher_approved"
             ? "ดู/แก้ไขผลการเรียน"
             : "ดูรายละเอียด";
     return r.status === "teacher_approved" ? "อนุมัติ" : "เรียบร้อย";
@@ -446,7 +446,7 @@ export default function Workspace({
   }
   function saveCorrectedGrade() {
     if (!selected || role !== "teacher" || view !== "overview" ||
-      !["teacher_approved", "completed"].includes(selected.status)) return;
+      selected.status !== "teacher_approved") return;
     if (!open) {
       setProblem("ระบบปิดรับดำเนินการแล้ว");
       return;
@@ -1784,8 +1784,13 @@ export default function Workspace({
                   </span>
                 </div>
               )}
+              {role === "teacher" && selected.status === "completed" && (
+                <p className="my-4 text-sm text-secondary">
+                  ฝ่ายวิชาการอนุมัติแล้ว ไม่สามารถแก้ไขผลการเรียนได้
+                </p>
+              )}
               {role === "teacher" && view === "overview" &&
-                ["teacher_approved", "completed"].includes(selected.status) &&
+                selected.status === "teacher_approved" &&
                 editingFinalGrade && (
                   <div className="my-5 rounded-lg border border-[#e8dff5] bg-[#faf7ff] p-4">
                     <label className="mb-2 block font-semibold" htmlFor="corrected-final-grade">
@@ -1894,7 +1899,7 @@ export default function Workspace({
                 {editingFinalGrade ? "ยกเลิก" : "ปิด"}
               </button>
               {role === "teacher" && view === "overview" && open &&
-                ["teacher_approved", "completed"].includes(selected.status) && (
+                selected.status === "teacher_approved" && (
                   <button
                     className="cursor-pointer bg-brand px-[18px] py-[11px] font-semibold text-white transition enabled:hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
                     disabled={busy || (editingFinalGrade && finalGrade === selected.final_grade)}
