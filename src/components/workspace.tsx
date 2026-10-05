@@ -802,7 +802,7 @@ export default function Workspace({
             </div>
             {view !== "schedule" && view !== "import" && view !== "students" && view !== "teachers" && view !== "academics" && view !== "managers" && view !== "student-lifecycle" && (
               <div className="flex w-full flex-wrap items-center gap-3 desk:w-auto">
-                <div className="relative flex min-w-[174px] flex-1 items-center gap-2 rounded-lg border border-[#e5e0ec] bg-white px-[11px] py-2 text-gray-600 focus-within:outline-1 focus-within:outline-gray-500 desk:flex-none">
+                <div className="relative flex min-w-[174px] flex-1 items-center gap-2 border border-[#e5e0ec] bg-white px-[11px] py-2 text-gray-600 focus-within:outline-1 focus-within:outline-gray-500 desk:flex-none">
                   <CalendarDays className="shrink-0" size={17} />
                   <span className="min-w-0 flex-1 truncate py-0.5 text-sm">
                     {year === "all" ? "ทุกปีการศึกษา" : `ปีการศึกษา ${year}`}
@@ -827,7 +827,7 @@ export default function Workspace({
                       ))}
                   </select>
                 </div>
-                <div className="relative flex min-w-[154px] flex-1 items-center gap-2 rounded-lg border border-[#e5e0ec] bg-white px-[11px] py-2 text-gray-600 focus-within:outline-1 focus-within:outline-gray-500 desk:flex-none">
+                <div className="relative flex min-w-[154px] flex-1 items-center gap-2 border border-[#e5e0ec] bg-white px-[11px] py-2 text-gray-600 focus-within:outline-1 focus-within:outline-gray-500 desk:flex-none">
                   <span className="min-w-0 flex-1 truncate py-0.5 text-sm">
                     {semester === "all"
                       ? "ทุกภาคเรียน"
@@ -993,7 +993,7 @@ export default function Workspace({
                     </div>
                     {(view === "export" || view === "history" && role !== "student") && (
                       <button
-                        className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border border-transparent px-[18px] py-[11px] font-[550] whitespace-nowrap bg-brand text-white shadow-[0_3px_6px_#713cd112] enabled:hover:bg-[#602cbc] enabled:hover:shadow-[0_3px_12px_#713cd126]"
+                        className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] border border-transparent px-[18px] py-[11px] font-[550] whitespace-nowrap bg-brand text-white shadow-[0_3px_6px_#713cd112] enabled:hover:bg-brand/90 enabled:hover:shadow-[0_3px_12px_#713cd126]"
                         onClick={exportData}
                         disabled={!filtered.length}
                       >
@@ -1002,10 +1002,10 @@ export default function Workspace({
                     )}
                   </div>
                   <div className="flex items-center gap-[13px] px-6 pb-[21px] max-desk:flex-wrap max-desk:gap-2 max-desk:px-4 max-desk:pb-[17px]">
-                    <div className="flex max-w-[390px] flex-1 items-center gap-2.5 rounded-[7px] border border-[#e9e4ef] px-3 text-[#b3a8bf] focus-within:border-[#a97ddf] [&_input]:min-w-0 [&_input]:w-full [&_input]:border-0 [&_input]:bg-transparent [&_input]:px-0 [&_input]:py-[9px] [&_input]:text-sm [&_input]:shadow-none [&_input]:placeholder:text-[#8e819b] max-desk:max-w-none max-desk:basis-full max-desk:[&_input]:text-[13px]">
+                    <div className="flex max-w-[390px] flex-1 items-center gap-2.5 border border-[#e9e4ef] px-3 text-[#b3a8bf] focus-within:border-[#a97ddf] [&_input]:min-w-0 [&_input]:w-full [&_input]:border-0 [&_input]:bg-transparent [&_input]:px-0 [&_input]:py-[9px] [&_input]:text-sm [&_input]:shadow-none [&_input]:placeholder:text-[#8e819b] max-desk:max-w-none max-desk:basis-full max-desk:[&_input]:text-[13px]">
                       <Search size={18} />
                       <input
-                        className="max-w-full rounded-lg border border-[#e1dce9] bg-white px-[13px] py-[11px] text-ink outline-none focus:border-brand"
+                        className="max-w-full border border-[#e1dce9] bg-white px-[13px] py-[11px] text-ink outline-none focus:border-brand"
                         aria-label="ค้นหารายการ"
                         placeholder={
                           role === "student"
@@ -1019,7 +1019,7 @@ export default function Workspace({
                     {role !== "academic" && view !== "history" && (
                       <div className="relative max-w-full">
                         <select
-                          className="min-w-[153px] max-w-full appearance-none rounded-lg border border-[#e1dce9] bg-white py-[9px] pr-10 pl-[13px] text-sm text-[#796788] outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115] max-desk:min-w-0 max-desk:py-2 max-desk:text-[13px]"
+                          className="min-w-[153px] max-w-full appearance-none border border-[#e1dce9] bg-white py-[9px] pr-10 pl-[13px] text-sm text-[#796788] outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115] max-desk:min-w-0 max-desk:py-2 max-desk:text-[13px]"
                           aria-label="กรองสถานะ"
                           value={filter}
                           onChange={(e) => setFilter(e.target.value)}
@@ -1191,7 +1191,7 @@ export default function Workspace({
                               <td className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
                                 {view === "export" || view === "history" || view === "outstanding" ? (
                                   <button
-                                    className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border font-[550] whitespace-nowrap border-[#e3ddea] bg-white text-[#625670] enabled:hover:bg-[#f8f5fc] px-3 py-[7px]"
+                                    className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] border font-[550] whitespace-nowrap border-[#e3ddea] bg-white text-[#625670] enabled:hover:bg-[#f8f5fc] px-3 py-[7px]"
                                     onClick={() => show(r)}
                                   >
                                     ดูรายละเอียด
@@ -1202,7 +1202,7 @@ export default function Workspace({
                                     className={twMerge(
                                       "cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3",
                                       twMerge(
-                                        "inline-flex min-w-[118px] items-center justify-center gap-[7px] rounded-[7px] border border-[#d9c3f0] bg-[#f2eafb] px-3 py-2 text-sm text-[#713bb5] enabled:hover:bg-[#eee3fc]",
+                                        "inline-flex min-w-[118px] items-center justify-center gap-[7px] border border-[#d9c3f0] bg-[#f2eafb] px-3 py-2 text-sm text-[#713bb5] enabled:hover:bg-[#eee3fc]",
                                         disabled &&
                                           "border-[#ede9f2] bg-[#faf9fc] text-[#b7acbf] disabled:opacity-100",
                                       ),
@@ -1881,7 +1881,7 @@ export default function Workspace({
             </div>
             <div className="sticky bottom-0 flex flex-wrap justify-end gap-2.5 border-t border-line bg-white px-[26px] py-[18px] max-desk:gap-2 max-desk:p-[15px] max-desk:[&_button]:px-3 max-desk:[&_button]:py-2.5 max-desk:[&_button]:text-xs max-desk:[&_button]:whitespace-normal">
               <button
-                className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border px-[18px] py-[11px] font-[550] whitespace-nowrap border-[#e3ddea] bg-white text-[#625670] enabled:hover:bg-[#f8f5fc]"
+                className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] border px-[18px] py-[11px] font-[550] whitespace-nowrap border-[#e3ddea] bg-white text-[#625670] enabled:hover:bg-[#f8f5fc]"
                 disabled={busy}
                 onClick={() => {
                   if (editingFinalGrade) {
@@ -1896,7 +1896,7 @@ export default function Workspace({
               {role === "teacher" && view === "overview" && open &&
                 ["teacher_approved", "completed"].includes(selected.status) && (
                   <button
-                    className="cursor-pointer rounded-lg bg-brand px-[18px] py-[11px] font-semibold text-white transition enabled:hover:bg-[#602cbc] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="cursor-pointer bg-brand px-[18px] py-[11px] font-semibold text-white transition enabled:hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
                     disabled={busy || (editingFinalGrade && finalGrade === selected.final_grade)}
                     onClick={() => editingFinalGrade ? saveCorrectedGrade() : setEditingFinalGrade(true)}
                   >
@@ -1906,7 +1906,7 @@ export default function Workspace({
               {role === "teacher" &&
                 ["assigned", "submitted"].includes(selected.status) && (
                   <button
-                    className="cursor-pointer rounded-lg border border-[#d8c8eb] bg-white px-[18px] py-[11px] font-[550] text-brand transition hover:bg-brand-soft disabled:opacity-60"
+                    className="cursor-pointer border border-[#d8c8eb] bg-white px-[18px] py-[11px] font-[550] text-brand transition hover:bg-brand-soft disabled:opacity-60"
                     disabled={busy}
                     onClick={() =>
                       window.location.assign(
@@ -1921,7 +1921,7 @@ export default function Workspace({
                 )}
               {nextStatus[role]?.[selected.status] && (
                 <button
-                  className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border border-transparent px-[18px] py-[11px] font-[550] whitespace-nowrap bg-brand text-white shadow-[0_3px_6px_#713cd112] enabled:hover:bg-[#602cbc] enabled:hover:shadow-[0_3px_12px_#713cd126]"
+                  className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] border border-transparent px-[18px] py-[11px] font-[550] whitespace-nowrap bg-brand text-white shadow-[0_3px_6px_#713cd112] enabled:hover:bg-brand/90 enabled:hover:shadow-[0_3px_12px_#713cd126]"
                   disabled={busy}
                   onClick={act}
                 >

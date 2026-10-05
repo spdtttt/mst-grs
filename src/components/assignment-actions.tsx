@@ -91,7 +91,7 @@ export default function AssignmentActions({
   if (!canAssign) return null;
 
   return (
-    <section className="rounded-2xl border border-[#e7dcef] bg-white p-6 shadow-[0_12px_45px_#3c24520a] max-md:p-5">
+    <section className="border border-[#e7dcef] bg-white p-6 shadow-[0_12px_45px_#3c24520a] max-md:p-5">
       <div className="mb-5 flex items-start gap-3">
         <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">
           <FileUp size={22} />
@@ -132,7 +132,7 @@ export default function AssignmentActions({
           รายละเอียดภาระงาน
         </label>
         <textarea
-          className="min-h-[170px] w-full resize-y rounded-xl border border-[#ded5e8] bg-white px-4 py-3 outline-none placeholder:text-[#a99eb3] focus:border-brand focus:ring-3 focus:ring-[#713cd115]"
+          className="min-h-[170px] w-full resize-y border border-[#ded5e8] bg-white px-4 py-3 outline-none placeholder:text-[#a99eb3] focus:border-brand focus:ring-3 focus:ring-[#713cd115]"
           id="assignment"
           name="assignment"
           minLength={10}
@@ -156,7 +156,7 @@ export default function AssignmentActions({
                   aria-hidden="true"
                 />
                 <input
-                  className="w-full rounded-xl border border-[#ded5e8] bg-white py-3 pr-4 pl-12 outline-none focus:border-brand focus:ring-3 focus:ring-[#713cd115]"
+                  className="w-full border border-[#ded5e8] bg-white py-3 pr-4 pl-12 outline-none focus:border-brand focus:ring-3 focus:ring-[#713cd115]"
                   id="due_date"
                   type="date"
                   value={dueDate}
@@ -176,7 +176,7 @@ export default function AssignmentActions({
                   aria-hidden="true"
                 />
                 <select
-                  className="w-full rounded-xl border border-[#ded5e8] bg-white py-3 pr-4 pl-12 outline-none focus:border-brand focus:ring-3 focus:ring-[#713cd115]"
+                  className="w-full border border-[#ded5e8] bg-white py-3 pr-4 pl-12 outline-none focus:border-brand focus:ring-3 focus:ring-[#713cd115]"
                   id="due_time"
                   value={dueTime}
                   onChange={(event) => setDueTime(event.target.value)}
@@ -266,7 +266,7 @@ export default function AssignmentActions({
         )}
 
         <button
-          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 font-semibold text-white shadow-[0_6px_18px_#713cd12c] transition enabled:hover:bg-[#602cbc] disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 bg-brand px-5 py-3 font-semibold text-white shadow-[0_6px_18px_#713cd12c] transition enabled:hover:bg-brand/90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
           type="submit"
           disabled={pending || !!fileError || state.success}
         >

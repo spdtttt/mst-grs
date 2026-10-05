@@ -121,7 +121,7 @@ export default function AssignmentDetail({
 
         <div className="grid grid-cols-[minmax(0,1fr)_360px] gap-6 max-lg:grid-cols-1 font-[Sarabun]">
           <div className="space-y-6">
-            <section className="rounded-2xl border border-line bg-white p-6 shadow-[0_12px_45px_#3c24520a] max-md:p-5">
+            <section className=" border border-line bg-white p-6 shadow-[0_12px_45px_#3c24520a] max-md:p-5">
               <h2 className="mb-5 flex items-center gap-3 text-lg font-semibold">
                 <BookOpen className="text-brand" size={21} />
                 รายละเอียดภาระงาน
