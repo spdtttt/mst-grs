@@ -112,7 +112,7 @@ export type Schedule = {
 export const roles: Record<Role, string> = {
   student: "นักเรียน",
   teacher: "ครูประจำวิชา",
-  academic: "ฝ่ายวิชาการ",
+  academic: "ฝ่ายวัดผล",
   manager: "ผู้บริหาร",
   admin: "ผู้ดูแลระบบ",
 };
@@ -125,7 +125,7 @@ export const statuses: Record<
   assigned: { label: "อยู่ระหว่างดำเนินการ", progress: 50, tone: "purple" },
   submitted: { label: "ส่งงานแล้ว", progress: 75, tone: "blue" },
   teacher_approved: {
-    label: "รอฝ่ายวิชาการอนุมัติ",
+    label: "รอฝ่ายวัดผลอนุมัติ",
     progress: 75,
     tone: "blue",
   },
