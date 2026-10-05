@@ -161,8 +161,8 @@ export async function resetAcademicAccount(
   return result.error
     ? {
         error: result.error
-          .replaceAll("คุณครู", "ฝ่ายวิชาการ")
-          .replaceAll("สิทธิ์ครู", "สิทธิ์ฝ่ายวิชาการ"),
+          .replaceAll("คุณครู", "ฝ่ายวัดผล")
+          .replaceAll("สิทธิ์ครู", "สิทธิ์ฝ่ายวัดผล"),
       }
     : result;
 }

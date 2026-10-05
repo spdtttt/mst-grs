@@ -50,7 +50,7 @@ export default function ManagerCompletionSummary({
             total: stats.total_students,
             unit: "คน",
             description:
-              "นับนักเรียนหนึ่งคนเมื่อทุกรายการได้รับอนุมัติจากฝ่ายวิชาการแล้ว",
+              "นับนักเรียนหนึ่งคนเมื่อทุกรายการได้รับอนุมัติจากฝ่ายวัดผลแล้ว",
             icon: Users,
             tone: "border-[#d9ebe4] bg-[#f5faf8]",
             text: "text-[#21765f]",
@@ -64,7 +64,7 @@ export default function ManagerCompletionSummary({
             total: stats.total_records,
             unit: "รายการ",
             description:
-              "นับแต่ละรายการที่ฝ่ายวิชาการอนุมัติแล้ว นักเรียนหนึ่งคนมีได้หลายรายการ",
+              "นับแต่ละรายการที่ฝ่ายวัดผลอนุมัติแล้ว นักเรียนหนึ่งคนมีได้หลายรายการ",
             icon: BookOpen,
             tone: "border-[#e7ddf2] bg-[#faf7fd]",
             text: "text-[#6b449f]",

@@ -191,31 +191,8 @@ export default function Login({
                     maxLength={cfg.identifierMaxLength}
                     placeholder={cfg.identifierPlaceholder}
                     className="max-w-full border px-[13px] outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115] bg-white  w-full border-[#46464E] py-2.5 pr-10 pl-10 text-[#2F3038]"
-                    type={
-                      citizenIdentifier && !identityVisible
-                        ? "password"
-                        : "text"
-                    }
+                    type="text"
                   />
-                  {citizenIdentifier && (
-                    <button
-                      type="button"
-                      aria-label={
-                        identityVisible
-                          ? "ซ่อนเลขบัตรประชาชน"
-                          : "แสดงเลขบัตรประชาชน"
-                      }
-                      aria-pressed={identityVisible}
-                      onClick={() => setIdentityVisible(!identityVisible)}
-                      className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 absolute top-1/2 right-3 z-10 -translate-y-1/2 text-[#46464E] transition-opacity duration-200 hover:opacity-70"
-                    >
-                      {identityVisible ? (
-                        <EyeOff className="size-5" aria-hidden="true" />
-                      ) : (
-                        <Eye className="size-5" aria-hidden="true" />
-                      )}
-                    </button>
-                  )}
                 </div>
               </div>
               {cfg.showPassword && (
@@ -293,11 +270,11 @@ export default function Login({
               นักเรียนตรวจสอบรายวิชาคงค้าง ยื่นคำร้อง และติดตามงานที่ครูมอบหมาย
             </li>
             <li>ครูผู้สอนมอบหมายงาน ตรวจรับงาน และอนุมัติผลการแก้ไข</li>
-            <li>ฝ่ายวิชาการและผู้บริหารติดตามความคืบหน้าและผลการดำเนินการ</li>
+            <li>ฝ่ายวัดผลและผู้บริหารติดตามความคืบหน้าและผลการดำเนินการ</li>
           </ul>
           <p className="mt-4 text-sm">
             เลือกประเภทผู้ใช้งานและเข้าสู่ระบบเพื่อดูข้อมูลตามสิทธิ์ของคุณ
-            หากเข้าสู่ระบบไม่ได้ โปรดติดต่อฝ่ายวิชาการของโรงเรียน
+            หากเข้าสู่ระบบไม่ได้ โปรดติดต่อฝ่ายวัดผลของโรงเรียน
           </p>
         </div>
       </section>

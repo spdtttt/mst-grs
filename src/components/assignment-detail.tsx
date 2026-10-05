@@ -64,7 +64,7 @@ export default function AssignmentDetail({
     ["มอบหมายงาน", record.assigned_at],
     ["ครูรับงาน", record.submitted_at],
     ["ครูอนุมัติ", record.teacher_approved_at],
-    ["ฝ่ายวิชาการอนุมัติ", record.completed_at],
+    ["ฝ่ายวัดผลอนุมัติ", record.completed_at],
   ] as const;
 
   return (

@@ -100,7 +100,7 @@ const navTitles: Record<View, string> = {
   students: "รายชื่อนักเรียน",
   teachers: "รายชื่อคุณครู",
   managers: "รายชื่อผู้บริหาร",
-  academics: "รายชื่อฝ่ายวิชาการ",
+  academics: "รายชื่อฝ่ายวัดผล",
 };
 function localBangkok(value: string | null) {
   if (!value) return "";
@@ -373,7 +373,7 @@ export default function Workspace({
         : r.status === "assigned"
           ? "ยืนยันรับงาน"
         : r.status === "submitted"
-          ? "อนุมัติ"
+          ? "อนุมัติหรือมอบหมายงานเพิ่ม"
           : r.status === "teacher_approved"
             ? "ดู/แก้ไขผลการเรียน"
             : "ดูรายละเอียด";
@@ -491,7 +491,7 @@ export default function Workspace({
       [
         ...Object.keys(columns),
         "สถานะ",
-        ...(extra ? ["ผลการเรียนใหม่", "วันที่ฝ่ายวิชาการอนุมัติ"] : []),
+        ...(extra ? ["ผลการเรียนใหม่", "วันที่ฝ่ายวัดผลอนุมัติ"] : []),
         ...(view === "history" ? ["วันที่เก็บเข้าประวัติ"] : []),
       ],
       filtered.map((r) => [
@@ -951,7 +951,7 @@ export default function Workspace({
                       unit="รายวิชา"
                       icon={<FileCheck2 size={21} />}
                       tone="green"
-                      detail="ฝ่ายวิชาการอนุมัติแล้ว"
+                      detail="ฝ่ายวัดผลอนุมัติแล้ว"
                     />
                   </section>
                 </>
@@ -1290,9 +1290,9 @@ export default function Workspace({
                       [
                         "75%",
                         "ส่งงานและรออนุมัติ",
-                        "ครูตรวจรับและเสนอฝ่ายวิชาการ",
+                        "ครูตรวจรับและเสนอฝ่ายวัดผล",
                       ],
-                      ["100%", "แก้ไขสำเร็จ", "ฝ่ายวิชาการยืนยันผลการเรียน"],
+                      ["100%", "แก้ไขสำเร็จ", "ฝ่ายวัดผลยืนยันผลการเรียน"],
                     ].map(([percent, title, detail], i) => (
                       <div
                         key={percent}
@@ -1560,7 +1560,7 @@ export default function Workspace({
                         <span>
                           เมื่อพ้นวันที่ปิดระบบ รายการที่แก้สำเร็จจะย้ายเข้าประวัติอัตโนมัติ
                           {" "}รายการที่ยังไม่สำเร็จจะกลับเป็นสถานะยังไม่ยื่นคำร้อง และต้องเริ่มดำเนินการใหม่ในรอบถัดไป{" "}
-                          นักเรียน ครู และฝ่ายวิชาการยังเปิดอ่านประวัติได้ตลอดเวลา แต่ดำเนินการแก้ผลการเรียนไม่ได้
+                          นักเรียน ครู และฝ่ายวัดผลยังเปิดอ่านประวัติได้ตลอดเวลา แต่ดำเนินการแก้ผลการเรียนไม่ได้
                           ผู้ดูแลระบบสามารถปรับช่วงเวลาได้จากเมนูตั้งค่าเวลาเปิด–ปิดระบบ
                         </span>
                       </div>
@@ -1777,7 +1777,7 @@ export default function Workspace({
                     {selected.completed_at && (
                       <>
                         {" "}
-                        · ฝ่ายวิชาการอนุมัติ{" "}
+                        · ฝ่ายวัดผลอนุมัติ{" "}
                         {thaiDate(selected.completed_at, true)}
                       </>
                     )}
@@ -1786,7 +1786,7 @@ export default function Workspace({
               )}
               {role === "teacher" && selected.status === "completed" && (
                 <p className="my-4 text-sm text-secondary">
-                  ฝ่ายวิชาการอนุมัติแล้ว ไม่สามารถแก้ไขผลการเรียนได้
+                  ฝ่ายวัดผลอนุมัติแล้ว ไม่สามารถแก้ไขผลการเรียนได้
                 </p>
               )}
               {role === "teacher" && view === "overview" &&
@@ -1829,7 +1829,7 @@ export default function Workspace({
                     ["มอบหมายงาน", selected.assigned_at],
                     ["ครูรับงาน", selected.submitted_at],
                     ["ครูอนุมัติ", selected.teacher_approved_at],
-                    ["ฝ่ายวิชาการอนุมัติ", selected.completed_at],
+                    ["ฝ่ายวัดผลอนุมัติ", selected.completed_at],
                   ].map(([label, date]) => (
                     <div key={label}>
                       <span
@@ -1940,7 +1940,7 @@ export default function Workspace({
                           ? "ยืนยันรับงาน"
                           : role === "academic"
                             ? "ยืนยันอนุมัติผลการเรียน"
-                            : "อนุมัติและส่งฝ่ายวิชาการ"}
+                            : "อนุมัติและส่งฝ่ายวัดผล"}
                   <ArrowRight size={16} />
                 </button>
               )}

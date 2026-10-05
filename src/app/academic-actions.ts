@@ -28,7 +28,7 @@ export async function listAcademics(
     p_page: parsed.data.page,
   });
   if (error)
-    return { error: "ไม่สามารถโหลดรายชื่อฝ่ายวิชาการได้ กรุณาลองอีกครั้ง" };
+    return { error: "ไม่สามารถโหลดรายชื่อฝ่ายวัดผลได้ กรุณาลองอีกครั้ง" };
   return { data: data as TeacherList };
 }
 

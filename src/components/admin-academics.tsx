@@ -139,8 +139,8 @@ export default function AdminAcademics({
       }
       setNotice(
         (mode === "existing"
-          ? "เพิ่มสิทธิ์ฝ่ายวิชาการแล้ว ใช้เลขบัตรประชาชนและรหัสผ่านเดิมเข้าสู่ระบบในบทบาทฝ่ายวิชาการได้"
-          : "สร้างบัญชีฝ่ายวิชาการแล้ว เข้าสู่ระบบด้วยเลขบัตรประชาชนและรหัสผ่านที่ตั้งไว้") +
+          ? "เพิ่มสิทธิ์ฝ่ายวัดผลแล้ว ใช้เลขบัตรประชาชนและรหัสผ่านเดิมเข้าสู่ระบบในบทบาทฝ่ายวัดผลได้"
+          : "สร้างบัญชีฝ่ายวัดผลแล้ว เข้าสู่ระบบด้วยเลขบัตรประชาชนและรหัสผ่านที่ตั้งไว้") +
           (demo ? " · ข้อมูลทดลอง" : ""),
       );
       setValues(emptyValues);
@@ -159,21 +159,21 @@ export default function AdminAcademics({
   return (
     <div className="space-y-6">
       <section
-        aria-label="เพิ่มฝ่ายวิชาการ"
+        aria-label="เพิ่มฝ่ายวัดผล"
         className="rounded-xl border border-line bg-white p-5 max-desk:p-4"
       >
         <h2 className="flex items-center gap-2 text-lg font-semibold">
           <UserPlus size={20} className="text-brand" />
-          เพิ่มฝ่ายวิชาการ
+          เพิ่มฝ่ายวัดผล
         </h2>
         <form onSubmit={submit} className="mt-4">
           <fieldset disabled={busy} className="space-y-4 disabled:opacity-70">
-            <legend className="sr-only">ข้อมูลฝ่ายวิชาการ</legend>
+            <legend className="sr-only">ข้อมูลฝ่ายวัดผล</legend>
             <div className="flex flex-wrap gap-4 text-sm">
               {(
                 [
                   ["existing", "เพิ่มสิทธิ์ให้ครูเดิม"],
-                  ["new", "สร้างบัญชีฝ่ายวิชาการใหม่"],
+                  ["new", "สร้างบัญชีฝ่ายวัดผลใหม่"],
                 ] as const
               ).map(([value, label]) => (
                 <label key={value} className="flex items-center gap-2">
@@ -195,7 +195,7 @@ export default function AdminAcademics({
             {mode === "existing" ? (
               <div className="space-y-3">
                 <p className="text-sm text-secondary">
-                  เลือกบัญชีคุณครูเพื่อเพิ่มสิทธิ์ฝ่ายวิชาการ โดยคงชื่อ รหัสผ่าน
+                  เลือกบัญชีคุณครูเพื่อเพิ่มสิทธิ์ฝ่ายวัดผล โดยคงชื่อ รหัสผ่าน
                   และสิทธิ์เดิมไว้
                 </p>
                 <label className="block text-sm" htmlFor="academic-teacher">
@@ -437,7 +437,7 @@ export default function AdminAcademics({
               className="inline-flex cursor-pointer hover:bg-brand/90 duration-150 items-center gap-2 rounded-lg bg-brand px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
             >
               {busy && <Loader2 size={16} className="animate-spin" />}
-              {busy ? "กำลังบันทึก..." : "บันทึกฝ่ายวิชาการ"}
+              {busy ? "กำลังบันทึก..." : "บันทึกฝ่ายวัดผล"}
             </button>
           </fieldset>
         </form>

@@ -21,7 +21,7 @@ import type { GradeCorrection } from "@/lib/domain";
 import { scheduleDates } from "@/lib/schedule-dates";
 export async function signIn(_prev: { error: string }, form: FormData) {
   if (!configured() || !process.env.SUPABASE_SERVICE_ROLE_KEY || (process.env.LOGIN_HMAC_SECRET?.length ?? 0) < 32)
-    return { error: "ยังไม่ได้เชื่อมต่อฐานข้อมูล กรุณาติดต่อฝ่ายวิชาการ" };
+    return { error: "ยังไม่ได้เชื่อมต่อฐานข้อมูล กรุณาติดต่อฝ่ายวัดผล" };
   const parsed = loginSchema.safeParse({ role: form.get("role"), identifier: form.get("identifier"), password: form.get("password") });
   if (!parsed.success)
     return { error: "กรุณาตรวจสอบข้อมูลเข้าสู่ระบบ" };
@@ -33,7 +33,7 @@ export async function signIn(_prev: { error: string }, form: FormData) {
     .digest("hex");
   const limit = await db.rpc("consume_login_attempt", { p_bucket: bucket });
   if (limit.error)
-    return { error: "ระบบยังไม่พร้อมให้บริการ กรุณาติดต่อฝ่ายวิชาการ" };
+    return { error: "ระบบยังไม่พร้อมให้บริการ กรุณาติดต่อฝ่ายวัดผล" };
   if (!limit.data)
     return { error: "พยายามเข้าสู่ระบบมากเกินไป กรุณารอ 15 นาที" };
   const service = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY, {

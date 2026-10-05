@@ -25,7 +25,7 @@ export default async function Dashboard({ searchParams }: {
     .single();
   if (se || !schedule)
     throw new Error(
-      "ไม่สามารถโหลดบัญชีหรือช่วงเวลาให้บริการ กรุณาติดต่อฝ่ายวิชาการ",
+      "ไม่สามารถโหลดบัญชีหรือช่วงเวลาให้บริการ กรุณาติดต่อฝ่ายวัดผล",
     );
   async function loadRecords(table: "grade_records" | "grade_record_history") {
     const rows = [];

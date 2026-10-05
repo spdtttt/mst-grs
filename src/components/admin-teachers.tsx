@@ -46,7 +46,7 @@ export default function AdminTeachers({
   onDemoReset?: (id: string) => void;
   onDemoEdit?: (row: TeacherRow) => void;
 }) {
-  const staffLabel = staffRole === "teacher" ? "คุณครู" : "ฝ่ายวิชาการ";
+  const staffLabel = staffRole === "teacher" ? "คุณครู" : "ฝ่ายวัดผล";
   const [data, setData] = useState<TeacherList>(emptyList);
   const [search, setSearch] = useState("");
   const [subjectGroup, setSubjectGroup] = useState("");
