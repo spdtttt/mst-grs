@@ -377,7 +377,15 @@ export default function AdminManagers({
                       role="manager"
                       demo={demo}
                       currentUserId={currentUserId}
-                      onSaved={() => setRefresh((value) => value + 1)}
+                      onSaved={(updated) => {
+                        if (demo)
+                          setDemoRows((rows) =>
+                            rows.map((row) =>
+                              row.id === updated.id ? updated : row,
+                            ),
+                          );
+                        else setRefresh((value) => value + 1);
+                      }}
                       onDeleted={(id) => {
                         if (demo)
                           setDemoRows((rows) =>

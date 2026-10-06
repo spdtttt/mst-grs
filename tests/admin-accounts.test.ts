@@ -90,7 +90,7 @@ test("account administration creates managers, enforces active Admin, searches, 
     assert.equal(first.items.length, 50);
     assert.equal(second.items.length, 2);
     assert.equal(new Set([...first.items,...second.items].map(row => row.id)).size, 52);
-    assert.deepEqual(Object.keys(first.items[0]).sort(), ["account_revision","first_name","full_name","id","last_name","name_prefix","username"]);
+    assert.deepEqual(Object.keys(first.items[0]).sort(), ["account_revision","first_name","full_name","has_auth","id","last_name","learning_subject_group","name_prefix","username"]);
     assert.equal((await list("manager", "MANAGER55")).items[0].id, id(55));
     assert.equal((await list("manager", "ทดสอบ")).total, 52);
     assert.equal((await list("manager", "%_")).total, 0);
@@ -107,8 +107,8 @@ test("account administration creates managers, enforces active Admin, searches, 
   } finally { await db.close(); }
 });
 
-test("inline edits follow IDs, preserve login identity and history, reject stale changes and protect referenced accounts", async () => {
-  const db = await loadTestDatabase();
+test("historical combined deletion before role deletion preserved registry identities", async () => {
+  const db = await loadTestDatabase({ through: "045" });
   const asAdmin = async () => {
     await db.exec("reset role");
     await db.query("select set_config('request.jwt.claim.sub',$1,false)", [id(1)]);

@@ -1,3 +1,4 @@
+// Historical registry reset protocol (042-045). Current reset coverage lives in account-lifecycle.test.ts.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import ExcelJS from "exceljs";
@@ -34,7 +35,7 @@ const registration = { ...input, password: "abc123" };
 const { learning_subject_group: _group, ...signup } = registration;
 
 test("reset recovers an existing encrypted identity with revision checks and retains registry roles", async () => {
-  const db = await loadTestDatabase();
+  const db = await loadTestDatabase({ through: "045" });
   const actor = uuid(91),
     teacher = uuid(92);
   const ciphertext = encryptStaffCitizenId(input.citizen_id, teacher, secret);
@@ -366,7 +367,7 @@ test("registration verifies Auth attempt ownership, reconciles lost create respo
 });
 
 test("registry import, reservation, reset and re-registration preserve identity, roles, history and reject old sessions", async () => {
-  const db = await loadTestDatabase();
+  const db = await loadTestDatabase({ through: "045" });
   const actor = uuid(1),
     teacher = uuid(2),
     student = uuid(3),
@@ -676,7 +677,7 @@ test("registry import, reservation, reset and re-registration preserve identity,
 });
 
 test("registry matches legacy accounts by identity only, rejects ambiguity and protects storage/admin; reset failures are atomic", async () => {
-  const db = await loadTestDatabase();
+  const db = await loadTestDatabase({ through: "045" });
   const actor = uuid(11),
     teacher = uuid(12),
     hash = staffCitizenHash(input.citizen_id, secret),

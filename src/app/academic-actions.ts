@@ -4,9 +4,12 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { adminContext } from "@/lib/admin-auth";
 import { teacherRegistrationSchema } from "@/lib/auth-input";
-import { staffLoginEmails } from "@/lib/role-login";
+import { randomUUID } from "node:crypto";
 import { encryptStaffCitizenId } from "@/lib/staff-identity";
-import { provisionStaff, RegistrationError } from "@/lib/teacher-registration";
+import {
+  provisionRegisteredTeacher,
+  RegistryRegistrationError,
+} from "@/lib/registered-teacher";
 import type { TeacherList } from "@/lib/teachers";
 
 export async function listAcademics(
@@ -72,77 +75,78 @@ export async function createAcademic(
   const service = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const result = await provisionStaff(
+  const proposedId = randomUUID();
+  const result = await provisionRegisteredTeacher(
     parsed.data,
     {
-      async createAuth(email, password) {
-        const existing = await service.rpc("staff_identity_exists", {
-          p_emails: staffLoginEmails(parsed.data.citizen_id, secret),
+      async consume() {
+        return true;
+      }, // This form already requires an active Admin session.
+      async claim(hash, first, last, token, emails) {
+        const claimed = await service.rpc("claim_academic_registration", {
+          p_actor: context.user.id,
+          p_token: token,
+          p_row: {
+            id: proposedId,
+            hash,
+            emails,
+            name_prefix: parsed.data.name_prefix,
+            first_name: first,
+            last_name: last,
+            citizen_id_encrypted: encryptStaffCitizenId(
+              parsed.data.citizen_id,
+              proposedId,
+              secret,
+            ),
+          },
         });
-        if (existing.error)
-          throw new RegistrationError(
-            "ตรวจสอบบัญชีเดิมไม่สำเร็จ กรุณาลองอีกครั้ง",
-          );
-        if (existing.data)
-          throw new RegistrationError(
-            "มีบัญชีบุคลากรนี้อยู่แล้ว หากเป็นคุณครูให้เลือกเพิ่มสิทธิ์จากบัญชีครูเดิม",
-          );
-        const { data, error } = await service.auth.admin.createUser({
+        if (claimed.error)
+          throw new RegistryRegistrationError(claimed.error.message);
+        return claimed.data;
+      },
+      async create(id, email, password, token) {
+        const created = await service.auth.admin.createUser({
+          id,
           email,
           password,
           email_confirm: true,
-          app_metadata: { role: "academic" },
+          app_metadata: { role: "academic", teacher_registration_token: token },
         });
-        if (error || !data.user) {
-          console.error("academics: create auth failed", { code: error?.code });
-          throw new RegistrationError(
-            error?.code === "weak_password"
-              ? "รหัสผ่านไม่ผ่านข้อกำหนดของระบบ กรุณาเปลี่ยนรหัสผ่าน"
-              : "สร้างบัญชีไม่สำเร็จ กรุณาตรวจสอบว่ามีบัญชีนี้อยู่แล้วหรือลองอีกครั้ง",
-          );
+        if (created.error || created.data.user?.id !== id)
+          throw new RegistryRegistrationError(created.error?.code ?? "unknown");
+      },
+      async authToken(id) {
+        const found = await service.auth.admin.getUserById(id);
+        if (found.error) {
+          if (
+            found.error.status === 404 ||
+            found.error.code === "user_not_found"
+          )
+            return null;
+          throw new Error("Auth lookup not confirmed");
         }
-        return data.user.id;
+        return typeof found.data.user?.app_metadata
+          .teacher_registration_token === "string"
+          ? found.data.user.app_metadata.teacher_registration_token
+          : "unowned";
       },
-      async saveProfile(profile, citizenId) {
-        // Use the signed-in Admin session so the database checks the active role again.
-        const { error } = await context.db.rpc(
-          "admin_create_academic_profile",
-          {
-            p_id: profile.id,
-            p_profile: {
-              name_prefix: profile.name_prefix,
-              first_name: profile.first_name,
-              last_name: profile.last_name,
-              citizen_id_encrypted: encryptStaffCitizenId(
-                citizenId,
-                profile.id,
-                secret,
-              ),
-            },
-          },
-        );
-        if (error) {
-          console.error("academics: save profile failed", { code: error.code });
-          throw new Error("Profile save failed");
-        }
-      },
-      async findProfile(id) {
-        const { data, error } = await service
-          .from("profiles")
-          .select("role")
-          .eq("id", id)
-          .maybeSingle();
-        if (error) throw new Error("Profile verification failed");
-        return data;
-      },
-      async deleteAuth(id) {
-        const { error } = await service.auth.admin.deleteUser(id);
-        if (error) throw new Error("Auth rollback failed");
+      async finish(id, token, success) {
+        const finished = await service.rpc("finish_teacher_registration", {
+          p_id: id,
+          p_token: token,
+          p_success: success,
+        });
+        if (finished.error)
+          throw new RegistryRegistrationError(finished.error.message);
       },
     },
     secret,
+    "admin-academic",
     "academic",
   );
-  if (result.success) revalidatePath("/dashboard/admin");
-  return result;
+  if (result.body.success) revalidatePath("/dashboard", "layout");
+  return {
+    success: result.body.success,
+    error: result.body.error?.replaceAll("คุณครู", "ฝ่ายวัดผล"),
+  };
 }

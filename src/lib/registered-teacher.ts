@@ -79,6 +79,7 @@ export async function provisionRegisteredTeacher(
   store: RegisteredTeacherStore,
   secret: string,
   source: string,
+  role: "teacher" | "academic" = "teacher",
 ): Promise<RegistrationResponse> {
   const parsed = teacherRegistrationSchema.safeParse(input);
   if (!parsed.success)
@@ -116,7 +117,7 @@ export async function provisionRegisteredTeacher(
     try {
       await store.create(
         claim.id,
-        loginEmail(`teacher:${value.citizen_id}`, secret),
+        loginEmail(`${role}:${value.citizen_id}`, secret),
         value.password,
         claim.token,
       );

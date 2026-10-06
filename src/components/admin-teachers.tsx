@@ -252,7 +252,7 @@ export default function AdminTeachers({
                         "สถานะบัญชี",
                         "ดำเนินการ",
                       ]
-                    : ["ชื่อ-สกุล", "ดำเนินการ"]
+                    : ["ชื่อ-สกุล", "สถานะบัญชี", "ดำเนินการ"]
                   ).map((heading) => (
                     <th
                       key={heading}
@@ -267,7 +267,7 @@ export default function AdminTeachers({
                 {loading ? (
                   <tr>
                     <td
-                      colSpan={staffRole === "teacher" ? 4 : 2}
+                      colSpan={staffRole === "teacher" ? 4 : 3}
                       className="p-10 text-center text-secondary"
                     >
                       <Loader2
@@ -292,7 +292,7 @@ export default function AdminTeachers({
                 ) : (
                   <tr>
                     <td
-                      colSpan={staffRole === "teacher" ? 4 : 2}
+                      colSpan={staffRole === "teacher" ? 4 : 3}
                       className="p-10 text-center text-secondary"
                     >
                       {search || (staffRole === "teacher" && subjectGroup)

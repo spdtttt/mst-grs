@@ -18,6 +18,13 @@ import {
 import { teacherRegistryError } from "@/lib/teacher-registry";
 import { parseTeacherName } from "@/lib/teacher-registry";
 import { decryptStaffCitizenId, staffCitizenHash } from "@/lib/staff-identity";
+import {
+  completeStaffAuthReset,
+  RejectedAuthDelete,
+  type ResetOperation,
+  type ResetFile,
+  type ResetResult,
+} from "@/lib/staff-auth-reset";
 
 function accountError(error: { message: string; code?: string }) {
   if (error.message.startsWith("REGISTRY_"))
@@ -28,6 +35,8 @@ function accountError(error: { message: string; code?: string }) {
     ACCOUNT_NOT_FOUND: "ไม่พบบัญชีในบทบาทนี้ กรุณาโหลดรายชื่อใหม่",
     ACCOUNT_PROTECTED: "ไม่สามารถแก้ไขหรือลบบัญชีผู้ดูแลระบบจากหน้านี้ได้",
     ACCOUNT_CHANGED: "ข้อมูลถูกแก้ไขแล้ว กรุณาโหลดรายชื่อใหม่ก่อนลองอีกครั้ง",
+    ACCOUNT_OUTSTANDING:
+      "ลบไม่ได้ เนื่องจากยังมีผลการเรียนคงค้าง สามารถรีเซ็ทรหัสผ่านได้โดยข้อมูลเดิมยังอยู่",
     ACCOUNT_REFERENCED:
       "ลบบัญชีไม่ได้ เนื่องจากมีผลการเรียน ประวัติ งาน หรือไฟล์อ้างอิงอยู่",
   };
@@ -161,23 +170,45 @@ export async function editAccount(
 
 export async function deleteAccount(
   input: unknown,
-): Promise<{ success?: boolean; error?: string; account_revision?: number }> {
+): Promise<{ success?: boolean; error?: string; profile_retained?: boolean }> {
   const context = await adminContext();
   if ("error" in context) return { error: context.error };
   const parsed = accountTargetSchema.safeParse(input);
   if (!parsed.success)
     return { error: "ข้อมูลบัญชีไม่ถูกต้อง กรุณาโหลดรายชื่อใหม่" };
+  const { id, role, expected_revision } = parsed.data;
+  const { data, error } = await context.db.rpc("admin_delete_account", {
+    p_id: id,
+    p_role: role,
+    p_expected_revision: expected_revision,
+  });
+  if (error) return { error: accountError(error) };
+  if (data?.deleted !== true)
+    return { error: "ยังยืนยันการลบไม่ได้ กรุณาโหลดรายชื่อใหม่" };
+  revalidatePath("/dashboard", "layout");
+  return { success: true, profile_retained: data.profile_retained };
+}
+
+export async function resetStaffAuth(input: unknown): Promise<ResetResult> {
+  const context = await adminContext();
+  if ("error" in context) return { error: context.error };
+  const parsed = accountTargetSchema
+    .extend({ role: z.enum(["teacher", "academic"]) })
+    .safeParse(input);
+  if (!parsed.success)
+    return { error: "ข้อมูลบัญชีไม่ถูกต้อง กรุณาโหลดรายชื่อใหม่" };
   const { id, role } = parsed.data;
+  const service = serviceClient();
+  if (!service) return { error: "ระบบรีเซ็ตบัญชียังไม่พร้อมให้บริการ" };
   let revision = parsed.data.expected_revision;
-  let result = await context.db.rpc("admin_delete_account", {
+  let result = await context.db.rpc("admin_begin_staff_auth_reset", {
     p_id: id,
     p_role: role,
     p_expected_revision: revision,
   });
   if (result.error?.message === "REGISTRY_IDENTITY_MISSING") {
-    const service = serviceClient(),
-      secret = process.env.LOGIN_HMAC_SECRET;
-    if (!service || !secret || secret.length < 32)
+    const secret = process.env.LOGIN_HMAC_SECRET;
+    if (!secret || secret.length < 32)
       return {
         error:
           "ระบบอ่านเลขบัตรเดิมยังไม่พร้อม กรุณาตรวจสอบการตั้งค่าเซิร์ฟเวอร์",
@@ -192,7 +223,7 @@ export async function deleteAccount(
     if (!profile?.citizen_id_encrypted)
       return {
         error:
-          "มีโปรไฟล์แล้ว แต่ยังไม่มีเลขบัตรประชาชนที่ใช้สมัครใหม่ กรุณานำเข้าทะเบียนครูด้วยเลขบัตรเดิมก่อนรีเซ็ต",
+          "มีโปรไฟล์แล้ว แต่ยังไม่มีเลขบัตรประชาชนที่ใช้สร้างบัญชีกลับ กรุณาเตรียมข้อมูลทะเบียนก่อนรีเซ็ต",
       };
     let hash: string,
       names: { name_prefix: string; first_name: string; last_name: string };
@@ -227,7 +258,7 @@ export async function deleteAccount(
     if (!Number.isInteger(prepared.data))
       return { error: "ยืนยันข้อมูลทะเบียนไม่ได้ กรุณาโหลดรายชื่อใหม่" };
     revision = prepared.data;
-    result = await context.db.rpc("admin_delete_account", {
+    result = await context.db.rpc("admin_begin_staff_auth_reset", {
       p_id: id,
       p_role: role,
       p_expected_revision: revision,
@@ -235,10 +266,95 @@ export async function deleteAccount(
   }
   const { data, error } = result;
   if (error) return { error: accountError(error) };
-  if (data?.deleted !== true)
-    return { error: "ยังยืนยันการลบไม่ได้ กรุณาโหลดรายชื่อใหม่" };
-  revalidatePath("/dashboard/admin");
-  return { success: true, account_revision: data.account_revision ?? revision };
+  if (!data || !["files", "deleting", "complete"].includes(data.stage))
+    return { error: "ยังยืนยันการรีเซ็ตไม่ได้ กรุณาโหลดรายชื่อใหม่" };
+  const rpc = async (name: string, token: string) => {
+    const response = await service.rpc(name, { p_id: id, p_token: token });
+    if (response.error) throw new Error(response.error.message);
+    return response.data;
+  };
+  try {
+    const reset = await completeStaffAuthReset(data as ResetOperation, {
+      async files(token) {
+        return (await rpc("staff_reset_files", token)) as ResetFile[];
+      },
+      async preserve(file) {
+        // Copy inside Storage instead of downloading/re-uploading large files.
+        // The service credential has no user owner; the path remains unchanged.
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/copy`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+              apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+              "Content-Type": "application/json",
+              "x-upsert": "true",
+            },
+            body: JSON.stringify({
+              bucketId: file.bucket,
+              sourceKey: file.name,
+              destinationKey: file.name,
+              ...(file.version ? { sourceVersionId: file.version } : {}),
+              copyMetadata: true,
+            }),
+            signal: AbortSignal.timeout(30_000),
+          },
+        );
+        if (!response.ok) throw new Error("Storage preservation failed");
+        const copied = await response.json();
+        if (
+          copied.owner_id === id ||
+          copied.owner === id ||
+          (file.metadata?.size !== undefined &&
+            copied.metadata?.size !== file.metadata.size)
+        )
+          throw new Error("Storage preservation could not be verified");
+      },
+      async claimDelete(token) {
+        return (await rpc("claim_staff_auth_delete", token)) === true;
+      },
+      async deleteAuth() {
+        const deleted = await service.auth.admin.deleteUser(id);
+        if (deleted.error) {
+          if (
+            deleted.error.status &&
+            deleted.error.status >= 400 &&
+            deleted.error.status < 500 &&
+            deleted.error.status !== 408
+          )
+            throw new RejectedAuthDelete("Auth rejected deletion");
+          throw new Error("Auth deletion not confirmed");
+        }
+      },
+      async retryAfterRejectedDelete(token) {
+        await rpc("retry_staff_auth_reset", token);
+      },
+      async authExists() {
+        const found = await service.auth.admin.getUserById(id);
+        if (found.error) {
+          if (
+            found.error.status === 404 ||
+            found.error.code === "user_not_found"
+          )
+            return false;
+          throw new Error("Auth lookup not confirmed");
+        }
+        return Boolean(found.data.user);
+      },
+      async finish(token) {
+        return await rpc("finish_staff_auth_reset", token);
+      },
+    });
+    revalidatePath("/dashboard", "layout");
+    return reset;
+  } catch {
+    return {
+      error:
+        "รีเซ็ตยังไม่เสร็จ ข้อมูลและไฟล์ยังอยู่ กรุณาโหลดรายชื่อใหม่แล้วลองรีเซ็ตอีกครั้ง",
+      account_revision: data.account_revision,
+    };
+  }
 }
 
 export async function resetManagerPassword(
