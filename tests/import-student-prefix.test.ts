@@ -79,14 +79,14 @@ test("student import expands only leading abbreviations and is safe to parse twi
   );
 });
 
-test("CSV, TSV and XLSX previews all contain full student prefixes", async () => {
+async function importTables(names: string[]) {
   const headers = Object.keys(columns);
-  const rows = examples.map(({ short }, i) => {
+  const rows = names.map((student_name, i) => {
     const row = {
       ...base,
       teacher_name: "ครู ตัวอย่าง",
       student_code: `0012${i}`,
-      student_name: `${short} ทดสอบ ใจดี`,
+      student_name,
     };
     return Object.values(columns).map((key) => row[key]);
   });
@@ -101,6 +101,11 @@ test("CSV, TSV and XLSX previews all contain full student prefixes", async () =>
   const read = new ExcelJS.Workbook();
   await read.xlsx.load(await workbook.xlsx.writeBuffer());
   tables.push(worksheetRows(read.worksheets[0]));
+  return tables;
+}
+
+test("CSV, TSV and XLSX previews all contain full student prefixes", async () => {
+  const tables = await importTables(examples.map(({ short }) => `${short} ทดสอบ ใจดี`));
   for (const table of tables) {
     const result = parseRows(table[0].map(String), table.slice(1));
     assert.deepEqual(result.errors, []);
@@ -111,7 +116,7 @@ test("CSV, TSV and XLSX previews all contain full student prefixes", async () =>
   }
 });
 
-test("normalized imports match full profile names in PostgreSQL and still reject different names", async () => {
+test("CSV, TSV and XLSX imports match student codes and store registered names", async () => {
   const db = await loadTestDatabase();
   const uuid = (n: number) =>
     `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -140,44 +145,77 @@ test("normalized imports match full profile names in PostgreSQL and still reject
     await db.exec(
       "select update_schedule(now()-interval '1 day',now()+interval '2 days','test')",
     );
-    const rows = examples.map(({ short }, i) =>
-      importSchema.parse({
-        ...base,
-        student_code: `0012${i}`,
-        student_name: `${short} ทดสอบ ใจดี`,
-      }),
-    );
-    const result = await db.query<{
-      result: { inserted: number; updated: number; skipped: number };
-    }>("select import_grades_overwrite($1::jsonb) result", [
-      JSON.stringify(rows),
-    ]);
-    assert.deepEqual(result.rows[0].result, {
-      inserted: 3,
-      updated: 0,
-      skipped: 0,
-    });
-    await assert.rejects(
-      () =>
-        db.query("select import_grades_overwrite($1::jsonb)", [
-          JSON.stringify([
-            importSchema.parse({
-              ...base,
-              student_code: "00120",
-              student_name: "น.ส. คนอื่น ใจดี",
-            }),
-          ]),
-        ]),
-      /ชื่อนักเรียนไม่ตรงกับบัญชี/,
-    );
+    const names = ["ทดสอบ ใจดี", "ด.ช. ทดสอบ ใจดี", "คนอื่น นามสกุลอื่น"];
+    const tables = await importTables(names);
+    const expected = examples.map(({ full }, i) => ({
+      student_id: uuid(i + 3),
+      student_code: `0012${i}`,
+      student_name: `${full}ทดสอบ ใจดี`,
+    }));
+    for (const [i, table] of tables.entries()) {
+      const parsed = parseRows(table[0].map(String), table.slice(1));
+      assert.deepEqual(parsed.errors, []);
+      assert.equal(parsed.rows[0].student_name, names[0]);
+      assert.deepEqual(parsed.rows.map(row => row.student_code), ["00120", "00121", "00122"]);
+      // Exercise both the current RPC and its compatibility wrapper.
+      const rpc = i === 1 ? "import_grades" : "import_grades_overwrite";
+      const result = await db.query<{
+        result: { inserted: number; updated: number; skipped: number };
+      }>(`select ${rpc}($1::jsonb) result`, [JSON.stringify(parsed.rows)]);
+      assert.deepEqual(result.rows[0].result, {
+        inserted: i === 0 ? 3 : 0,
+        updated: i === 0 ? 0 : 3,
+        skipped: 0,
+      });
+      await db.exec("reset role");
+      assert.deepEqual((await db.query(
+        "select student_id,student_code,student_name from grade_records order by student_code",
+      )).rows, expected);
+      await db.exec("set role authenticated");
+    }
+
+    // Refresh the current record from the account, retaining the original snapshot.
     await db.exec("reset role");
-    const saved = await db.query<{ student_name: string }>(
-      "select student_name from grade_records order by student_code",
-    );
-    assert.deepEqual(
-      saved.rows.map((row) => row.student_name),
-      examples.map(({ full }) => `${full}ทดสอบ ใจดี`),
-    );
+    const renamed = "นางสาวชื่อใหม่ ใจดี";
+    await db.query("update profiles set full_name=$1 where id=$2", [renamed, uuid(3)]);
+    const profilesBefore = (await db.query("select * from profiles order by id")).rows;
+    await db.exec("set role authenticated");
+    const replacement = importSchema.parse({ ...base, student_code: "00120", student_name: "ชื่อเก่า ใจดี" });
+    await db.query("select import_grades_overwrite($1::jsonb)", [JSON.stringify([replacement])]);
+    await db.exec("reset role");
+    assert.equal((await db.query<{ student_name: string }>(
+      "select student_name from grade_records where student_code='00120'",
+    )).rows[0].student_name, renamed);
+    const history = (await db.query<{ student_name: string }>(
+      "select record_snapshot->>'student_name' student_name from grade_reset_history where student_id=$1",
+      [uuid(3)],
+    )).rows;
+    assert.equal(history.length, 3);
+    assert.ok(history.every(row => row.student_name === expected[0].student_name));
+    assert.deepEqual((await db.query("select * from profiles order by id")).rows, profilesBefore);
+
+    // Missing codes (including a code with its leading zeroes removed) roll back
+    // prior inserts, overwrites, snapshots and audit entries in the same batch.
+    async function snapshot() {
+      return {
+        records: (await db.query("select * from grade_records order by id")).rows,
+        history: (await db.query("select * from grade_reset_history order by id")).rows,
+        audit: (await db.query("select * from audit_log order by id")).rows,
+      };
+    }
+    const before = await snapshot();
+    for (const missingCode of ["99999", "120"]) {
+      await db.exec("set role authenticated");
+      await assert.rejects(() => db.query("select import_grades_overwrite($1::jsonb)", [
+        JSON.stringify([
+          { ...replacement, course_name: "ชื่อวิชาที่ไม่ควรบันทึก" },
+          { ...replacement, course_code: "NEW" },
+          { ...replacement, student_code: missingCode },
+        ]),
+      ]), /ไม่พบบัญชีนักเรียนเลขประจำตัว/);
+      await db.exec("reset role");
+      assert.deepEqual(await snapshot(), before);
+    }
   } finally {
     await db.close();
   }
