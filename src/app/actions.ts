@@ -18,6 +18,7 @@ import {
   parseAssignmentDetails, validateAssignmentFiles, type AssignmentUpload,
 } from "@/lib/assignment-files";
 import type { GradeCorrection } from "@/lib/domain";
+import type { AdminOutstandingGradePage } from "@/lib/domain";
 import { scheduleDates } from "@/lib/schedule-dates";
 export async function signIn(_prev: { error: string }, form: FormData) {
   if (!configured() || !process.env.SUPABASE_SERVICE_ROLE_KEY || (process.env.LOGIN_HMAC_SECRET?.length ?? 0) < 32)
@@ -343,4 +344,55 @@ export async function importGrades(input: unknown) {
     updated: data.updated as number,
     skipped: data.skipped as number,
   };
+}
+
+const outstandingGradeListSchema = z.object({
+  search: z.string().trim().max(100).default(""),
+  level: z.number().int().min(1).max(6).nullable().default(null),
+  classroom: z.string().trim().max(40).nullable().default(null),
+  page: z.number().int().min(1).max(100000).default(1),
+});
+
+export async function listOutstandingGrades(input: unknown) {
+  if (!configured()) return { error: "ยังไม่ได้เชื่อมต่อฐานข้อมูล" };
+  const parsed = outstandingGradeListSchema.safeParse(input);
+  if (!parsed.success) return { error: "ตัวกรองรายการผลการเรียนไม่ถูกต้อง" };
+  const db = await supabase();
+  const { data: { user } } = await db.auth.getUser();
+  if (!user) return { error: "กรุณาเข้าสู่ระบบใหม่" };
+  const { data: role, error: roleError } = await db.rpc("my_role");
+  if (roleError || role !== "admin")
+    return { error: "เฉพาะผู้ดูแลระบบเท่านั้นที่ดูรายการนี้ได้" };
+  const { data, error } = await db.rpc("admin_outstanding_grade_list", {
+    p_search: parsed.data.search,
+    p_level: parsed.data.level,
+    p_classroom: parsed.data.classroom,
+    p_page: parsed.data.page,
+  });
+  if (error) return { error: "ไม่สามารถโหลดรายการผลการเรียนคงค้างได้" };
+  return { data: data as AdminOutstandingGradePage };
+}
+
+const deleteOutstandingGradesSchema = z.array(z.uuid()).min(1).max(50)
+  .refine((ids) => new Set(ids).size === ids.length);
+
+export async function deleteOutstandingGrades(input: unknown) {
+  if (!configured()) return { error: "ยังไม่ได้เชื่อมต่อฐานข้อมูล" };
+  const parsed = deleteOutstandingGradesSchema.safeParse(input);
+  if (!parsed.success) return { error: "เลือกรายการที่ต้องการลบไม่ถูกต้อง" };
+  const db = await supabase();
+  const { data: { user } } = await db.auth.getUser();
+  if (!user) return { error: "กรุณาเข้าสู่ระบบใหม่" };
+  const { data: role, error: roleError } = await db.rpc("my_role");
+  if (roleError || role !== "admin")
+    return { error: "เฉพาะผู้ดูแลระบบเท่านั้นที่ลบรายการได้" };
+  const { data, error } = await db.rpc("admin_delete_outstanding_grades", {
+    p_record_ids: parsed.data,
+  });
+  if (error) return { error: error.message.includes("OUTSTANDING_CHANGED")
+    ? "รายการบางส่วนเปลี่ยนสถานะแล้ว กรุณาโหลดรายการใหม่ก่อนลบ"
+    : "ไม่สามารถลบรายการได้ กรุณาลองใหม่" };
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/admin");
+  return { success: true, deleted: Number(data.deleted) };
 }

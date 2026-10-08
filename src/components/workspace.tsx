@@ -84,6 +84,7 @@ const AdminTeachers = dynamic(() => import("./admin-teachers"), {
 const AdminStudentLifecycle = dynamic(() => import("./admin-student-lifecycle"), { ssr: false });
 const AdminManagers = dynamic(() => import("./admin-managers"), { ssr: false });
 const AdminAcademics = dynamic(() => import("./admin-academics"), { ssr: false });
+const AdminOutstandingGrades = dynamic(() => import("./admin-outstanding-grades"), { ssr: false });
 
 type View = "overview" | "outstanding" | "history" | "export" | "import" | "schedule" | "students" | "teachers" | "academics" | "managers" | "student-lifecycle";
 const emptyHistory: ArchivedGradeRecord[] = [];
@@ -178,6 +179,7 @@ export default function Workspace({
   const [closes, setCloses] = useState(scheduleClosingDate(schedule.closes_at));
   const [notice, setNotice] = useState(schedule.notice);
   const [preview, setPreview] = useState<ImportRow[]>([]);
+  const [outstandingRefreshVersion, setOutstandingRefreshVersion] = useState(0);
   const [fileErrors, setFileErrors] = useState<string[]>([]);
   const [fileName, setFileName] = useState("");
   const [reading, setReading] = useState(false);
@@ -556,6 +558,7 @@ export default function Workspace({
       setToast(
         `เพิ่มใหม่ ${result.inserted} รายการ เขียนทับและเริ่มใหม่ ${result.updated} รายการ${result.skipped ? ` ข้ามรายการในประวัติ ${result.skipped} รายการ` : ""}`,
       );
+      setOutstandingRefreshVersion((version) => version + 1);
       setPreview([]);
       setFileName("");
       if (fileInput.current) fileInput.current.value = "";
@@ -1492,6 +1495,7 @@ export default function Workspace({
                     คอลัมน์คะแนนและข้อมูลอื่นนอกเหนือจาก 11
                     คอลัมน์จะไม่ถูกส่งไปบันทึกในฐานข้อมูล
                   </div>
+                  <AdminOutstandingGrades refreshVersion={outstandingRefreshVersion} />
                 </>
               )}
               {role === "admin" && view === "schedule" && (

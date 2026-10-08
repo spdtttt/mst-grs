@@ -51,6 +51,11 @@ export type GradeRecord = {
   final_grade: string | null;
   created_at: string;
 };
+export type AdminOutstandingGradePage = {
+  items: GradeRecord[];
+  total: number;
+  classrooms: string[];
+};
 export type ArchivedGradeRecord = GradeRecord & {
   archived_at: string;
   archived_closes_at: string;

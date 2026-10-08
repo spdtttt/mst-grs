@@ -36,7 +36,10 @@ export const importSchema = z.object({
     (value) => (typeof value === "string" && !value.trim() ? undefined : value),
     z.coerce.number().min(0).max(20),
   ),
-  classroom: z.string().trim().min(1).max(40),
+  classroom: z.string()
+    .trim()
+    .transform((value) => value.replace(/^([1-6]\/\d+)$/, "ม.$1"))
+    .pipe(z.string().min(1).max(40)),
   teacher_name: z.preprocess(
     parseTeacherNames,
     z.array(z.string().trim().min(1).max(150))
