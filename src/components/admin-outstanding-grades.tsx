@@ -7,7 +7,7 @@ import {
   listOutstandingGrades,
 } from "@/app/actions";
 import type { AdminOutstandingGradePage } from "@/lib/domain";
-import { statuses } from "@/lib/domain";
+import { statusText } from "@/lib/domain";
 
 const empty: AdminOutstandingGradePage = {
   items: [],
@@ -217,7 +217,7 @@ export default function AdminOutstandingGrades({
                 <td className="min-w-56 px-4 py-3">{row.course_code} {row.course_name}</td>
                 <td className="whitespace-nowrap px-4 py-3">{row.academic_year}/{row.semester}</td>
                 <td className="px-4 py-3">{row.original_grade}</td>
-                <td className="whitespace-nowrap px-4 py-3">{statuses[row.status].label}</td>
+                <td className="whitespace-nowrap px-4 py-3">{statusText(row.status)}</td>
                 <td className="min-w-48 px-4 py-3">{row.teacher_name.join(", ")}</td>
               </tr>
             )) : (

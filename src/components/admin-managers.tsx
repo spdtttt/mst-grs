@@ -23,9 +23,9 @@ const prefixOptions = ["นาย", "นาง", "นางสาว"].map((valu
   label: value,
 }));
 const inputClass =
-  "mt-1 w-full rounded border border-line bg-white px-3 py-2.5 text-sm focus:border-brand";
+  "mt-1 w-full border border-line bg-white px-3 py-2.5 text-sm outline-none focus:border-brand focus:ring-0";
 const buttonClass =
-  "cursor-pointer rounded border border-line px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50";
+  "cursor-pointer border border-line px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50";
 const sample: AccountRow[] = [
   {
     id: "demo-manager-1",
@@ -290,7 +290,7 @@ export default function AdminManagers({
           <button
             type="submit"
             disabled={busy}
-            className={`${buttonClass} mt-4 inline-flex items-center gap-2 bg-brand text-white hover:bg-brand/90`}
+            className={`${buttonClass} mt-4 inline-flex items-center gap-2 duration-150 bg-brand text-white hover:bg-brand/90`}
           >
             {busy ? (
               <Loader2 size={17} className="animate-spin" />

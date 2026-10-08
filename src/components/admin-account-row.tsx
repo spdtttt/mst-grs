@@ -18,9 +18,9 @@ import {
 import { passwordSchema } from "@/lib/auth-input";
 
 const inputClass =
-  "w-full min-w-20 rounded border border-line bg-white px-2 py-2 text-sm text-ink focus:border-brand";
+  "w-full min-w-20 border border-line bg-white px-2 py-2 text-sm text-ink focus:border-brand";
 const buttonClass =
-  "cursor-pointer whitespace-nowrap rounded border border-line px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50";
+  "cursor-pointer whitespace-nowrap border border-line px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50";
 
 export default function AdminAccountRow({
   row,
@@ -378,7 +378,7 @@ export default function AdminAccountRow({
             {role === "manager" && (
               <button
                 type="button"
-                className={`${buttonClass} text-brand hover:bg-brand-soft`}
+                className={`${buttonClass} duration-150 text-brand hover:bg-brand-soft`}
                 disabled={unavailable}
                 onClick={() => begin("password")}
               >
@@ -389,7 +389,7 @@ export default function AdminAccountRow({
             {staff && (
               <button
                 type="button"
-                className={`${buttonClass} text-brand hover:bg-brand-soft`}
+                className={`${buttonClass} duration-150 text-brand hover:bg-brand-soft`}
                 disabled={unavailable}
                 onClick={() => begin("reset-auth")}
               >

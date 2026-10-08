@@ -61,6 +61,7 @@ test("grade corrections lock when academics approve, including stale requests", 
     await db.exec("reset role");
     const legacy = await snapshot(completedId);
     await db.exec(readFileSync("supabase/migrations/045_lock_approved_grade_corrections.sql", "utf8"));
+    await db.exec(readFileSync("supabase/migrations/051_measurement_wording.sql", "utf8"));
     assert.deepEqual(await snapshot(completedId), legacy);
 
     await t.test("only assigned teachers may correct grades through the RPC", async () => {
@@ -77,7 +78,7 @@ test("grade corrections lock when academics approve, including stale requests", 
     await t.test("earlier workflow states cannot use grade correction", async () => {
       await as(teacher);
       for (const status of statuses.slice(0, 4)) {
-        await assert.rejects(() => correct(idFor(status), "1", "3"), /เฉพาะรายการที่รอฝ่ายวิชาการอนุมัติ/);
+        await assert.rejects(() => correct(idFor(status), "1", "3"), /เฉพาะรายการที่รอฝ่ายวัดผลอนุมัติ/);
       }
     });
 
@@ -107,7 +108,7 @@ test("grade corrections lock when academics approve, including stale requests", 
 
     await t.test("already completed records reject changes without modifying data or audit", async () => {
       await as(teacher);
-      await assert.rejects(() => correct(completedId, "2", "4"), /ฝ่ายวิชาการอนุมัติแล้ว/);
+      await assert.rejects(() => correct(completedId, "2", "4"), /ฝ่ายวัดผลอนุมัติแล้ว/);
       await db.exec("reset role");
       assert.deepEqual(await snapshot(completedId), legacy);
     });
@@ -125,7 +126,7 @@ test("grade corrections lock when academics approve, including stale requests", 
       assert.ok(approved.record[0].completed_at);
       for (const actor of [teacher, coTeacher]) {
         await as(actor);
-        await assert.rejects(() => correct(approvedId, staleGrade, "4"), /ฝ่ายวิชาการอนุมัติแล้ว/);
+        await assert.rejects(() => correct(approvedId, staleGrade, "4"), /ฝ่ายวัดผลอนุมัติแล้ว/);
       }
       await db.exec("reset role");
       assert.deepEqual(await snapshot(approvedId), approved);

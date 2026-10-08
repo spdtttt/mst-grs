@@ -30,12 +30,15 @@ test("new-period reset clears workflow progress without changing the original fa
     assert.deepEqual(resetForNewPeriod(reset), reset);
   }
 });
-test("two approvals are mandatory and teacher approval stays 75%", () => {
+test("two approvals are mandatory and progress never drops when more work is assigned", () => {
   assert.equal(nextStatus.student?.pending, "requested");
   assert.equal(nextStatus.teacher?.requested, "assigned");
   assert.equal(nextStatus.teacher?.assigned, "submitted");
   assert.equal(nextStatus.teacher?.submitted, "teacher_approved");
   assert.equal(nextStatus.academic?.teacher_approved, "completed");
+  // Assigning more work moves submitted back to assigned, so both must share 50%.
+  assert.equal(statuses.assigned.progress, 50);
+  assert.equal(statuses.submitted.progress, 50);
   assert.equal(statuses.teacher_approved.progress, 75);
   assert.equal(statuses.completed.progress, 100);
   assert.equal(nextStatus.teacher?.teacher_approved, undefined);

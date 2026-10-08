@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import AssignmentActions from "./assignment-actions";
 import {
-  statuses,
+  statusText,
   thaiDate,
   type AssignmentFile,
   type GradeAssignment,
@@ -114,7 +114,7 @@ export default function AssignmentDetail({
               </p>
             </div>
             <span className="rounded-full bg-brand-soft px-4 py-2 text-sm font-medium text-brand">
-              {statuses[record.status].label}
+              {statusText(record.status)}
             </span>
           </div>
         </div>

@@ -31,6 +31,7 @@ import { loadManagerStudentCourses, loadManagerStudents } from "@/app/manager-ac
 import {
   roles,
   statuses,
+  statusText,
   type GradeRecord,
   type Profile,
   type Role,
@@ -396,7 +397,7 @@ function ManagerStudentsView({
       >
         <label className="min-w-[220px] flex-1 text-sm font-medium text-[#756782]">
           ค้นหานักเรียน
-          <span className="mt-1.5 flex items-center gap-2 rounded-lg border border-[#e5dced] bg-white px-3 focus-within:border-[#9d72cf] focus-within:ring-2 focus-within:ring-[#9d72cf33]">
+          <span className="mt-1.5 flex items-center gap-2 border border-[#e5dced] bg-white px-3 focus-within:border-[#9d72cf]">
             <Search
               size={17}
               className="shrink-0 text-[#9a8aa9]"
@@ -420,7 +421,7 @@ function ManagerStudentsView({
               setPage(1);
               setLevel(event.target.value);
             }}
-            className="h-10 rounded-lg border border-[#e5dced] bg-white px-3 text-sm text-[#3d2d52] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
+            className="h-10 border border-[#e5dced] bg-white px-3 text-sm text-[#3d2d52] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
           >
             <option value="all">ทุกระดับชั้น</option>
             {[1, 2, 3, 4, 5, 6].map((value) => (
@@ -437,7 +438,7 @@ function ManagerStudentsView({
               setPage(1);
               setAcademicYear(event.target.value);
             }}
-            className="h-10 rounded-lg border border-[#e5dced] bg-white px-3 text-sm text-[#3d2d52] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
+            className="h-10 border border-[#e5dced] bg-white px-3 text-sm text-[#3d2d52] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
           >
             <option value="all">ทุกปีการศึกษา</option>
             {yearOptions.map((year) => (
@@ -454,7 +455,7 @@ function ManagerStudentsView({
               setPage(1);
               setSemester(event.target.value);
             }}
-            className="h-10 rounded-lg border border-[#e5dced] bg-white px-3 text-sm text-[#3d2d52] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
+            className="h-10 border border-[#e5dced] bg-white px-3 text-sm text-[#3d2d52] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
           >
             <option value="all">ทุกภาคเรียน</option>
             {[1, 2].map((value) => (
@@ -464,7 +465,7 @@ function ManagerStudentsView({
         </label>
         <button
           type="submit"
-          className="cursor-pointer rounded-lg bg-yellow-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-yellow-700 duration-300 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
+          className="cursor-pointer bg-yellow-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-yellow-700 duration-300 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
         >
           ค้นหา
         </button>
@@ -476,7 +477,7 @@ function ManagerStudentsView({
             setResult(null);
             setRefresh((value) => value + 1);
           }}
-          className="grid size-10 cursor-pointer place-items-center rounded-lg border border-[#e5dced] text-[#765a9b] transition-colors hover:bg-[#f7f1fd] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
+          className="grid size-10 cursor-pointer place-items-center border border-[#e5dced] text-[#765a9b] transition-colors hover:bg-[#f7f1fd] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
         >
           <RefreshCw size={17} aria-hidden="true" />
         </button>
@@ -586,7 +587,7 @@ function ManagerStudentsView({
                         type="button"
                         onClick={() => setSelectedStudent(student)}
                         aria-label={`ดูรายละเอียดรายวิชาของ ${student.student_name}`}
-                        className="cursor-pointer whitespace-nowrap rounded-lg border border-[#d9c8ee] px-3 py-1.5 text-xs font-semibold text-[#7046a4] transition-colors hover:bg-[#f3ecfb] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
+                        className="cursor-pointer whitespace-nowrap border border-[#d9c8ee] px-3 py-1.5 text-sm font-semibold text-[#7046a4] transition-colors hover:bg-[#f3ecfb] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
                       >
                         ดูรายวิชา
                       </button>
@@ -762,7 +763,7 @@ function ManagerStudentCoursesDialog({
                   <div><dt className="text-xs text-[#8c7e99]">หน่วยกิต</dt><dd className="mt-1">{course.credits}</dd></div>
                   <div><dt className="text-xs text-[#8c7e99]">คุณครูประจำวิชา</dt><dd className="mt-1">{course.teacher_name.join(", ")}</dd></div>
                   <div><dt className="text-xs text-[#8c7e99]">ผลการเรียนเดิม</dt><dd className="mt-1">{course.original_grade}</dd></div>
-                  <div><dt className="text-xs text-[#8c7e99]">สถานะปัจจุบัน</dt><dd className="mt-1">{statuses[course.status].label}</dd></div>
+                  <div><dt className="text-xs text-[#8c7e99]">สถานะปัจจุบัน</dt><dd className="mt-1">{statusText(course.status)}</dd></div>
                 </dl>
               </article>
             ))}

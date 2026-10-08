@@ -434,7 +434,7 @@ export default function AdminAcademics({
             <button
               type="submit"
               disabled={busy || (mode === "existing" && !selected)}
-              className="inline-flex cursor-pointer hover:bg-brand/90 duration-150 items-center gap-2 rounded-lg bg-brand px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+              className="inline-flex cursor-pointer disabled:cursor-not-allowed hover:bg-brand/90 duration-150 items-center gap-2 bg-brand px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
             >
               {busy && <Loader2 size={16} className="animate-spin" />}
               {busy ? "กำลังบันทึก..." : "บันทึกฝ่ายวัดผล"}

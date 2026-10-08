@@ -128,7 +128,8 @@ export const statuses: Record<
   pending: { label: "ยังไม่ยื่นคำร้อง", progress: 0, tone: "gray" },
   requested: { label: "รอมอบหมายงาน", progress: 25, tone: "amber" },
   assigned: { label: "อยู่ระหว่างดำเนินการ", progress: 50, tone: "purple" },
-  submitted: { label: "ส่งงานแล้ว", progress: 75, tone: "blue" },
+  // Stays 50% until the teacher approves: assigning more work moves submitted back to assigned.
+  submitted: { label: "ครูรับงานแล้ว รอพิจารณา", progress: 50, tone: "blue" },
   teacher_approved: {
     label: "รอฝ่ายวัดผลอนุมัติ",
     progress: 75,
@@ -136,6 +137,9 @@ export const statuses: Record<
   },
   completed: { label: "แก้ไขสำเร็จ", progress: 100, tone: "green" },
 };
+export function statusText(status: Status) {
+  return `${statuses[status].label} (${statuses[status].progress}%)`;
+}
 export const nextStatus: Partial<
   Record<Role, Partial<Record<Status, Status>>>
 > = {

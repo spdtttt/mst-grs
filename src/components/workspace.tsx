@@ -43,6 +43,7 @@ import {
   type Role,
   type Status,
   statuses,
+  statusText,
   roles,
   nextStatus,
   isOpen,
@@ -710,9 +711,8 @@ export default function Workspace({
             {actor.full_name.slice(0, 1)}
           </span>
           <div>
-            <strong className="font-semibold font-[Sarabun]">{actor.full_name}</strong>
-            {role === "teacher" && <small className="block leading-5" title={actor.learning_subject_group || "ยังไม่ระบุกลุ่มสาระการเรียนรู้"}>{actor.learning_subject_group || "ยังไม่ระบุกลุ่มสาระการเรียนรู้"}</small>}
-            <small className="text-md font-[Sarabun]">{roles[role]}</small>
+            <strong className="font-semibold">{actor.full_name}</strong>
+            <small className="text-md">{roles[role]}</small>
           </div>
           <button
             className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex size-[34px] shrink-0 items-center justify-center rounded-[7px] border-0 bg-transparent p-1.5 text-muted enabled:hover:bg-brand-soft enabled:hover:text-brand"
@@ -748,7 +748,7 @@ export default function Workspace({
           <div className="flex items-center gap-5 max-desk:gap-2.5">
             <span
               className={twMerge(
-                "flex items-center gap-[7px] text-xs whitespace-nowrap [&>span]:size-1.5 [&>span]:rounded-full max-desk:text-[10px]",
+                "flex items-center gap-[7px] text-sm whitespace-nowrap [&>span]:size-1.5 [&>span]:rounded-full max-desk:text-[10px]",
                 open
                   ? "text-[#598472] [&>span]:bg-[#39a782]"
                   : "text-[#a58356] [&>span]:bg-[#c79754]",
@@ -758,9 +758,6 @@ export default function Workspace({
               {open ? "ระบบเปิดให้บริการ" : "ระบบปิดให้บริการ"}
             </span>
             <span className="h-6 w-px bg-line max-desk:hidden" />
-            <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#ece3f9] font-semibold text-brand size-8">
-              {actor.full_name.slice(0, 1)}
-            </span>
             {role === "teacher" && <div className="hidden max-desk:block max-w-40 text-right"><strong className="block truncate text-xs">{actor.full_name}</strong><small className="block text-[10px] text-secondary">{actor.learning_subject_group || "ยังไม่ระบุกลุ่มสาระการเรียนรู้"}</small></div>}
           </div>
         </header>
@@ -1279,8 +1276,8 @@ export default function Workspace({
               )}
               {view === "overview" && (
                 <section className="mt-[25px] rounded-xl border border-line bg-white px-[26px] py-[22px] max-desk:p-5">
-                  <div className="flex items-center justify-between gap-4 [&_h2]:text-sm [&>span]:text-xs [&>span]:text-[#aa9fb6] max-wide:[&>span]:hidden">
-                    <h2 className="text-lg leading-normal font-[650]">
+                  <div className="flex items-center justify-between gap-4 [&_h2]:text-base [&>span]:text-xs [&>span]:text-[#aa9fb6] max-wide:[&>span]:hidden">
+                    <h2 className="leading-normal font-[650]">
                       ขั้นตอนการแก้ไขผลการเรียน
                     </h2>
                     <span>ติดตามได้ตั้งแต่เริ่มต้นจนสำเร็จ</span>
@@ -1289,17 +1286,21 @@ export default function Workspace({
                     {[
                       ["0%", "ยื่นคำร้อง", "เลือกวิชาที่ต้องการแก้ไข"],
                       ["25%", "รอมอบหมายงาน", "ครูประจำวิชากำหนดภาระงาน"],
-                      ["50%", "ดำเนินการแก้ไข", "ทำงานตามที่ได้รับมอบหมาย"],
+                      [
+                        "50%",
+                        "ดำเนินการแก้ไข",
+                        "ทำงาน ส่งงาน และครูตรวจรับ",
+                      ],
                       [
                         "75%",
-                        "ส่งงานและรออนุมัติ",
-                        "ครูตรวจรับและเสนอฝ่ายวัดผล",
+                        "ครูอนุมัติแล้ว",
+                        "รอฝ่ายวัดผลอนุมัติผลการเรียน",
                       ],
                       ["100%", "แก้ไขสำเร็จ", "ฝ่ายวัดผลยืนยันผลการเรียน"],
                     ].map(([percent, title, detail], i) => (
                       <div
                         key={percent}
-                        className="relative pr-2.5 [&_strong]:block [&_strong]:text-xs [&_strong]:font-medium [&_strong]:text-[#6c527e] [&_small]:mt-[3px] [&_small]:block [&_small]:text-xs [&_small]:text-secondary [&:not(:last-child)]:after:absolute [&:not(:last-child)]:after:top-3.5 [&:not(:last-child)]:after:right-[13px] [&:not(:last-child)]:after:left-10 [&:not(:last-child)]:after:border-t [&:not(:last-child)]:after:border-dashed [&:not(:last-child)]:after:border-[#e2d7f0] [&:not(:last-child)]:after:content-[''] max-roomy:[&_small]:text-[10px] max-roomy:[&_strong]:text-[11px] max-wide:[&_small]:hidden max-desk:grid max-desk:grid-cols-[38px_1fr] max-desk:items-start max-desk:gap-x-2.5 max-desk:pr-0 max-desk:pb-[18px] max-desk:last:pb-0 max-desk:[&_strong]:text-[13px] max-desk:[&_small]:col-start-2 max-desk:[&_small]:block max-desk:[&_small]:text-[11px] max-desk:[&:not(:last-child)]:after:top-[29px] max-desk:[&:not(:last-child)]:after:right-auto max-desk:[&:not(:last-child)]:after:bottom-0 max-desk:[&:not(:last-child)]:after:left-3.5 max-desk:[&:not(:last-child)]:after:border-t-0 max-desk:[&:not(:last-child)]:after:border-l"
+                        className="relative pr-2.5 [&_strong]:block [&_strong]:text-sm [&_strong]:font-medium [&_strong]:text-[#6c527e] [&_small]:mt-[3px] [&_small]:block [&_small]:text-xs [&_small]:text-secondary [&:not(:last-child)]:after:absolute [&:not(:last-child)]:after:top-3.5 [&:not(:last-child)]:after:right-[13px] [&:not(:last-child)]:after:left-10 [&:not(:last-child)]:after:border-t [&:not(:last-child)]:after:border-dashed [&:not(:last-child)]:after:border-[#e2d7f0] [&:not(:last-child)]:after:content-[''] max-roomy:[&_small]:text-[10px] max-roomy:[&_strong]:text-[11px] max-wide:[&_small]:hidden max-desk:grid max-desk:grid-cols-[38px_1fr] max-desk:items-start max-desk:gap-x-2.5 max-desk:pr-0 max-desk:pb-[18px] max-desk:last:pb-0 max-desk:[&_strong]:text-[13px] max-desk:[&_small]:col-start-2 max-desk:[&_small]:block max-desk:[&_small]:text-[11px] max-desk:[&:not(:last-child)]:after:top-[29px] max-desk:[&:not(:last-child)]:after:right-auto max-desk:[&:not(:last-child)]:after:bottom-0 max-desk:[&:not(:last-child)]:after:left-3.5 max-desk:[&:not(:last-child)]:after:border-t-0 max-desk:[&:not(:last-child)]:after:border-l"
                       >
                         <div
                           className={twMerge(
@@ -1338,7 +1339,7 @@ export default function Workspace({
                         </p>
                       </div>
                       <button
-                        className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border px-[18px] py-[11px] font-[550] whitespace-nowrap border-[#e3ddea] bg-white text-[#625670] enabled:hover:bg-[#f8f5fc]"
+                        className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] border px-[18px] py-[11px] font-[550] whitespace-nowrap border-[#e3ddea] bg-white text-[#625670] enabled:hover:bg-[#f8f5fc]"
                         onClick={() =>
                           saveCsv(
                             "MST-GRS-template.csv",
@@ -1364,7 +1365,7 @@ export default function Workspace({
                           : fileName || "เลือกไฟล์ผลการเรียนที่ต้องการนำเข้า"}
                       </h3>
                       <p>คลิกเพื่อเลือกไฟล์จากเครื่องของคุณ</p>
-                      <span className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border px-[18px] py-[11px] font-[550] whitespace-nowrap border-[#e3ddea] bg-white text-[#625670] enabled:hover:bg-[#f8f5fc]">
+                      <span className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] border px-[18px] py-[11px] font-[550] whitespace-nowrap border-[#e3ddea] bg-white text-[#625670] enabled:hover:bg-[#f8f5fc]">
                         เลือกไฟล์
                       </span>
                     </button>
@@ -1621,11 +1622,14 @@ export default function Workspace({
               {problem}
             </p>
           )}
-          <footer className="flex items-center justify-between gap-5 pt-[25px] pb-[22px] text-xs text-secondary [&>span]:flex [&>span]:items-center [&>span]:gap-[7px] [&_i]:mx-[3px] [&_i]:h-[9px] [&_i]:w-px [&_i]:bg-[#d7cedf] max-desk:flex-col max-desk:items-start max-desk:gap-[5px] max-desk:text-[10px]">
-            <span>
-              MST GRS <i /> ระบบจัดการผลการเรียนคงค้าง
-            </span>
-            <span>
+          <footer className="flex items-start justify-between gap-5 pt-[25px] pb-[22px] text-sm text-secondary [&>span]:flex [&>span]:items-center [&>span]:gap-[7px] [&_i]:mx-[3px] [&_i]:h-[9px] [&_i]:w-px [&_i]:bg-[#d7cedf] max-desk:flex-col max-desk:items-start max-desk:gap-[5px] max-desk:text-[12.5px]">
+            <div className="flex flex-col gap-1.5">
+              <span>
+                MST GRS <i /> ระบบจัดการผลการเรียนคงค้าง
+              </span>
+              ติดต่อผู้พัฒนา : suppapon.d@ku.th
+            </div>
+            <span className="">
               <ShieldCheck size={14} /> ข้อมูลตามสิทธิ์ของผู้ใช้งาน
             </span>
           </footer>
@@ -1704,7 +1708,7 @@ export default function Workspace({
                 <span>
                   สถานะ
                   <strong className="font-semibold text-[#574365]">
-                    {statuses[selected.status].label}
+                    {statusText(selected.status)}
                   </strong>
                 </span>
               </div>
@@ -1872,6 +1876,16 @@ export default function Workspace({
                   <p>
                     ยืนยันเมื่อนักเรียนนำงานมาส่งกับคุณแล้วเท่านั้น
                     หลังจากนี้คุณจะสามารถอนุมัติผลการเรียนได้
+                    ความคืบหน้าจะยังเป็น 50% จนกว่าคุณจะอนุมัติ
+                  </p>
+                </div>
+              )}
+              {role === "teacher" && selected.status === "submitted" && (
+                <div className="my-5 flex items-start gap-2.5 rounded-lg border border-[#e8dff5] bg-[#f6f2fd] p-[15px] text-sm text-[#6b5788] [&>svg]:mt-[3px] [&>svg]:shrink-0">
+                  <Info size={20} />
+                  <p>
+                    หากอนุมัติและส่งฝ่ายวัดผลแล้ว จะมอบหมายงานเพิ่มไม่ได้
+                    แต่ยังแก้ไขผลการเรียนได้จนกว่าฝ่ายวัดผลจะอนุมัติ
                   </p>
                 </div>
               )}

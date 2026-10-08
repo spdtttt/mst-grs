@@ -30,6 +30,7 @@ import {
   runStudentBatch,
   type StudentBatchResult,
 } from "@/lib/student-import";
+import { nonnegative } from "zod";
 
 const fields = Object.entries(studentColumns);
 const prefixOptions = ["เด็กชาย", "เด็กหญิง", "นาย", "นางสาว"].map(
@@ -39,7 +40,7 @@ const prefixOptions = ["เด็กชาย", "เด็กหญิง", "น
   }),
 );
 const inputStyle =
-  "mt-1 w-full border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/10";
+  "mt-1 w-full border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand";
 const buttonStyle =
   "inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50";
 const emptyList: StudentList = {
@@ -607,24 +608,6 @@ export default function AdminStudents({
       : 0;
   return (
     <section className="space-y-6" aria-label="จัดการรายชื่อนักเรียน">
-      {onManageYear && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-white p-4">
-          <div>
-            <h2 className="font-semibold">เตรียมรายชื่อสำหรับปีการศึกษาใหม่</h2>
-            <p className="mt-1 text-sm text-secondary">
-              จัดการนักเรียนจบการศึกษา ย้ายออก และดูรายชื่อย้อนหลัง
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onManageYear}
-            disabled={processing}
-            className={`${buttonStyle} cursor-pointer rounded-lg border border-line text-brand hover:bg-brand-soft`}
-          >
-            จัดการนักเรียนปีใหม่
-          </button>
-        </div>
-      )}
       <dialog
         ref={processDialog}
         aria-labelledby="student-process-title"
@@ -752,9 +735,7 @@ export default function AdminStudents({
                           borderColor: state.isFocused
                             ? "var(--color-brand)"
                             : "var(--color-line)",
-                          boxShadow: state.isFocused
-                            ? "0 0 0 2px rgb(125 30 138 / 10%)"
-                            : "none",
+                          boxShadow: "none",
                           "&:hover": { borderColor: "var(--color-brand)" },
                         }),
                       }}
@@ -827,10 +808,10 @@ export default function AdminStudents({
           <p className="mt-2 text-sm leading-relaxed text-secondary">
             อ่านครบทุกชีท รวม ม.1–ม.6 ตรวจข้อมูลก่อนบันทึก รองรับชีทละ 2,000 แถว
           </p>
-          <div className="mt-4 flex flex-1 flex-col justify-start rounded-lg border border-dashed border-brand/30 bg-brand-soft/40 p-5">
+          <div className="mt-4 cursor-pointer flex flex-1 flex-col justify-start rounded-lg border border-dashed border-brand/30 bg-brand-soft/40 hover:bg-brand-soft/60 duration-150 p-5">
             <label
               htmlFor="student-xlsx"
-              className="mb-3 block text-sm font-medium"
+              className="mb-3 block text-sm cursor-pointer font-medium"
             >
               เลือกไฟล์รายชื่อนักเรียน
             </label>
@@ -839,7 +820,7 @@ export default function AdminStudents({
               type="file"
               accept=".xlsx"
               disabled={busy || reading}
-              className="block w-full text-sm cursor-pointer file:mr-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-2 file:text-brand"
+              className="block w-full text-sm file:mr-3 cursor-pointer file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-2 file:text-brand"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 e.target.value = "";
@@ -860,7 +841,7 @@ export default function AdminStudents({
           </div>
           <button
             type="button"
-            className={`${buttonStyle} cursor-pointer mt-3 self-start border border-line text-brand`}
+            className={`${buttonStyle} cursor-pointer hover:bg-gray-50 mt-3 self-start border border-line text-brand`}
             onClick={template}
             disabled={busy}
           >
