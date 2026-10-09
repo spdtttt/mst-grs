@@ -60,8 +60,8 @@ test("grade corrections lock when academics approve, including stale requests", 
     await correct(completedId, "1", "2");
     await db.exec("reset role");
     const legacy = await snapshot(completedId);
-    await db.exec(readFileSync("supabase/migrations/045_lock_approved_grade_corrections.sql", "utf8"));
-    await db.exec(readFileSync("supabase/migrations/051_measurement_wording.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/045_lock_approved_grade_corrections.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/051_measurement_wording.sql", "utf8"));
     assert.deepEqual(await snapshot(completedId), legacy);
 
     await t.test("only assigned teachers may correct grades through the RPC", async () => {

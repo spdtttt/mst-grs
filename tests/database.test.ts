@@ -15,14 +15,14 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     await db.exec(
       "create role anon; create role authenticated; create role service_role; create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated,anon; grant execute on function auth.uid() to authenticated,anon; create schema storage; grant usage on schema storage to authenticated; create table storage.buckets(id text primary key,name text not null,public boolean not null default false,file_size_limit bigint,allowed_mime_types text[]); create table storage.objects(id uuid default gen_random_uuid(),bucket_id text not null,name text not null); alter table storage.objects enable row level security; grant select,insert,delete on storage.objects to authenticated; create function storage.foldername(text) returns text[] language sql immutable as $$ select string_to_array(regexp_replace($1,'/[^/]+$',''),'/') $$; grant execute on function storage.foldername(text) to authenticated;",
     );
-    await db.exec(readFileSync("supabase/migrations/001_initial.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/001_initial.sql", "utf8"));
     await db.exec(
       readFileSync(
-        "supabase/migrations/002_assignment_attachments.sql",
+        "tests/fixtures/migration-history/002_assignment_attachments.sql",
         "utf8",
       ),
     );
-    await db.exec(readFileSync("supabase/migrations/003_web_push.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/003_web_push.sql", "utf8"));
     for (const [id, role, name, code] of [
       [student, "student", "นักเรียน หนึ่ง", "001"],
       [other, "student", "นักเรียน สอง", "002"],
@@ -42,38 +42,38 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
       [admin],
     );
     await db.exec(
-      readFileSync("supabase/migrations/004_academic_schedule.sql", "utf8"),
+      readFileSync("tests/fixtures/migration-history/004_academic_schedule.sql", "utf8"),
     );
     await db.exec(
-      readFileSync("supabase/migrations/005_manager_role.sql", "utf8"),
+      readFileSync("tests/fixtures/migration-history/005_manager_role.sql", "utf8"),
     );
     await db.exec(
       readFileSync(
-        "supabase/migrations/006_manager_dashboard_stats.sql",
+        "tests/fixtures/migration-history/006_manager_dashboard_stats.sql",
         "utf8",
       ),
     );
     await db.query("insert into auth.users values($1)", [manager]);
     await db.exec(
       readFileSync(
-        "supabase/migrations/007_manager_student_counts.sql",
+        "tests/fixtures/migration-history/007_manager_student_counts.sql",
         "utf8",
       ),
     );
     await db.exec(
       readFileSync(
-        "supabase/migrations/008_manager_outstanding_statuses.sql",
+        "tests/fixtures/migration-history/008_manager_outstanding_statuses.sql",
         "utf8",
       ),
     );
     await db.exec(
-      readFileSync("supabase/migrations/009_manager_student_lists.sql", "utf8"),
+      readFileSync("tests/fixtures/migration-history/009_manager_student_lists.sql", "utf8"),
     );
     await db.exec(
-      readFileSync("supabase/migrations/010_manager_student_courses.sql", "utf8"),
+      readFileSync("tests/fixtures/migration-history/010_manager_student_courses.sql", "utf8"),
     );
     await db.exec(
-      readFileSync("supabase/migrations/011_manager_student_filters.sql", "utf8"),
+      readFileSync("tests/fixtures/migration-history/011_manager_student_filters.sql", "utf8"),
     );
     await db.query(
       "insert into public.profiles(id,role,full_name) values($1,'manager','ผู้บริหาร')",
@@ -323,7 +323,7 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
       "original_grade", "semester", "status", "teacher_name",
     ]);
     await db.exec("reset role");
-    await db.exec(readFileSync("supabase/migrations/012_multi_teachers.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/012_multi_teachers.sql", "utf8"));
     await db.query(
       "update grade_records set status='assigned',assignment='Legacy assignment details',due_at=now()+interval '1 day',assigned_at=now() where id=$1",
       [id],
@@ -332,7 +332,7 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
       "insert into assignment_files(record_id,storage_path,original_name,mime_type,size_bytes,uploaded_by) values($1,$2,'legacy.pdf','application/pdf',1024,$3)",
       [id, `${id}/00000000-0000-4000-8000-000000000097.pdf`, teacher],
     );
-    await db.exec(readFileSync("supabase/migrations/013_assignment_rounds.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/013_assignment_rounds.sql", "utf8"));
     const legacyRound = (await db.query<{ id: string; assignment: string }>(
       "select id,assignment from grade_assignments where record_id=$1", [id],
     )).rows[0];
@@ -811,7 +811,7 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     // Archive lifecycle: the cron entry point is exercised directly because
     // pg_cron is not available in the embedded PostgreSQL test runtime.
     await db.exec("reset role");
-    await db.exec(readFileSync("supabase/migrations/016_grade_record_history.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/016_grade_record_history.sql", "utf8"));
     const beforeCompleted = (await db.query<{ id: string; student_id: string; teacher_id: string[] }>(
       "select * from grade_records where status='completed' order by id",
     )).rows;
@@ -885,7 +885,7 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
 
     // Direct uploads must accept large files while validating actual Storage metadata.
     await db.exec("reset role; alter table storage.objects add column metadata jsonb;");
-    await db.exec(readFileSync("supabase/migrations/019_direct_assignment_uploads.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/019_direct_assignment_uploads.sql", "utf8"));
     assert.equal((await db.query<{ file_size_limit: number | null }>(
       "select file_size_limit from storage.buckets where id='assignment-files'",
     )).rows[0].file_size_limit, null);
@@ -939,7 +939,7 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     await db.exec("alter table site_schedule disable trigger archive_on_schedule_change");
     await db.query("update site_schedule set opens_at=$1::timestamptz,closes_at=$2::timestamptz", [`${today}T01:00:00+07:00`, `${today}T02:00:00+07:00`]);
     await db.exec("alter table site_schedule enable trigger archive_on_schedule_change");
-    await db.exec(readFileSync("supabase/migrations/020_date_only_schedule.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/020_date_only_schedule.sql", "utf8"));
     assert.equal((await db.query("select id from grade_records where id=$1", [uploadId])).rows.length, 1,
       "conversion must not archive against the old partial-day deadline");
     await as(academic);
@@ -976,7 +976,7 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     await db.query("insert into storage.objects(bucket_id,name,metadata) values('assignment-files',$1,'{\"size\":1024,\"mimetype\":\"application/pdf\"}')", [oldPath]);
     await db.query("insert into assignment_files(record_id,assignment_id,storage_path,original_name,mime_type,size_bytes,uploaded_by) values($1,$2,$3,'old.pdf','application/pdf',1024,$4)", [resetId, oldTask, oldPath, teacher]);
     const beforeReset = (await db.query<Record<string, unknown>>("select * from grade_records where id=any($1::uuid[]) order by id", [resetRecords.map((record) => record.id)])).rows;
-    await db.exec(readFileSync("supabase/migrations/021_reset_unfinished_on_close.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/021_reset_unfinished_on_close.sql", "utf8"));
     assert.equal((await db.query("select * from school_period_closures")).rows.length, 0, "do not reset before the closing date");
     const firstClose = new Date(Date.parse(`${today}T00:00:00+07:00`) - 2 * 86400000).toISOString();
     async function expireWithoutTrigger(close: string) {
@@ -1047,8 +1047,8 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
 
     // Teachers may correct approved grades during the open period, with an
     // immutable history. Archived records can never be corrected.
-    await db.exec(readFileSync("supabase/migrations/022_grade_corrections.sql", "utf8"));
-    await db.exec(readFileSync("supabase/migrations/023_allow_all_new_grades.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/022_grade_corrections.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/023_allow_all_new_grades.sql", "utf8"));
     await as(academic);
     await db.query("select update_schedule($1,$2,'open for corrections')", [bounds.opens_at, bounds.closes_at]);
     const approvedId = resetRecords.find((record) => record.course_code === "RESET-teacher_approved")!.id;
@@ -1113,8 +1113,8 @@ test("PostgreSQL enforces role isolation, schedule, two approvals and atomic imp
     // Admin owns import and schedule operations; the other roles keep their
     // existing record permissions and cannot invoke either operation.
     await db.exec("reset role");
-    await db.exec(readFileSync("supabase/migrations/024_admin_role.sql", "utf8"));
-    await db.exec(readFileSync("supabase/migrations/025_admin_operations.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/024_admin_role.sql", "utf8"));
+    await db.exec(readFileSync("tests/fixtures/migration-history/025_admin_operations.sql", "utf8"));
     await db.query("insert into auth.users values($1)", [admin]);
     await db.query("insert into profiles(id,role,full_name) values($1,'admin','ผู้ดูแลระบบ')", [admin]);
     assert.deepEqual((await db.query<{ role: string }>(

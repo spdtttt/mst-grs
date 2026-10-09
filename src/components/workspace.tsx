@@ -1627,7 +1627,7 @@ export default function Workspace({
               <span>
                 MST GRS <i /> ระบบจัดการผลการเรียนคงค้าง
               </span>
-              ติดต่อผู้พัฒนา : suppapon.d@ku.th
+              ติดต่อ : gpa@mst.ac.th
             </div>
             <span className="">
               <ShieldCheck size={14} /> ข้อมูลตามสิทธิ์ของผู้ใช้งาน

@@ -28,7 +28,7 @@ const teacher = {
 test("historical repair migration restores the legacy registration schema without removing profiles", async () => {
   const db = await loadTestDatabase({ through: "041" });
   const repair = readFileSync(
-    "supabase/migrations/030_restore_profile_citizen_id_encrypted.sql",
+    "tests/fixtures/migration-history/030_restore_profile_citizen_id_encrypted.sql",
     "utf8",
   );
   const existingId = "00000000-0000-4000-8000-000000000002";

@@ -1,6 +1,6 @@
 # NEW-MST-GRS
 
-ระบบแก้ไขผลการเรียนคงค้าง ภาษาไทย โทนม่วง ใช้ Next.js App Router, TypeScript และ Supabase PostgreSQL/Auth
+ระบบแก้ไขผลการเรียนคงค้าง ภาษาไทย โทนสีม่วง ใช้ Next.js App Router, TypeScript และ Supabase (PostgreSQL/Auth)
 
 ## เริ่มต้น
 

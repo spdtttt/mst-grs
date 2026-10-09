@@ -23,7 +23,7 @@ test("legacy term trigger repair restores completion and preserves existing term
       for each row execute function stamp_completion_term();
     `);
     await assert.rejects(db.exec("update grade_records set status = 'completed' where id = 1"), /current_academic_year/);
-    const repair = readFileSync("supabase/migrations/018_remove_legacy_completion_trigger.sql", "utf8");
+    const repair = readFileSync("tests/fixtures/migration-history/018_remove_legacy_completion_trigger.sql", "utf8");
     await db.exec(repair);
     await db.exec(repair);
     await db.exec("update grade_records set status = 'completed' where id = 1");
