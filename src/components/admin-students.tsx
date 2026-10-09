@@ -1,4 +1,5 @@
 "use client";
+import { SkeletonTableRows } from "@/components/skeleton";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Select from "react-select";
 import AdminAccountRow from "./admin-account-row";
@@ -1116,15 +1117,7 @@ export default function AdminStudents({
               </thead>
               <tbody>
                 {loading ? (
-                  <tr>
-                    <td colSpan={5} className="p-10 text-center text-secondary">
-                      <Loader2
-                        className="mx-auto mb-2 animate-spin"
-                        size={22}
-                      />
-                      กำลังโหลดรายชื่อ...
-                    </td>
-                  </tr>
+                  <SkeletonTableRows columns={5} />
                 ) : data.items.length ? (
                   data.items.map((s) => (
                     <AdminAccountRow

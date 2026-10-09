@@ -1,4 +1,5 @@
 "use client";
+import { Skeleton, SkeletonTableRows } from "@/components/skeleton";
 import { useEffect, useRef, useState } from "react";
 import Select from "react-select";
 import { Loader2, Search, UserPlus } from "lucide-react";
@@ -315,7 +316,7 @@ export default function AdminManagers({
             <h2 className="text-lg font-semibold">รายชื่อผู้บริหารทั้งหมด</h2>
             <p className="mt-1 text-sm text-secondary">
               {loading
-                ? "กำลังโหลด..."
+                ? <><Skeleton className="inline-block h-4 w-24 align-middle" /><span className="sr-only">กำลังโหลด</span></>
                 : `ทั้งหมด ${data.total.toLocaleString("th-TH")} คน`}
             </p>
           </div>
@@ -365,11 +366,7 @@ export default function AdminManagers({
               </thead>
               <tbody>
                 {loading ? (
-                  <tr>
-                    <td colSpan={3} className="p-8 text-center">
-                      กำลังโหลดรายชื่อ...
-                    </td>
-                  </tr>
+                  <SkeletonTableRows columns={3} />
                 ) : data.items.length ? (
                   data.items.map((row) => (
                     <AdminAccountRow

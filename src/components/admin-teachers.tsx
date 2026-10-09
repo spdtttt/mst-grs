@@ -1,7 +1,8 @@
 "use client";
+import { Skeleton, SkeletonTableRows } from "@/components/skeleton";
 import { useEffect, useState } from "react";
 import Select from "react-select";
-import { Loader2, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { listTeachers } from "@/app/teacher-actions";
 import {
   TEACHER_PAGE_SIZE,
@@ -153,7 +154,7 @@ export default function AdminTeachers({
             <h2 className="text-lg font-semibold">รายชื่อ{staffLabel}</h2>
             <p className="mt-1 text-sm text-secondary">
               {loading
-                ? "กำลังโหลด..."
+                ? <><Skeleton className="inline-block h-4 w-24 align-middle" /><span className="sr-only">กำลังโหลด</span></>
                 : `ทั้งหมด ${data.total.toLocaleString("th-TH")} คน`}
             </p>
           </div>
@@ -272,18 +273,7 @@ export default function AdminTeachers({
               </thead>
               <tbody>
                 {loading ? (
-                  <tr>
-                    <td
-                      colSpan={staffRole === "teacher" ? 4 : 3}
-                      className="p-10 text-center text-secondary"
-                    >
-                      <Loader2
-                        size={22}
-                        className="mx-auto mb-2 animate-spin"
-                      />
-                      กำลังโหลดรายชื่อ...
-                    </td>
-                  </tr>
+                  <SkeletonTableRows columns={staffRole === "teacher" ? 4 : 3} />
                 ) : data.items.length ? (
                   data.items.map((teacher) => (
                     <AdminAccountRow

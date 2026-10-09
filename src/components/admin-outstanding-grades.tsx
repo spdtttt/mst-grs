@@ -1,5 +1,6 @@
 "use client";
 
+import { SkeletonTableRows } from "@/components/skeleton";
 import { useEffect, useState, useTransition } from "react";
 import { ChevronLeft, ChevronRight, Search, Trash2 } from "lucide-react";
 import {
@@ -205,7 +206,7 @@ export default function AdminOutstandingGrades({
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={9} className="p-10 text-center text-secondary">กำลังโหลดรายการผลการเรียน…</td></tr>
+              <SkeletonTableRows columns={9} rows={8} label="กำลังโหลดรายการผลการเรียน" />
             ) : data.items.length ? data.items.map((row) => (
               <tr key={row.id} className="border-t border-line hover:bg-brand-soft/15">
                 <td className="px-4 py-3">

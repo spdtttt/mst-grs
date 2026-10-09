@@ -1,4 +1,5 @@
 "use client";
+import { Skeleton } from "@/components/skeleton";
 import { useEffect, useRef, useState } from "react";
 import Select from "react-select";
 import { Loader2, UserPlus } from "lucide-react";
@@ -232,7 +233,12 @@ export default function AdminAcademics({
                   isLoading={loading}
                   isSearchable
                   placeholder="พิมพ์ชื่อหรือนามสกุลเพื่อค้นหาคุณครู"
-                  loadingMessage={() => "กำลังค้นหาคุณครู..."}
+                  loadingMessage={() => (
+                    <>
+                      <Skeleton className="inline-block h-4 w-40 align-middle" />
+                      <span className="sr-only">กำลังค้นหาคุณครู</span>
+                    </>
+                  )}
                   noOptionsMessage={() =>
                     lookupError
                       ? "ไม่สามารถโหลดรายชื่อคุณครูได้"
@@ -283,7 +289,7 @@ export default function AdminAcademics({
                 <div className="flex flex-wrap items-center gap-3 text-sm text-secondary">
                   <span>
                     {loading
-                      ? "กำลังโหลดครู..."
+                      ? <><Skeleton className="inline-block h-4 w-40 align-middle" /><span className="sr-only">กำลังโหลดครู</span></>
                       : `ทั้งหมด ${teachers.total} คน · หน้า ${page} / ${Math.max(1, Math.ceil(teachers.total / TEACHER_PAGE_SIZE))}`}
                   </span>
                   <button

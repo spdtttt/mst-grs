@@ -1,4 +1,5 @@
 "use client";
+import { SkeletonCard } from "@/components/skeleton";
 import { twMerge } from "tailwind-merge";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -72,20 +73,16 @@ import { bangkokDate, normalizeSchedule, scheduleClosingDate, scheduleClosingDis
 // server response independent of this interactive component's browser bundle.
 const AdminStudents = dynamic(() => import("./admin-students"), {
   ssr: false,
-  loading: () => (
-    <div className="rounded-xl border border-line bg-white p-6 text-sm text-secondary" role="status">
-      กำลังโหลดรายชื่อนักเรียน...
-    </div>
-  ),
+  loading: () => <SkeletonCard label="กำลังโหลดรายชื่อนักเรียน" />,
 });
 const AdminTeachers = dynamic(() => import("./admin-teachers"), {
   ssr: false,
-  loading: () => <div role="status" className="rounded-xl border border-line bg-white p-6 text-sm text-secondary">กำลังโหลดรายชื่อคุณครู...</div>,
+  loading: () => <SkeletonCard label="กำลังโหลดรายชื่อคุณครู" />,
 });
-const AdminStudentLifecycle = dynamic(() => import("./admin-student-lifecycle"), { ssr: false });
-const AdminManagers = dynamic(() => import("./admin-managers"), { ssr: false });
-const AdminAcademics = dynamic(() => import("./admin-academics"), { ssr: false });
-const AdminOutstandingGrades = dynamic(() => import("./admin-outstanding-grades"), { ssr: false });
+const AdminStudentLifecycle = dynamic(() => import("./admin-student-lifecycle"), { ssr: false, loading: () => <SkeletonCard /> });
+const AdminManagers = dynamic(() => import("./admin-managers"), { ssr: false, loading: () => <SkeletonCard /> });
+const AdminAcademics = dynamic(() => import("./admin-academics"), { ssr: false, loading: () => <SkeletonCard /> });
+const AdminOutstandingGrades = dynamic(() => import("./admin-outstanding-grades"), { ssr: false, loading: () => <SkeletonCard /> });
 
 type View = "overview" | "outstanding" | "history" | "export" | "import" | "schedule" | "students" | "teachers" | "academics" | "managers" | "student-lifecycle";
 const emptyHistory: ArchivedGradeRecord[] = [];

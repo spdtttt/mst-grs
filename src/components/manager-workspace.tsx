@@ -1,5 +1,6 @@
 "use client";
 
+import { Skeleton, SkeletonRows } from "@/components/skeleton";
 import {
   startTransition,
   useEffect,
@@ -56,9 +57,12 @@ const BarChart = dynamic(
     loading: () => (
       <div
         role="status"
-        className="flex h-[360px] items-center justify-center rounded-xl bg-[#faf8fd] text-sm text-[#8c7e99]"
+        className="flex h-[360px] items-end gap-4 rounded-xl bg-[#faf8fd] p-6"
       >
-        กำลังโหลดกราฟ…
+        <span className="sr-only">กำลังโหลดกราฟ</span>
+        {["h-[55%]", "h-[80%]", "h-[40%]", "h-[90%]", "h-[65%]", "h-[30%]"].map((height) => (
+          <Skeleton key={height} className={`flex-1 ${height}`} />
+        ))}
       </div>
     ),
   },
@@ -381,7 +385,7 @@ function ManagerStudentsView({
           </p>
         </div>
         <span className="rounded-full bg-[#f3ecfb] px-3 py-1.5 text-sm font-semibold text-[#6b449f]">
-          {result ? `${format(result.total)} คน` : "กำลังโหลด"}
+          {result ? `${format(result.total)} คน` : (<><Skeleton className="inline-block h-4 w-14 align-middle" /><span className="sr-only">กำลังโหลด</span></>)}
         </span>
       </div>
 
@@ -484,12 +488,10 @@ function ManagerStudentsView({
       </form>
 
       {loading ? (
-        <p
-          role="status"
-          className="px-5 py-16 text-center text-sm text-[#8c7e99]"
-        >
-          กำลังโหลดรายชื่อนักเรียน…
-        </p>
+        <div role="status" className="divide-y divide-[#efe8f6] px-5 py-3">
+          <span className="sr-only">กำลังโหลดรายชื่อนักเรียน</span>
+          <SkeletonRows rows={6} />
+        </div>
       ) : error ? (
         <p
           role="alert"
@@ -739,9 +741,16 @@ function ManagerStudentCoursesDialog({
             {error}
           </p>
         ) : courses === null ? (
-          <p role="status" className="py-10 text-center text-[15px] text-[#8c7e99]">
-            กำลังโหลดรายละเอียดรายวิชา…
-          </p>
+          <div role="status" className="space-y-3">
+            <span className="sr-only">กำลังโหลดรายละเอียดรายวิชา</span>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="space-y-3 rounded-xl border border-[#e9e1f2] p-4">
+                <Skeleton className="h-5 w-2/5" />
+                <Skeleton className="h-4 w-3/5" />
+                <Skeleton className="h-2 w-full" />
+              </div>
+            ))}
+          </div>
         ) : courses.length === 0 ? (
           <p className="py-10 text-center text-[15px] text-[#8c7e99]">ไม่พบรายวิชาของนักเรียน</p>
         ) : (

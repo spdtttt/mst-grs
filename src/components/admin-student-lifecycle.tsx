@@ -1,5 +1,6 @@
 "use client";
 
+import { Skeleton, SkeletonTableRows } from "@/components/skeleton";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -390,7 +391,7 @@ export default function AdminStudentLifecycle({
             </span>
             <strong className="mt-2 block text-3xl text-brand">
               {loading
-                ? "…"
+                ? <><Skeleton className="h-8 w-14" /><span className="sr-only">กำลังโหลด</span></>
                 : loadError
                   ? "—"
                   : (data.counts[key]?.toLocaleString("th-TH") ?? "—")}
@@ -570,11 +571,7 @@ export default function AdminStudentLifecycle({
               </thead>
               <tbody>
                 {loading ? (
-                  <tr>
-                    <td colSpan={7} className="p-8 text-center">
-                      กำลังโหลดรายชื่อ...
-                    </td>
-                  </tr>
+                  <SkeletonTableRows columns={7} />
                 ) : data.items.length ? (
                   data.items.map((row) => (
                     <tr
