@@ -242,7 +242,14 @@ export default function AdminTeachers({
           </div>
         ) : (
           <div className="overflow-x-auto" aria-busy={loading}>
-            <table className="w-full text-left text-sm">
+            <table
+              className={`w-full table-fixed text-left text-sm ${staffRole === "teacher" ? "min-w-[1040px]" : "min-w-[780px]"}`}
+            >
+              {staffRole === "teacher" ? (
+                <colgroup><col /><col style={{ width: 260 }} /><col style={{ width: 180 }} /><col style={{ width: 320 }} /></colgroup>
+              ) : (
+                <colgroup><col /><col style={{ width: 180 }} /><col style={{ width: 320 }} /></colgroup>
+              )}
               <thead className="bg-[#f8f6fc] text-sm text-secondary">
                 <tr>
                   {(staffRole === "teacher"

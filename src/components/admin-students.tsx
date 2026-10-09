@@ -1094,7 +1094,8 @@ export default function AdminStudents({
           </div>
         ) : (
           <div className="overflow-x-auto" aria-busy={loading}>
-            <table className="w-full text-left text-sm">
+            <table className="w-full min-w-[1000px] table-fixed text-left text-sm">
+              <colgroup><col style={{ width: 140 }} /><col /><col style={{ width: 150 }} /><col style={{ width: 100 }} /><col style={{ width: 320 }} /></colgroup>
               <thead className="bg-[#f8f6fc] text-sm text-secondary">
                 <tr>
                   {[
