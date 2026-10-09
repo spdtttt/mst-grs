@@ -705,8 +705,7 @@ export default function Workspace({
             );
           })}
         </nav>
-        <div className={styles.school}><strong>โรงเรียนเมืองสุราษฎร์ธานี</strong><p>ระบบแก้ไขผลการเรียนคงค้าง<br />ติดตามทุกขั้นตอนในที่เดียว</p></div>
-        <div className="-mx-[19px] flex items-center gap-[9px] border-t border-line px-[17px] py-5 [&>div]:min-w-0 [&>div]:flex-1 [&_strong]:block [&_strong]:truncate [&_strong]:text-md [&_small]:text-xs [&_small]:text-muted max-roomy:-mx-[13px] max-roomy:px-[13px] max-wide:-mx-2.5 max-desk:-mx-[18px]">
+        <div className="-mx-[19px] mt-auto flex items-center gap-[9px] border-t border-line px-[17px] py-5 [&>div]:min-w-0 [&>div]:flex-1 [&_strong]:block [&_strong]:truncate [&_strong]:text-md [&_small]:text-xs [&_small]:text-muted max-roomy:-mx-[13px] max-roomy:px-[13px] max-wide:-mx-2.5 max-desk:-mx-[18px]">
           <span className="inline-flex size-[38px] shrink-0 items-center justify-center rounded-full bg-[#ece3f9] font-semibold text-brand">
             {actor.full_name.slice(0, 1)}
           </span>
@@ -916,12 +915,12 @@ export default function Workspace({
                   </section>
                   <section className={styles.metrics} aria-label="ภาพรวมผลการเรียน">
                     <Stat
-                      title="รายวิชาทั้งหมด"
+                      title="รายการคงค้างทั้งหมด"
                       value={scope.length}
-                      unit="รายวิชา"
+                      unit="รายการ"
                       icon={<BookOpen size={21} />}
                       tone="purple"
-                      detail="ผลการเรียนในระบบ"
+                      detail="รายการในระบบ"
                     />
                     <Stat
                       title="ต้องดำเนินการ"
