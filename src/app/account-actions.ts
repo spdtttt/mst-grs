@@ -10,6 +10,7 @@ import {
   type AccountList,
   type AccountRow,
 } from "@/lib/admin-accounts";
+import { deleteAuthUserAfterRoleDelete } from "@/lib/account-auth-cleanup";
 import { passwordSchema } from "@/lib/auth-input";
 import {
   ManagerAccountError,
@@ -170,7 +171,13 @@ export async function editAccount(
 
 export async function deleteAccount(
   input: unknown,
-): Promise<{ success?: boolean; error?: string; profile_retained?: boolean }> {
+): Promise<{
+  success?: boolean;
+  error?: string;
+  profile_retained?: boolean;
+  auth_deleted?: boolean;
+  auth_user_id?: string;
+}> {
   const context = await adminContext();
   if ("error" in context) return { error: context.error };
   const parsed = accountTargetSchema.safeParse(input);
@@ -186,7 +193,21 @@ export async function deleteAccount(
   if (data?.deleted !== true)
     return { error: "ยังยืนยันการลบไม่ได้ กรุณาโหลดรายชื่อใหม่" };
   revalidatePath("/dashboard", "layout");
-  return { success: true, profile_retained: data.profile_retained };
+  if (data.profile_retained === true)
+    return { success: true, profile_retained: true };
+  // Last role removed: the profile is gone, so also remove the Auth account.
+  const service = serviceClient();
+  const cleanup = service
+    ? await deleteAuthUserAfterRoleDelete(service, id)
+    : { ok: false };
+  return cleanup.ok
+    ? { success: true, profile_retained: false, auth_deleted: true }
+    : {
+        success: true,
+        profile_retained: false,
+        auth_deleted: false,
+        auth_user_id: id,
+      };
 }
 
 export async function resetStaffAuth(input: unknown): Promise<ResetResult> {

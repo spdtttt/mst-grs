@@ -53,8 +53,9 @@ export default function AdminAccountRow({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [removed, setRemoved] = useState(false);
   const lock = useRef(false);
-  const unavailable = disabled || busy || row.id === currentUserId;
+  const unavailable = disabled || busy || removed || row.id === currentUserId;
   const student = role === "student";
   const staff = role === "teacher" || role === "academic";
   const roleLabel = {
@@ -169,6 +170,14 @@ export default function AdminAccountRow({
         const result = demo ? { success: true } : await deleteAccount(target);
         if (result.error || !result.success) {
           setError(result.error ?? "ลบไม่สำเร็จ");
+          return;
+        }
+        if (result.auth_deleted === false) {
+          setRemoved(true);
+          setMode("view");
+          setError(
+            `ลบข้อมูลในระบบแล้ว แต่ลบบัญชีเข้าสู่ระบบ (Supabase Auth) ไม่สำเร็จ กรุณาลบผู้ใช้ ${result.auth_user_id ?? row.id} ใน Supabase Dashboard แล้วโหลดรายชื่อใหม่`,
+          );
           return;
         }
         onDeleted(row.id);
@@ -409,7 +418,7 @@ export default function AdminAccountRow({
         ) : (
           <div className="space-y-3">
             {mode === "delete" && (
-              <p className="max-w-sm text-sm leading-6 text-red-700">{`ยืนยันลบ ${row.full_name} เฉพาะบทบาท${roleLabel}? บทบาทอื่น บัญชีเข้าสู่ระบบ และประวัติยังคงอยู่ หากมีผลการเรียนคงค้างจะลบไม่ได้`}</p>
+              <p className="max-w-sm text-sm leading-6 text-red-700">{`ยืนยันลบ ${row.full_name} เฉพาะบทบาท${roleLabel}? หากเป็นบทบาทสุดท้ายของผู้ใช้ บัญชีเข้าสู่ระบบจะถูกลบด้วย ส่วนบทบาทอื่นและประวัติยังคงอยู่ หากมีผลการเรียนคงค้างจะลบไม่ได้`}</p>
             )}
             {mode === "reset-auth" && (
               <p className="max-w-sm text-sm leading-6 text-red-700">{`ยืนยันรีเซ็ทรหัสผ่านของ ${row.full_name}? จะลบบัญชีเข้าสู่ระบบที่ใช้ร่วมกันทุกบทบาท โดยเก็บทะเบียน ผลการเรียนคงค้าง ประวัติ และไฟล์แนบไว้ ต้องสร้างบัญชีเข้าสู่ระบบกลับก่อนใช้งานอีกครั้ง`}</p>
