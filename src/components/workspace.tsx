@@ -232,6 +232,8 @@ export default function Workspace({
   }, [selected]);
   const role = actor.role;
   const open = isOpen(settings, now);
+  // Admins can use every page, including imports, outside the open/close window.
+  const canImport = open || role === "admin";
   const scope = items.filter((r) =>
     role === "student"
       ? r.student_id === actor.id
@@ -539,7 +541,7 @@ export default function Workspace({
     }
   }
   function confirmImport() {
-    if (!open) {
+    if (!canImport) {
       setProblem("ระบบยังไม่เปิดรับการนำเข้าข้อมูล กรุณาตั้งวันที่เปิดระบบก่อน");
       return;
     }
@@ -1322,7 +1324,7 @@ export default function Workspace({
               )}
               {view === "import" && (
                 <>
-                  {!open && (
+                  {!canImport && (
                     <p className="mb-4 rounded-lg border border-[#f1dfb8] bg-[#fff8e9] p-4 text-sm text-[#886628]">
                       ระบบยังไม่เปิดรับการนำเข้าข้อมูล ตั้งวันที่เปิดระบบในเมนูตั้งค่าเวลาเปิด–ปิดระบบก่อน
                     </p>
@@ -1436,7 +1438,7 @@ export default function Workspace({
                           </div>
                           <button
                             className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex items-center justify-center gap-[9px] rounded-lg border border-transparent px-[18px] py-[11px] font-[550] whitespace-nowrap bg-brand text-white shadow-[0_3px_6px_#713cd112] enabled:hover:bg-[#602cbc] enabled:hover:shadow-[0_3px_12px_#713cd126]"
-                            disabled={!open || busy || reading || !!fileErrors.length}
+                            disabled={!canImport || busy || reading || !!fileErrors.length}
                             onClick={confirmImport}
                           >
                             <FileSpreadsheet size={17} />

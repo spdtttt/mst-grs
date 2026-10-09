@@ -153,18 +153,21 @@ test("grade imports overwrite only active records, reset progress and retain sec
       await as(admin); assert.deepEqual(await importRows([row("ARCHIVE")]), { inserted: 1, updated: 0, skipped: 0 });
       await owner(); await db.exec("update grade_records set status='completed', completed_at=now(), final_grade='4' where course_code='ARCHIVE'");
       await as(admin); await db.exec("select update_schedule(now()-interval '3 days',now()-interval '1 day','closed')");
-      await assert.rejects(() => importRows(original), /ไม่มีสิทธิ์/);
       await owner();
       const history = (await db.query("select * from grade_record_history")).rows;
       assert.equal(history.length, 1);
       assert.equal(await count("grade_reset_history where reset_reason='period_close' and closes_at is not null"), 6);
+      await as(admin);
+      assert.deepEqual(await importRows([row("CLOSED")]), { inserted: 1, updated: 0, skipped: 0 });
+      await as(teacher);
+      await assert.rejects(() => importRows([row("CLOSED2")]), /ไม่มีสิทธิ์/);
       await as(admin); await db.exec("select update_schedule(now()-interval '1 day',now()+interval '2 days','reopened')");
       assert.deepEqual(await importRows([row("NEW"), original[0], { ...row("ARCHIVE"), course_name: "Overwrite history?" }]), { inserted: 1, updated: 1, skipped: 1 });
       assert.deepEqual(await importRows([{ ...original[0], semester: 2 }, { ...original[0], academic_year: 2570 }]), { inserted: 2, updated: 0, skipped: 0 });
       await owner();
       assert.deepEqual((await db.query("select * from grade_record_history")).rows, history);
       assert.equal(await count("grade_records where course_code='ARCHIVE'"), 0);
-      assert.equal(await count("grade_records"), 9);
+      assert.equal(await count("grade_records"), 10);
     });
   } finally { await db.close(); }
 });
