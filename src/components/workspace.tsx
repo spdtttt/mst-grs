@@ -64,6 +64,7 @@ import { useSwipeSidebar } from "@/lib/use-swipe-sidebar";
 import { summarizeManagerStats, type ManagerStats } from "@/lib/manager-stats";
 import { worksheetRows } from "@/lib/import-excel";
 import PushNotificationControl from "@/components/push-notification-control";
+import InstallAppControl from "@/components/install-app-control";
 import {
   columns,
   parseRows,
@@ -1656,7 +1657,12 @@ export default function Workspace({
           </div>
           {role !== "admin" && !isStatsView && (
             <RecoveryRail records={scope} schedule={settings} open={open}>
-              {role === "teacher" && !demo && <PushNotificationControl />}
+              {role === "teacher" && !demo && (
+                <>
+                  <InstallAppControl />
+                  <PushNotificationControl />
+                </>
+              )}
             </RecoveryRail>
           )}
           </div>

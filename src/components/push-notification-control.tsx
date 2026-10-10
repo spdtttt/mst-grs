@@ -154,7 +154,7 @@ export default function PushNotificationControl() {
   const canToggle = !["unsupported", "blocked", "loading"].includes(state);
 
   return (
-    <section className="mx-[7px] mb-4 rounded-xl border border-[#e6dcf1] bg-white px-4 py-4 text-xs text-[#6f607c] shadow-[0_8px_28px_#40206f0a]">
+    <section className="mx-[7px] mb-4 rounded-xl border border-[#e6dcf1] bg-white px-4 py-4 text-sm text-[#6f607c] shadow-[0_8px_28px_#40206f0a]">
       <div className="flex items-start gap-3">
         <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
           <Icon
@@ -165,7 +165,7 @@ export default function PushNotificationControl() {
         </span>
         <div className="min-w-0 flex-1">
           <h2 className="font-semibold text-[#5b476d]">แจ้งเตือนคำร้องใหม่</h2>
-          <p className="mt-1 leading-5" aria-live="polite">
+          <p className="mt-1 leading-5 text-xs" aria-live="polite">
             {message}
           </p>
         </div>
