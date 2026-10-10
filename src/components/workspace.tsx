@@ -859,6 +859,11 @@ export default function Workspace({
           </div>
           <div className={twMerge(styles.columns, (role === "admin" || isStatsView) && styles.adminColumns)}>
           <div className={styles.content}>
+          {(role === "admin" || isStatsView) && !demo && (
+            <div className="mb-5">
+              <InstallAppControl />
+            </div>
+          )}
           {!open && role !== "admin" && view !== "history" && !isStatsView ? (
             <div className="rounded-[14px] border border-line bg-white px-[25px] py-[60px] text-center text-[#9481aa] [&>svg]:mx-auto [&_h2]:m-[15px] [&_h2]:text-ink [&>div]:m-5 [&>div]:text-sm max-desk:px-4 max-desk:py-10 max-desk:[&_h2]:text-[19px]">
               <Clock3 size={42} />
@@ -1657,12 +1662,8 @@ export default function Workspace({
           </div>
           {role !== "admin" && !isStatsView && (
             <RecoveryRail records={scope} schedule={settings} open={open}>
-              {role === "teacher" && !demo && (
-                <>
-                  <InstallAppControl />
-                  <PushNotificationControl />
-                </>
-              )}
+              {!demo && <InstallAppControl />}
+              {role === "teacher" && !demo && <PushNotificationControl />}
             </RecoveryRail>
           )}
           </div>

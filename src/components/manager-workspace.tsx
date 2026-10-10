@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import styles from "./dashboard.module.css";
 import LogoutOverlay from "@/components/logout-overlay";
+import InstallAppControl from "@/components/install-app-control";
 import ManagerCompletionSummary from "@/components/manager-completion-summary";
 import { signOut } from "@/app/actions";
 import {
@@ -282,6 +283,11 @@ export default function ManagerWorkspace({
             <h1>{title}</h1>
             <p>ติดตามภาพรวมการแก้ไขผลการเรียนของนักเรียน โรงเรียนเมืองสุราษฎร์ธานี</p>
           </div>
+          {!demo && (
+            <div className="mb-5">
+              <InstallAppControl />
+            </div>
+          )}
           {view === "dashboard" ? (
             <ManagerStatsContent stats={stats} />
           ) : (
