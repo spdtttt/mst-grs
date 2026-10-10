@@ -926,8 +926,15 @@ function ManagerDashboardStats({ stats }: { stats: ManagerStats }) {
       row.incomplete_students,
     ]),
   );
-  const intervals = Math.min(4, Math.max(2, maxStudents));
-  const tickStep = Math.max(1, Math.ceil(maxStudents / intervals));
+  // Bar value labels sit above the bars but are clipped to the plot area, so the
+  // axis must end at least ~10% above the tallest bar to leave room for them.
+  const headroomMax = Math.ceil(maxStudents * 1.1);
+  const intervals = [4, 3, 2].reduce((best, count) =>
+    Math.ceil(headroomMax / count) * count < Math.ceil(headroomMax / best) * best
+      ? count
+      : best,
+  );
+  const tickStep = Math.max(1, Math.ceil(headroomMax / intervals));
   const axisMax = tickStep * intervals;
   const format = (count: number) => count.toLocaleString("th-TH");
   const statusCounts = stats.outstanding_by_status;
