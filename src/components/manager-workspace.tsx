@@ -15,6 +15,7 @@ import {
   ClipboardList,
   Clock3,
   ChevronLeft,
+  Download,
   ChevronRight,
   ArrowLeftRight,
   Loader2,
@@ -28,7 +29,12 @@ import styles from "./dashboard.module.css";
 import LogoutOverlay from "@/components/logout-overlay";
 import ManagerCompletionSummary from "@/components/manager-completion-summary";
 import { signOut } from "@/app/actions";
-import { loadManagerStudentCourses, loadManagerStudents } from "@/app/manager-actions";
+import {
+  exportManagerStudents,
+  loadManagerStudentCourses,
+  loadManagerStudents,
+} from "@/app/manager-actions";
+import { saveCsv } from "@/lib/save-csv";
 import {
   roles,
   statuses,
@@ -311,7 +317,68 @@ export function ManagerStudentsView({
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedStudent, setSelectedStudent] = useState<ManagerStudentRow | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
   const format = (value: number) => value.toLocaleString("th-TH");
+
+  // Exports every student matching the current search and filters, not only the visible page.
+  async function exportCsv() {
+    if (exporting) return;
+    setExporting(true);
+    setExportError("");
+    try {
+      const filters = {
+        level: level === "all" ? null : Number(level),
+        academicYear: academicYear === "all" ? null : Number(academicYear),
+        semester: semester === "all" ? null : Number(semester),
+      };
+      let rows: ManagerStudentRow[];
+      if (demoRecords) {
+        rows = [];
+        for (let next = 1; ; next++) {
+          const part = summarizeManagerStudents(demoRecords, completed, query, next, filters);
+          rows.push(...part.items);
+          if (rows.length >= part.total || part.items.length === 0) break;
+        }
+      } else {
+        const response = await exportManagerStudents({ completed, query, ...filters });
+        if (!response.data) {
+          setExportError(response.error);
+          return;
+        }
+        rows = response.data;
+      }
+      saveCsv(
+        `MST-GRS-students-${completed ? "completed" : "incomplete"}-${new Date().toISOString().slice(0, 10)}.csv`,
+        [
+          "เลขประจำตัว",
+          "ชื่อ-สกุล",
+          "ชั้น/ห้อง",
+          "เลขที่",
+          "ปีการศึกษาล่าสุด",
+          "ภาคเรียนล่าสุด",
+          "รายการทั้งหมด",
+          ...(completed ? [] : ["ยังคงค้าง"]),
+          "เรียบร้อยแล้ว",
+        ],
+        rows.map((student) => [
+          student.student_code,
+          student.student_name,
+          student.classroom,
+          student.roll_number,
+          student.academic_year,
+          student.semester,
+          student.total_records,
+          ...(completed ? [] : [student.incomplete_records]),
+          student.completed_records,
+        ]),
+      );
+    } catch {
+      setExportError("ไม่สามารถส่งออกรายชื่อนักเรียนได้ กรุณาลองอีกครั้ง");
+    } finally {
+      setExporting(false);
+    }
+  }
 
   useEffect(() => {
     let active = true;
@@ -375,10 +442,33 @@ export function ManagerStudentsView({
               : "มีอย่างน้อยหนึ่งวิชาที่ยังดำเนินการไม่เสร็จ"}
           </p>
         </div>
-        <span className="rounded-full bg-[#f3ecfb] px-3 py-1.5 text-sm font-semibold text-[#6b449f]">
-          {result ? `${format(result.total)} คน` : (<><Skeleton className="inline-block h-4 w-14 align-middle" /><span className="sr-only">กำลังโหลด</span></>)}
-        </span>
+        <div className="flex flex-wrap items-center gap-5">
+          <span className="rounded-full bg-[#f3ecfb] px-3 py-1.5 text-sm font-semibold text-[#6b449f]">
+            {result ? `${format(result.total)} คน` : (<><Skeleton className="inline-block h-4 w-14 align-middle" /><span className="sr-only">กำลังโหลด</span></>)}
+          </span>
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={exporting || !result || result.total === 0}
+            className="inline-flex cursor-pointer items-center gap-2 border border-[#d9c8ee] px-3.5 py-2 text-sm font-semibold text-[#7046a4] transition-colors hover:bg-[#f3ecfb] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7144b3]"
+          >
+            {exporting ? (
+              <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+            ) : (
+              <Download size={16} aria-hidden="true" />
+            )}
+            {exporting ? "กำลังส่งออก..." : "ส่งออก CSV"}
+          </button>
+        </div>
       </div>
+      {exportError && (
+        <p
+          role="alert"
+          className="mx-5 mb-4 rounded-xl bg-[#fff4f4] px-4 py-3 text-sm text-[#a35b68] desk:mx-7"
+        >
+          {exportError}
+        </p>
+      )}
 
       <form
         onSubmit={(event) => {

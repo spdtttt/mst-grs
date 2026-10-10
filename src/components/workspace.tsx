@@ -51,8 +51,8 @@ import {
   isOpen,
   resetForNewPeriod,
   thaiDate,
-  safeCell,
 } from "@/lib/domain";
+import { saveCsv } from "@/lib/save-csv";
 import { demoProfiles } from "@/lib/demo";
 import ManagerWorkspace, {
   ManagerStatsContent,
@@ -117,23 +117,6 @@ const statsHeadings: Partial<Record<View, string>> = {
 function localBangkok(value: string | null) {
   if (!value) return "";
   return new Date(Date.parse(value) + 7 * 3600000).toISOString().slice(0, 16);
-}
-function saveCsv(filename: string, headers: string[], rows: unknown[][]) {
-  const csv =
-    "\uFEFF" +
-    [headers, ...rows]
-      .map((row) =>
-        row.map((v) => '"' + safeCell(v).replaceAll('"', '""') + '"').join(","),
-      )
-      .join("\r\n");
-  const url = URL.createObjectURL(
-    new Blob([csv], { type: "text/csv;charset=utf-8" }),
-  );
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 export default function Workspace({
   profile,
