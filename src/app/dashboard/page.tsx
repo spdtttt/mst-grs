@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { configured, supabase } from "@/lib/supabase";
 import Workspace from "@/components/workspace";
 import type { ArchivedGradeRecord, GradeCorrection, GradeRecord, Profile, Schedule } from "@/lib/domain";
+import type { ManagerStats } from "@/lib/manager-stats";
 import { currentProfile } from "@/lib/current-profile";
 export const dynamic = "force-dynamic";
 export default async function Dashboard({ searchParams }: {
@@ -51,9 +52,14 @@ export default async function Dashboard({ searchParams }: {
       if (data.length < 1000) return rows;
     }
   }
-  const [records, history, corrections] = await Promise.all([
+  async function loadManagerStats() {
+    const { data, error } = await db.rpc("manager_dashboard_stats");
+    return error ? null : (data as ManagerStats | null);
+  }
+  const [records, history, corrections, managerStats] = await Promise.all([
     loadRecords("grade_records"), loadRecords("grade_record_history"),
     profile.role === "teacher" ? loadCorrections() : Promise.resolve([]),
+    profile.role === "academic" ? loadManagerStats() : Promise.resolve(null),
   ]);
   return (
     <Workspace
@@ -63,6 +69,7 @@ export default async function Dashboard({ searchParams }: {
       gradeCorrections={corrections as GradeCorrection[]}
       initialView={initialView}
       schedule={schedule as Schedule}
+      managerStats={managerStats}
     />
   );
 }

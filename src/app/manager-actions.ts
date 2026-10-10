@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { managerProfile } from "@/lib/manager-auth";
+import { managerStatsViewerProfile } from "@/lib/manager-auth";
 import {
   managerStudentPageSize,
   type ManagerStudentCourse,
@@ -23,7 +23,7 @@ export async function loadManagerStudents(
 ): Promise<
   { data: ManagerStudentList; error: null } | { data: null; error: string }
 > {
-  await managerProfile();
+  await managerStatsViewerProfile();
   const parsed = listRequest.safeParse(input);
   if (!parsed.success) return { data: null, error: "ข้อมูลค้นหาไม่ถูกต้อง" };
   const { completed, page, query, level, academicYear, semester } = parsed.data;
@@ -53,7 +53,7 @@ export async function loadManagerStudentCourses(
 ): Promise<
   { data: ManagerStudentCourse[]; error: null } | { data: null; error: string }
 > {
-  await managerProfile();
+  await managerStatsViewerProfile();
   const parsed = detailRequest.safeParse(input);
   if (!parsed.success)
     return { data: null, error: "รหัสนักเรียนไม่ถูกต้อง" };

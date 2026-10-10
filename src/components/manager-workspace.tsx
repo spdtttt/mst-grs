@@ -277,16 +277,7 @@ export default function ManagerWorkspace({
             <p>ติดตามภาพรวมการแก้ไขผลการเรียนของนักเรียน โรงเรียนเมืองสุราษฎร์ธานี</p>
           </div>
           {view === "dashboard" ? (
-            stats ? (
-              <ManagerDashboardStats stats={stats} />
-            ) : (
-              <section
-                role="alert"
-                className="rounded-2xl border border-[#ead7db] bg-white px-6 py-8 text-sm text-[#9b485b] shadow-[0_8px_24px_#40206f08]"
-              >
-                ยังไม่สามารถโหลดสถิติได้ กรุณาตรวจสอบการติดตั้งฐานข้อมูล
-              </section>
-            )
+            <ManagerStatsContent stats={stats} />
           ) : (
             <ManagerStudentsView
               key={view}
@@ -301,7 +292,7 @@ export default function ManagerWorkspace({
   );
 }
 
-function ManagerStudentsView({
+export function ManagerStudentsView({
   completed,
   demoRecords,
 }: {
@@ -810,6 +801,18 @@ function ManagerMetric({
         {value === null ? "—" : value.toLocaleString("th-TH")}
         <span className="ml-2 text-[15px] font-normal text-[#9486a2]">คน</span>
       </div>
+    </section>
+  );
+}
+
+export function ManagerStatsContent({ stats }: { stats: ManagerStats | null }) {
+  if (stats) return <ManagerDashboardStats stats={stats} />;
+  return (
+    <section
+      role="alert"
+      className="rounded-2xl border border-[#ead7db] bg-white px-6 py-8 text-sm text-[#9b485b] shadow-[0_8px_24px_#40206f08]"
+    >
+      ยังไม่สามารถโหลดสถิติได้ กรุณาตรวจสอบการติดตั้งฐานข้อมูล
     </section>
   );
 }

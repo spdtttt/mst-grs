@@ -5,7 +5,7 @@ import type { Profile } from "@/lib/domain";
 import { currentProfile } from "./current-profile";
 import { roleHomePath } from "@/lib/navigation";
 
-export async function managerProfile(): Promise<Profile> {
+async function profileWithRoles(allowed: readonly Profile["role"][]): Promise<Profile> {
   if (!configured()) redirect("/");
   const db = await supabase();
   const {
@@ -14,6 +14,15 @@ export async function managerProfile(): Promise<Profile> {
   if (!user) redirect("/");
   const profile = await currentProfile(db, user.id);
   if (!profile) redirect("/");
-  if (profile.role !== "manager") redirect(roleHomePath(profile.role));
+  if (!allowed.includes(profile.role)) redirect(roleHomePath(profile.role));
   return profile as Profile;
+}
+
+export function managerProfile(): Promise<Profile> {
+  return profileWithRoles(["manager"]);
+}
+
+/** Statistics and student lists are shared by managers and academic staff. */
+export function managerStatsViewerProfile(): Promise<Profile> {
+  return profileWithRoles(["manager", "academic"]);
 }

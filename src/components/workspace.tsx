@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
+  BarChart3,
   GraduationCap,
   LayoutDashboard,
   History,
@@ -53,11 +54,14 @@ import {
   safeCell,
 } from "@/lib/domain";
 import { demoProfiles } from "@/lib/demo";
-import ManagerWorkspace from "@/components/manager-workspace";
+import ManagerWorkspace, {
+  ManagerStatsContent,
+  ManagerStudentsView,
+} from "@/components/manager-workspace";
 import styles from "./dashboard.module.css";
 import RecoveryRail from "./recovery-rail";
 import { useSwipeSidebar } from "@/lib/use-swipe-sidebar";
-import { summarizeManagerStats } from "@/lib/manager-stats";
+import { summarizeManagerStats, type ManagerStats } from "@/lib/manager-stats";
 import { worksheetRows } from "@/lib/import-excel";
 import PushNotificationControl from "@/components/push-notification-control";
 import {
@@ -84,7 +88,9 @@ const AdminManagers = dynamic(() => import("./admin-managers"), { ssr: false, lo
 const AdminAcademics = dynamic(() => import("./admin-academics"), { ssr: false, loading: () => <SkeletonCard /> });
 const AdminOutstandingGrades = dynamic(() => import("./admin-outstanding-grades"), { ssr: false, loading: () => <SkeletonCard /> });
 
-type View = "overview" | "outstanding" | "history" | "export" | "import" | "schedule" | "students" | "teachers" | "academics" | "managers" | "student-lifecycle";
+type View = "overview" | "outstanding" | "history" | "export" | "import" | "schedule" | "students" | "teachers" | "academics" | "managers" | "student-lifecycle" | "stats" | "incomplete-students" | "completed-students";
+// Read-only statistics pages shared with the manager role.
+const statsViews: readonly View[] = ["stats", "incomplete-students", "completed-students"];
 const emptyHistory: ArchivedGradeRecord[] = [];
 const emptyCorrections: GradeCorrection[] = [];
 const validFinalGrades = ["0", "ร", "มผ", "1", "1.5", "2", "2.5", "3", "3.5", "4", "ผ"];
@@ -100,6 +106,13 @@ const navTitles: Record<View, string> = {
   teachers: "รายชื่อคุณครู",
   managers: "รายชื่อผู้บริหาร",
   academics: "รายชื่อฝ่ายวัดผล",
+  stats: "ภาพรวมสถิติ",
+  "incomplete-students": "รายชื่อนักเรียนที่ยังไม่เรียบร้อย",
+  "completed-students": "รายชื่อนักเรียนที่เรียบร้อยแล้ว",
+};
+const statsHeadings: Partial<Record<View, string>> = {
+  "incomplete-students": "รายชื่อนักเรียนที่ยังแก้ไขไม่เสร็จสิ้น",
+  "completed-students": "รายชื่อนักเรียนที่แก้ไขเสร็จสิ้นแล้ว",
 };
 function localBangkok(value: string | null) {
   if (!value) return "";
@@ -128,6 +141,7 @@ export default function Workspace({
   schedule,
   historyRecords = emptyHistory,
   gradeCorrections = emptyCorrections,
+  managerStats = null,
   initialView = profile.role === "admin" ? "students" : "overview",
   demo = false,
 }: {
@@ -136,6 +150,7 @@ export default function Workspace({
   schedule: Schedule;
   historyRecords?: ArchivedGradeRecord[];
   gradeCorrections?: GradeCorrection[];
+  managerStats?: ManagerStats | null;
   initialView?: "overview" | "history" | "import" | "students" | "teachers" | "academics" | "managers" | "student-lifecycle";
   demo?: boolean;
 }) {
@@ -231,6 +246,10 @@ export default function Workspace({
   const open = isOpen(settings, now);
   // Admins can use every page, including imports, outside the open/close window.
   const canImport = open || role === "admin";
+  // Statistics pages read live database summaries, so they ignore the open window.
+  const isStatsView = role === "academic" && statsViews.includes(view);
+  // Academic staff see the hero banner and summary cards only on the approval and outstanding pages.
+  const showSummary = role !== "academic" || view === "overview" || view === "outstanding";
   const scope = items.filter((r) =>
     role === "student"
       ? r.student_id === actor.id
@@ -258,7 +277,7 @@ export default function Workspace({
         ? ["overview", "history", "export"]
         : role === "admin"
           ? ["students", "student-lifecycle", "teachers", "academics", "managers", "import", "schedule"]
-          : ["overview", "outstanding", "history", "export"];
+          : ["overview", "outstanding", "history", "export", ...statsViews];
   const filtered = useMemo(
     () => {
       const rows = visibleScope.filter((r) => {
@@ -314,6 +333,8 @@ export default function Workspace({
       setSemester("all");
       if (!demo) router.refresh();
     }
+    // Refresh so the statistics reflect approvals made since the page loaded.
+    if (v === "stats" && !demo) router.refresh();
   }
   function switchRole(r: Role) {
     setActor(demoProfiles[r]);
@@ -658,6 +679,12 @@ export default function Workspace({
             const Icon =
               v === "student-lifecycle" || v === "students" || v === "teachers" || v === "academics" || v === "managers"
                 ? UsersRound
+                : v === "stats"
+                ? BarChart3
+                : v === "incomplete-students"
+                ? ClipboardList
+                : v === "completed-students"
+                ? CheckCircle2
                 : v === "overview"
                 ? LayoutDashboard
                 : v === "outstanding"
@@ -795,10 +822,10 @@ export default function Workspace({
                     : role === "teacher"
                       ? "คำร้องของนักเรียน"
                       : "รายการรออนุมัติ"
-                  : navTitles[view]}
+                  : statsHeadings[view] ?? navTitles[view]}
               </h1>
             </div>
-            {view !== "schedule" && view !== "import" && view !== "students" && view !== "teachers" && view !== "academics" && view !== "managers" && view !== "student-lifecycle" && (
+            {!isStatsView && view !== "schedule" && view !== "import" && view !== "students" && view !== "teachers" && view !== "academics" && view !== "managers" && view !== "student-lifecycle" && (
               <div className="flex w-full flex-wrap items-center gap-3 desk:w-auto">
                 <div className="relative flex min-w-[174px] flex-1 items-center gap-2 border border-[#e5e0ec] bg-white px-[11px] py-2 text-gray-600 focus-within:outline-1 focus-within:outline-gray-500 desk:flex-none">
                   <CalendarDays className="shrink-0" size={17} />
@@ -846,9 +873,9 @@ export default function Workspace({
               </div>
             )}
           </div>
-          <div className={twMerge(styles.columns, role === "admin" && styles.adminColumns)}>
+          <div className={twMerge(styles.columns, (role === "admin" || isStatsView) && styles.adminColumns)}>
           <div className={styles.content}>
-          {!open && role !== "admin" && view !== "history" ? (
+          {!open && role !== "admin" && view !== "history" && !isStatsView ? (
             <div className="rounded-[14px] border border-line bg-white px-[25px] py-[60px] text-center text-[#9481aa] [&>svg]:mx-auto [&_h2]:m-[15px] [&_h2]:text-ink [&>div]:m-5 [&>div]:text-sm max-desk:px-4 max-desk:py-10 max-desk:[&_h2]:text-[19px]">
               <Clock3 size={42} />
               <h2 className="text-lg leading-normal font-[650]">
@@ -875,7 +902,19 @@ export default function Workspace({
               {role === "admin" && view === "teachers" && <AdminTeachers demo={demo} currentUserId={actor.id} />}
               {role === "admin" && view === "managers" && <AdminManagers demo={demo} currentUserId={actor.id} />}
               {role === "admin" && view === "academics" && <AdminAcademics demo={demo} currentUserId={actor.id} />}
-              {view !== "schedule" && view !== "import" && view !== "history" && view !== "students" && view !== "teachers" && view !== "academics" && view !== "managers" && view !== "student-lifecycle" && (
+              {isStatsView && view === "stats" && (
+                <ManagerStatsContent
+                  stats={demo ? summarizeManagerStats(items) : managerStats}
+                />
+              )}
+              {isStatsView && view !== "stats" && (
+                <ManagerStudentsView
+                  key={view}
+                  completed={view === "completed-students"}
+                  demoRecords={demo ? items : null}
+                />
+              )}
+              {!isStatsView && showSummary && view !== "schedule" && view !== "import" && view !== "history" && view !== "students" && view !== "teachers" && view !== "academics" && view !== "managers" && view !== "student-lifecycle" && (
                 <>
                   <section className={styles.hero}>
                     <div>
@@ -1632,7 +1671,7 @@ export default function Workspace({
             </span>
           </footer>
           </div>
-          {role !== "admin" && (
+          {role !== "admin" && !isStatsView && (
             <RecoveryRail records={scope} schedule={settings} open={open}>
               {role === "teacher" && !demo && <PushNotificationControl />}
             </RecoveryRail>
