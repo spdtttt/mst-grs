@@ -185,7 +185,7 @@ export default function AdminOutstandingGrades({
       </div>
 
       <div className="overflow-x-auto" aria-busy={loading}>
-        <table className="w-full min-w-[1250px] border-collapse text-left text-sm">
+        <table className="mobile-cards w-full min-w-[1250px] border-collapse text-left text-sm">
           <thead className="bg-[#f8f6fc] text-secondary">
             <tr>
               <th className="w-12 px-4 py-3">
@@ -209,17 +209,17 @@ export default function AdminOutstandingGrades({
               <SkeletonTableRows columns={9} rows={8} label="กำลังโหลดรายการผลการเรียน" />
             ) : data.items.length ? data.items.map((row) => (
               <tr key={row.id} className="border-t border-line hover:bg-brand-soft/15">
-                <td className="px-4 py-3">
+                <td data-card="select" className="px-4 py-3">
                   <input type="checkbox" aria-label={`เลือกรายการ ${row.student_code} ${row.course_code}`} checked={selected.includes(row.id)} disabled={busy} onChange={(event) => setSelected((current) => event.target.checked ? [...current, row.id] : current.filter((id) => id !== row.id))} />
                 </td>
-                <td className="px-4 py-3 font-medium text-brand">{row.student_code}</td>
-                <td className="min-w-52 px-4 py-3 font-medium">{row.student_name}</td>
-                <td className="whitespace-nowrap px-4 py-3">{row.classroom}</td>
-                <td className="min-w-56 px-4 py-3">{row.course_code} {row.course_name}</td>
-                <td className="whitespace-nowrap px-4 py-3">{row.academic_year}/{row.semester}</td>
-                <td className="px-4 py-3">{row.original_grade}</td>
-                <td className="whitespace-nowrap px-4 py-3">{statusText(row.status)}</td>
-                <td className="min-w-48 px-4 py-3">{row.teacher_name.join(", ")}</td>
+                <td data-label="รหัสนักเรียน" className="px-4 py-3 font-medium text-brand">{row.student_code}</td>
+                <td data-card="title" className="min-w-52 px-4 py-3 font-medium">{row.student_name}</td>
+                <td data-label="ชั้น/ห้อง" className="whitespace-nowrap px-4 py-3">{row.classroom}</td>
+                <td data-label="รายวิชา" data-card="full" className="min-w-56 px-4 py-3">{row.course_code} {row.course_name}</td>
+                <td data-label="ปี/ภาคเรียน" className="whitespace-nowrap px-4 py-3">{row.academic_year}/{row.semester}</td>
+                <td data-label="ผลเดิม" className="px-4 py-3">{row.original_grade}</td>
+                <td data-label="สถานะ" className="whitespace-nowrap px-4 py-3">{statusText(row.status)}</td>
+                <td data-label="ครูผู้สอน" data-card="full" className="min-w-48 px-4 py-3">{row.teacher_name.join(", ")}</td>
               </tr>
             )) : (
               <tr><td colSpan={9} className="p-10 text-center text-secondary">ไม่พบรายการผลการเรียนคงค้างตามตัวกรอง</td></tr>

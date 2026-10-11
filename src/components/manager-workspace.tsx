@@ -594,19 +594,11 @@ export function ManagerStudentsView({
         </p>
       ) : result ? (
         <>
-          <p className="px-5 pb-2 text-xs text-[#9486a2] desk:hidden">
-            <ArrowLeftRight
-              size={14}
-              className="mr-1 inline"
-              aria-hidden="true"
-            />
-            เลื่อนตารางซ้าย–ขวาเพื่อดูข้อมูลทั้งหมด
-          </p>
           <div
             data-swipe-ignore
             className="touch-auto overflow-x-auto overscroll-x-contain"
           >
-            <table className="w-full min-w-[920px] border-collapse text-left text-sm">
+            <table className="mobile-cards w-full min-w-[920px] border-collapse text-left text-sm">
               <caption className="sr-only">
                 {completed
                   ? "รายชื่อนักเรียนที่แก้ไขเรียบร้อยแล้ว"
@@ -644,6 +636,7 @@ export function ManagerStudentsView({
                   <tr key={student.student_code} className="hover:bg-[#fcfaff]">
                     <th
                       scope="row"
+                      data-card="title"
                       className="px-5 py-4 font-medium text-[#3d2d52] desk:pl-7"
                     >
                       <span className="block">{student.student_name}</span>
@@ -651,27 +644,27 @@ export function ManagerStudentsView({
                         เลขประจำตัว {student.student_code}
                       </span>
                     </th>
-                    <td className="px-4 py-4 text-[#756782]">
+                    <td data-label="ชั้น/ห้อง" className="px-4 py-4 text-[#756782]">
                       {student.classroom}
                       <span className="mt-1 block text-xs text-[#9587a3]">
                         เลขที่ {student.roll_number}
                       </span>
                     </td>
-                    <td className="px-4 py-4 tabular-nums text-[#756782]">
+                    <td data-label="ปี/ภาคเรียนล่าสุด" className="px-4 py-4 tabular-nums text-[#756782]">
                       {student.academic_year} / {student.semester}
                     </td>
-                    <td className="px-4 py-4 text-right font-medium tabular-nums text-[#5d4c70]">
+                    <td data-label="รายการทั้งหมด" className="px-4 py-4 text-right font-medium tabular-nums text-[#5d4c70]">
                       {format(student.total_records)}
                     </td>
                     {!completed &&
-                      <td className="px-4 py-4 text-right font-semibold tabular-nums text-red-500">
+                      <td data-label="ยังคงค้าง" className="px-4 py-4 text-right font-semibold tabular-nums text-red-500">
                         {format(student.incomplete_records)}
                       </td>
                     }
-                    <td className="px-5 py-4 text-right font-semibold tabular-nums text-[#32977c] desk:pr-7">
+                    <td data-label="เรียบร้อยแล้ว" className="px-5 py-4 text-right font-semibold tabular-nums text-[#32977c] desk:pr-7">
                       {format(student.completed_records)}
                     </td>
-                    <td className="px-5 py-4 text-right desk:pr-7">
+                    <td data-card="action" className="px-5 py-4 text-right desk:pr-7">
                       <button
                         type="button"
                         onClick={() => setSelectedStudent(student)}

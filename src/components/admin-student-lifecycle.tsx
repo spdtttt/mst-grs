@@ -527,7 +527,7 @@ export default function AdminStudentLifecycle({
           </p>
         ) : (
           <div className="overflow-x-auto" aria-busy={loading}>
-            <table className="w-full text-left text-sm">
+            <table className="mobile-cards w-full text-left text-sm">
               <thead className="bg-[#f8f6fc] text-secondary">
                 <tr>
                   <th className="px-4 py-3">
@@ -578,7 +578,7 @@ export default function AdminStudentLifecycle({
                       key={row.id}
                       className="border-t border-line hover:bg-brand-soft/20"
                     >
-                      <td className="px-4 py-3">
+                      <td data-card="select" className="px-4 py-3">
                         <input
                           type="checkbox"
                           aria-label={`เลือก ${row.student_code} ${row.full_name}`}
@@ -595,20 +595,20 @@ export default function AdminStudentLifecycle({
                           }}
                         />
                       </td>
-                      <td className="px-4 py-3 text-brand">
+                      <td data-label="รหัสนักเรียน" className="px-4 py-3 text-brand">
                         {row.student_code}
                       </td>
-                      <td className="min-w-56 px-4 py-3 font-medium">
+                      <td data-card="title" className="min-w-56 px-4 py-3 font-medium">
                         {row.full_name}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3">
+                      <td data-label="ชั้น/ห้อง" className="whitespace-nowrap px-4 py-3">
                         {row.classroom ?? "—"}
                       </td>
-                      <td className="px-4 py-3">{row.roll_number ?? "—"}</td>
-                      <td className="whitespace-nowrap px-4 py-3">
+                      <td data-label="เลขที่" className="px-4 py-3">{row.roll_number ?? "—"}</td>
+                      <td data-label="สถานะ" className="whitespace-nowrap px-4 py-3">
                         {studentStatusLabels[row.student_status]}
                       </td>
-                      <td className="px-4 py-3">
+                      <td data-label="ปีการศึกษา พ.ศ." className="px-4 py-3">
                         {row.student_status_year ?? "—"}
                       </td>
                     </tr>

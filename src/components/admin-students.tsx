@@ -943,7 +943,7 @@ export default function AdminStudents({
             </button>
           </div>
           <div className="max-h-64 overflow-auto">
-            <table className="w-full text-left text-sm">
+            <table className="mobile-cards w-full text-left text-sm">
               <thead className="sticky top-0 bg-[#f8f6fc]">
                 <tr>
                   {["รหัสนักเรียน", "ชื่อ-นามสกุล", "ชั้น/ห้อง", "เลขที่"].map(
@@ -961,10 +961,10 @@ export default function AdminStudents({
               <tbody>
                 {sortedPreview.slice(0, 50).map((s) => (
                   <tr key={s.student_code} className="border-t border-line">
-                    <td className="px-4 py-3">{s.student_code}</td>
-                    <td className="min-w-48 px-4 py-3">{studentFullName(s)}</td>
-                    <td className="px-4 py-3">{s.classroom}</td>
-                    <td className="px-4 py-3">{s.roll_number}</td>
+                    <td data-label="รหัสนักเรียน" className="px-4 py-3">{s.student_code}</td>
+                    <td data-card="title" className="min-w-48 px-4 py-3">{studentFullName(s)}</td>
+                    <td data-label="ชั้น/ห้อง" className="px-4 py-3">{s.classroom}</td>
+                    <td data-label="เลขที่" className="px-4 py-3">{s.roll_number}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1095,7 +1095,7 @@ export default function AdminStudents({
           </div>
         ) : (
           <div className="overflow-x-auto" aria-busy={loading}>
-            <table className="w-full min-w-[1000px] table-fixed text-left text-sm">
+            <table className="mobile-cards w-full min-w-[1000px] table-fixed text-left text-sm">
               <colgroup><col style={{ width: 140 }} /><col /><col style={{ width: 150 }} /><col style={{ width: 100 }} /><col style={{ width: 320 }} /></colgroup>
               <thead className="bg-[#f8f6fc] text-sm text-secondary">
                 <tr>

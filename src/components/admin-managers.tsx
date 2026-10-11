@@ -348,7 +348,7 @@ export default function AdminManagers({
           </div>
         ) : (
           <div className="overflow-x-auto" aria-busy={loading}>
-            <table className="w-full min-w-[820px] table-fixed text-left text-sm">
+            <table className="mobile-cards w-full min-w-[820px] table-fixed text-left text-sm">
               <colgroup><col /><col style={{ width: 200 }} /><col style={{ width: 340 }} /></colgroup>
               <thead className="bg-[#f8f6fc] text-secondary">
                 <tr>

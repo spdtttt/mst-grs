@@ -74,6 +74,9 @@ import {
 import Image from "next/image";
 import { bangkokDate, normalizeSchedule, scheduleClosingDate, scheduleClosingDisplay, scheduleDates } from "@/lib/schedule-dates";
 
+const buttonStyle =
+  "inline-flex cursor-pointer hover:bg-gray-100 items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50";
+
 // Student data and import dialogs are loaded on the client. Keep the first
 // server response independent of this interactive component's browser bundle.
 const AdminStudents = dynamic(() => import("./admin-students"), {
@@ -1065,7 +1068,7 @@ export default function Workspace({
                       </div>
                     )}
                   </div>
-                  <div className="overflow-x-auto [&_tbody_tr]:hover:bg-[#fdfbff] max-desk:[&_table]:min-w-[800px]">
+                  <div className={`overflow-x-auto [&_tbody_tr]:hover:bg-[#fdfbff] max-desk:[&_table]:min-w-[800px]`}>
                     <table className={`${styles.records} w-full border-collapse text-left`}>
                       <thead>
                         <tr>
@@ -1276,25 +1279,20 @@ export default function Workspace({
                       –{Math.min(Math.min(page, pages) * 8, filtered.length)}{" "}
                       จาก {filtered.length} รายการ
                     </span>
-                    <div>
+                    <div className="flex gap-2">
                       <button
-                        className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex size-[34px] shrink-0 items-center justify-center rounded-[7px] border-0 bg-transparent p-1.5 text-muted enabled:hover:bg-brand-soft enabled:hover:text-brand"
-                        aria-label="หน้าก่อนหน้า"
-                        disabled={page <= 1}
+                        className={`${buttonStyle} border border-line`}
+                        disabled={busy || page <= 1}
                         onClick={() => setPage((p) => p - 1)}
                       >
-                        <ChevronLeft size={17} />
+                        ก่อนหน้า
                       </button>
-                      <span className="grid size-[27px] place-items-center rounded-md border border-[#e8def4] bg-[#f8f3fe] text-[#9a72cd]">
-                        {Math.min(page, pages)}
-                      </span>
                       <button
-                        className="cursor-pointer transition-[background,box-shadow,transform] duration-150 enabled:active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[#ad84f1] focus-visible:outline-offset-3 inline-flex size-[34px] shrink-0 items-center justify-center rounded-[7px] border-0 bg-transparent p-1.5 text-muted enabled:hover:bg-brand-soft enabled:hover:text-brand"
-                        aria-label="หน้าถัดไป"
-                        disabled={page >= pages}
+                        className={`${buttonStyle} border border-line`}
+                        disabled={busy || page >= pages}
                         onClick={() => setPage((p) => p + 1)}
                       >
-                        <ChevronRight size={17} />
+                        ถัดไป
                       </button>
                     </div>
                   </div>
@@ -1471,7 +1469,7 @@ export default function Workspace({
                           </button>
                         </div>
                         <div className="overflow-x-auto [&_tbody_tr]:hover:bg-[#fdfbff] max-desk:[&_table]:min-w-[800px]">
-                          <table className="w-full border-collapse text-left whitespace-nowrap">
+                          <table className="mobile-cards w-full border-collapse text-left whitespace-nowrap">
                             <thead>
                               <tr>
                                 <th className="border-y border-line bg-[#faf9fc] px-[22px] py-[13px] text-xs font-medium text-[#796d89] first:pl-6 last:pr-6 last:text-right">
@@ -1494,19 +1492,19 @@ export default function Workspace({
                             <tbody>
                               {preview.slice(0, 10).map((r, i) => (
                                 <tr key={i}>
-                                  <td className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
+                                  <td data-label="เลขประจำตัว" className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
                                     {r.student_code}
                                   </td>
-                                  <td className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
+                                  <td data-card="title" className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
                                     {r.student_name}
                                   </td>
-                                  <td className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
+                                  <td data-label="รายวิชา" data-card="full" className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
                                     {r.course_code} {r.course_name}
                                   </td>
-                                  <td className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
+                                  <td data-label="ครูผู้สอน" className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
                                     {r.teacher_name.join(", ")}
                                   </td>
-                                  <td className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
+                                  <td data-label="ผลการเรียน" className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]">
                                     {r.original_grade}
                                   </td>
                                 </tr>

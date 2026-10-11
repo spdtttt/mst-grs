@@ -229,9 +229,9 @@ export default function AdminAccountRow({
       aria-busy={busy}
     >
       {student && (
-        <td className="px-5 py-4 font-medium text-brand">{row.student_code}</td>
+        <td data-label="รหัสนักเรียน" className="px-5 py-4 font-medium text-brand">{row.student_code}</td>
       )}
-      <td className="min-w-60 px-5 py-4">
+      <td data-card="title" className="min-w-60 px-5 py-4">
         {mode === "edit" ? (
           <div className="grid min-w-56 gap-2">
             <label
@@ -300,11 +300,11 @@ export default function AdminAccountRow({
         )}
       </td>
       {role === "manager" && (
-        <td className="px-5 py-4">{row.username ?? "—"}</td>
+        <td data-label="ชื่อผู้ใช้งาน" className="px-5 py-4">{row.username ?? "—"}</td>
       )}
       {role === "teacher" && (
         <>
-          <td className="min-w-48 px-5 py-4">
+          <td data-label="กลุ่มสาระการเรียนรู้" className="min-w-48 px-5 py-4">
             {mode === "edit" ? (
               <input
                 aria-label="กลุ่มสาระการเรียนรู้"
@@ -326,13 +326,13 @@ export default function AdminAccountRow({
         </>
       )}
       {staff && (
-        <td className="whitespace-nowrap px-5 py-4">
+        <td data-label="สถานะบัญชี" className="whitespace-nowrap px-5 py-4">
           {row.has_auth === false ? "ยังไม่มีบัญชีเข้าสู่ระบบ" : "มีบัญชีแล้ว"}
         </td>
       )}
       {student && (
         <>
-          <td className="px-5 py-4">
+          <td data-label="ชั้น/ห้อง" className="px-5 py-4">
             {mode === "edit" ? (
               <input
                 aria-label="ชั้น/ห้อง"
@@ -351,7 +351,7 @@ export default function AdminAccountRow({
               row.classroom || "—"
             )}
           </td>
-          <td className="px-5 py-4">
+          <td data-label="เลขที่" className="px-5 py-4">
             {mode === "edit" ? (
               <input
                 aria-label="เลขที่"
@@ -373,7 +373,7 @@ export default function AdminAccountRow({
           </td>
         </>
       )}
-      <td className="min-w-56 px-5 py-4">
+      <td data-card="action" className="min-w-56 px-5 py-4">
         {mode === "view" ? (
           <div className="flex flex-wrap gap-2">
             <button

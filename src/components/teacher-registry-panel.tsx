@@ -428,7 +428,7 @@ export default function TeacherRegistryPanel({
             {preview.filter((row) => row.id !== null).length} คน
           </p>
           <div className="max-h-80 overflow-auto">
-            <table className="w-full text-left text-sm">
+            <table className="mobile-cards w-full text-left text-sm">
               <thead>
                 <tr>
                   {[
@@ -446,10 +446,10 @@ export default function TeacherRegistryPanel({
               <tbody>
                 {preview.slice(0, 50).map((row) => (
                   <tr className="border-t border-line" key={row.citizen_id}>
-                    <td className="p-2">{row.citizen_id}</td>
-                    <td className="p-2">{accountFullName(row)}</td>
-                    <td className="p-2">{row.learning_subject_group}</td>
-                    <td className="p-2">{row.id ? "อัปเดต" : "เพิ่มใหม่"}</td>
+                    <td data-label="เลขบัตรประชาชน" className="p-2">{row.citizen_id}</td>
+                    <td data-card="title" className="p-2">{accountFullName(row)}</td>
+                    <td data-label="กลุ่มสาระการเรียนรู้" className="p-2">{row.learning_subject_group}</td>
+                    <td data-label="ผลที่คาดว่าจะเกิด" className="p-2">{row.id ? "อัปเดต" : "เพิ่มใหม่"}</td>
                   </tr>
                 ))}
               </tbody>

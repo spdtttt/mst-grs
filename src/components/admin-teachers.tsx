@@ -244,7 +244,7 @@ export default function AdminTeachers({
         ) : (
           <div className="overflow-x-auto" aria-busy={loading}>
             <table
-              className={`w-full table-fixed text-left text-sm ${staffRole === "teacher" ? "min-w-[1040px]" : "min-w-[780px]"}`}
+              className={`mobile-cards w-full table-fixed text-left text-sm ${staffRole === "teacher" ? "min-w-[1040px]" : "min-w-[780px]"}`}
             >
               {staffRole === "teacher" ? (
                 <colgroup><col /><col style={{ width: 260 }} /><col style={{ width: 180 }} /><col style={{ width: 320 }} /></colgroup>

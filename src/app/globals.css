@@ -56,3 +56,89 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* Phone layout for data tables: each row becomes a card, matching the
+   records table in workspace.tsx. Add `mobile-cards` to a <table> and a
+   `data-label` to each cell that should show its column name. Cells can opt
+   into a role with `data-card`: "title" (full-width header strip), "full"
+   (full width), "action" (full width, stretched buttons) or "select"
+   (checkbox pinned to the card's top-right corner).
+   Left unlayered on purpose so it wins over Tailwind utilities on cells. */
+@media (max-width: 767px) {
+  table.mobile-cards {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  .mobile-cards thead,
+  .mobile-cards colgroup,
+  .mobile-cards caption {
+    display: none;
+  }
+  .mobile-cards tbody {
+    display: grid;
+    gap: 12px;
+    padding: 12px 16px 16px;
+  }
+  .mobile-cards tbody > tr {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: var(--color-surface);
+    overflow: hidden;
+  }
+  .mobile-cards tbody > tr > td,
+  .mobile-cards tbody > tr > th {
+    display: block;
+    min-width: 0;
+    width: auto;
+    padding: 12px;
+    border: 0;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .mobile-cards [data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--color-secondary);
+  }
+  .mobile-cards [data-card="title"],
+  .mobile-cards [data-card="full"],
+  .mobile-cards [data-card="action"],
+  .mobile-cards td[colspan] {
+    grid-column: 1 / -1;
+  }
+  .mobile-cards [data-card="title"] {
+    order: -1;
+    background: var(--color-canvas);
+  }
+  .mobile-cards [data-card="title"]::before {
+    content: none;
+  }
+  .mobile-cards tbody > tr:has(> [data-card="select"]) > [data-card="title"] {
+    padding-right: 48px;
+  }
+  .mobile-cards [data-card="select"] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+  }
+  .mobile-cards [data-card="action"] :is(button, a) {
+    flex: 1 1 auto;
+    min-height: 44px;
+    justify-content: center;
+  }
+  .mobile-cards [data-card="action"] > :is(button, a) {
+    width: 100%;
+  }
+  .mobile-cards td[colspan] {
+    text-align: center;
+  }
+}
