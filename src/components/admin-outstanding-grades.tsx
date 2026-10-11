@@ -40,6 +40,9 @@ export default function AdminOutstandingGrades({
   const totalPages = Math.max(1, Math.ceil(data.total / pageSize));
   const pageIds = data.items.map((row) => row.id);
   const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selected.includes(id));
+  const togglePage = (checked: boolean) => setSelected((current) => checked
+    ? [...new Set([...current, ...pageIds])]
+    : current.filter((id) => !pageIds.includes(id)));
 
   useEffect(() => {
     let cancelled = false;
@@ -185,6 +188,20 @@ export default function AdminOutstandingGrades({
       </div>
 
       <div className="overflow-x-auto" aria-busy={loading}>
+        {/* The header checkbox is hidden with the table head on phones. */}
+        <label className="mx-4 mt-3 flex min-h-11 cursor-pointer items-center gap-3 border border-line bg-canvas px-3 text-sm font-medium desk:hidden">
+          <input
+            type="checkbox"
+            className="size-4"
+            disabled={loading || busy || !pageIds.length}
+            checked={allPageSelected}
+            onChange={(event) => togglePage(event.target.checked)}
+          />
+          เลือกทุกรายการในหน้านี้
+          {selected.length > 0 && (
+            <span className="ml-auto text-xs font-normal text-secondary">เลือกแล้ว {selected.length} รายการ</span>
+          )}
+        </label>
         <table className="mobile-cards w-full min-w-[1250px] border-collapse text-left text-sm">
           <thead className="bg-[#f8f6fc] text-secondary">
             <tr>
@@ -194,9 +211,7 @@ export default function AdminOutstandingGrades({
                   aria-label="เลือกทุกรายการในหน้านี้"
                   disabled={loading || busy || !pageIds.length}
                   checked={allPageSelected}
-                  onChange={(event) => setSelected((current) => event.target.checked
-                    ? [...new Set([...current, ...pageIds])]
-                    : current.filter((id) => !pageIds.includes(id)))}
+                  onChange={(event) => togglePage(event.target.checked)}
                 />
               </th>
               {["รหัสนักเรียน", "ชื่อ-นามสกุล", "ชั้น/ห้อง", "รายวิชา", "ปี/ภาคเรียน", "ผลเดิม", "สถานะ", "ครูผู้สอน"].map((title) => (
