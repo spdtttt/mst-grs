@@ -42,6 +42,8 @@ export const lifecycleChangeResultSchema = z.object({
   ),
 });
 export type LifecycleChangeResult = z.infer<typeof lifecycleChangeResultSchema>;
+// Largest whole-school selection; must match migration 054.
+export const MAX_LIFECYCLE_SELECTION = 10000;
 export const lifecycleFilterSchema = z
   .object({
     search: z.string().trim().max(150),
@@ -55,7 +57,7 @@ export const lifecycleFilterSchema = z
     level: z.number().int().min(1).max(6).nullable(),
     classroom: z.string().max(40).nullable(),
     page: z.number().int().min(1).max(100000),
-    pageSize: z.union([z.literal(50), z.literal(2000)]),
+    pageSize: z.union([z.literal(50), z.literal(MAX_LIFECYCLE_SELECTION)]),
   })
   .strict();
 export const lifecycleChangeSchema = z
@@ -67,7 +69,7 @@ export const lifecycleChangeSchema = z
           .strict(),
       )
       .min(1)
-      .max(2000),
+      .max(MAX_LIFECYCLE_SELECTION),
     status: studentStatusSchema,
     year: z.number().int().min(2500).max(2800).nullable(),
   })

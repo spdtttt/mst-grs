@@ -5860,3 +5860,122 @@ grant execute on function public.manager_student_list_filtered(boolean,text,inte
 
 notify pgrst, 'reload schema';
 commit;
+
+-- ============================================================
+-- 054_student_lifecycle_whole_school.sql
+-- ============================================================
+begin;
+
+-- Admins can select and change the whole school at once (up to 10,000
+-- students, matching MAX_LIFECYCLE_SELECTION in src/lib/student-lifecycle.ts).
+-- The list body is unchanged from the latest version except the page size.
+create or replace function public.admin_student_lifecycle_list(
+  p_search text default '', p_status text default 'active', p_level integer default null,
+  p_classroom text default null, p_page integer default 1, p_page_size integer default 50
+) returns jsonb language plpgsql stable security definer set search_path='' as $$
+declare result jsonb;
+begin
+  if auth.uid() is null or public.my_role() is distinct from 'admin' then raise exception 'STUDENT_LIFECYCLE_FORBIDDEN'; end if;
+  if p_status is null or p_status not in ('all','active','graduated','transferred','not_graduated') or p_search is null or length(p_search)>150
+    or (p_level is not null and p_level not between 1 and 6) or length(p_classroom)>40
+    or p_page is null or p_page not between 1 and 100000 or p_page_size is null or p_page_size not in (50,10000) then
+    raise exception 'STUDENT_LIFECYCLE_INVALID';
+  end if;
+  with students as (
+    select id,student_code,full_name,classroom,roll_number,account_revision,student_status,student_status_year,
+      ((regexp_match(classroom,'^(?:ม[.]\s*)?([1-6])(?:/|$)'))[1])::integer as level,
+      ((regexp_match(classroom,'^(?:ม[.]\s*)?[1-6]/([0-9]+)$'))[1])::numeric as room
+    from public.profiles where role='student'
+  ), filtered as (
+    select * from students where (p_status='all' or student_status=p_status)
+      and (p_level is null or level=p_level) and (p_classroom is null or classroom=p_classroom)
+      and (strpos(lower(full_name),lower(trim(p_search)))>0 or strpos(student_code,trim(p_search))>0)
+  ), paged as (
+    select id,student_code,full_name,classroom,roll_number,account_revision,student_status,student_status_year,level,room
+    from filtered order by level nulls last,room nulls last,case when room is null then classroom end nulls last,roll_number nulls last,student_code,id limit p_page_size offset (p_page-1)*p_page_size
+  ) select jsonb_build_object(
+    'items',coalesce((select jsonb_agg(to_jsonb(p)-'level'-'room' order by level nulls last,room nulls last,case when room is null then classroom end nulls last,roll_number nulls last,student_code,id) from paged p),'[]'::jsonb),
+    'total',(select count(*) from filtered),
+    'classrooms',coalesce((select jsonb_agg(classroom order by level nulls last,room nulls last,classroom) from (select distinct classroom,level,room from students where classroom is not null and (p_level is null or level=p_level)) c),'[]'::jsonb),
+    'counts',jsonb_build_object('not_graduated',(select count(*) from students where student_status='not_graduated'),'active',(select count(*) from students where student_status='active'),
+      'graduated',(select count(*) from students where student_status='graduated'),'transferred',(select count(*) from students where student_status='transferred'))
+  ) into result;
+  return result;
+end;
+$$;
+revoke all on function public.admin_student_lifecycle_list(text,text,integer,text,integer,integer) from public,anon;
+grant execute on function public.admin_student_lifecycle_list(text,text,integer,text,integer,integer) to authenticated;
+
+-- Same validation, locking and result as 038, but set-based: the per-row loop
+-- re-scanned the request array for every student (quadratic at 10,000 rows).
+create or replace function public.admin_set_student_status(p_students jsonb,p_status text,p_year integer default null)
+returns jsonb language plpgsql security definer set search_path='' as $$
+declare wanted integer; matched integer; changed integer; graduated integer; not_graduated jsonb;
+begin
+  if auth.uid() is null or public.my_role() is distinct from 'admin' then raise exception 'STUDENT_LIFECYCLE_FORBIDDEN'; end if;
+  if p_status is null or p_status not in ('active','graduated','transferred','not_graduated') or jsonb_typeof(p_students) is distinct from 'array' then
+    raise exception 'STUDENT_LIFECYCLE_INVALID';
+  end if;
+  wanted := jsonb_array_length(p_students);
+  if wanted not between 1 and 10000 or (p_status='active' and p_year is not null)
+    or (p_status<>'active' and (p_year is null or p_year not between 2500 and 2800))
+    or exists(select 1 from jsonb_array_elements(p_students) s where jsonb_typeof(s) is distinct from 'object'
+      or coalesce(s->>'id','') !~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+      or coalesce(s->>'revision','') !~ '^[0-9]{1,10}$') then raise exception 'STUDENT_LIFECYCLE_INVALID'; end if;
+  if (select count(distinct (s->>'id')::uuid) from jsonb_array_elements(p_students) s)<>wanted then raise exception 'STUDENT_LIFECYCLE_INVALID'; end if;
+  -- Match the lock order used by imports, account edits and closing the grading period.
+  perform 1 from public.site_schedule where id=1 for share;
+  lock table public.grade_records in share row exclusive mode;
+  -- Deterministic locks and revisions prevent stale selections overwriting imports/edits.
+  perform 1 from public.profiles p
+    where p.id in (select (s->>'id')::uuid from jsonb_array_elements(p_students) s)
+    order by p.id for update of p;
+  select count(*) into matched
+    from public.profiles p
+    join jsonb_array_elements(p_students) s on p.id=(s->>'id')::uuid
+    where p.role='student' and p.account_revision=(s->>'revision')::bigint;
+  if matched<>wanted then raise exception 'STUDENT_LIFECYCLE_CHANGED'; end if;
+
+  with req as (
+    select (s->>'id')::uuid as id from jsonb_array_elements(p_students) s
+  ), outstanding as (
+    select g.student_id, count(*) as n from public.grade_records g
+    where g.status<>'completed' and g.student_id in (select id from req)
+    group by g.student_id
+  ), plan as (
+    select p.id,p.student_code,p.full_name,p.classroom,p.student_status,p.student_status_year,
+      coalesce(o.n,0) as outstanding_count,
+      case when p_status='graduated' and coalesce(o.n,0)>0 then 'not_graduated' else p_status end as actual_status
+    from public.profiles p join req r on r.id=p.id left join outstanding o on o.student_id=p.id
+  ), changed_rows as (
+    select * from plan
+    where student_status is distinct from actual_status or student_status_year is distinct from p_year
+  ), updated as (
+    update public.profiles p
+    set student_status=c.actual_status,student_status_year=p_year,student_status_changed_at=now()
+    from changed_rows c where p.id=c.id
+    returning p.id
+  ), audited as (
+    insert into public.audit_log(actor_id,action)
+    select auth.uid(),'student_status_changed:' || jsonb_build_object(
+      'id',c.id,'student_code',c.student_code,'classroom',c.classroom,
+      'from',c.student_status,'from_year',c.student_status_year,'to',c.actual_status,'requested',p_status,'year',p_year)::text
+    from changed_rows c order by c.id
+    returning 1
+  ) select
+      (select count(*) from updated),
+      (select count(*) from changed_rows where actual_status='graduated'),
+      coalesce((select jsonb_agg(jsonb_build_object(
+        'id',id,'student_code',student_code,'full_name',full_name,'outstanding_count',outstanding_count) order by id)
+        from plan where p_status='graduated' and outstanding_count>0),'[]'::jsonb)
+    into changed, graduated, not_graduated
+    from (select count(*) from audited) a;
+
+  return jsonb_build_object('updated',changed,'graduated',graduated,'notGraduated',not_graduated);
+end;
+$$;
+revoke all on function public.admin_set_student_status(jsonb,text,integer) from public,anon;
+grant execute on function public.admin_set_student_status(jsonb,text,integer) to authenticated;
+
+notify pgrst, 'reload schema';
+commit;

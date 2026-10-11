@@ -14,6 +14,7 @@ import {
   listStudentLifecycle,
 } from "@/app/student-lifecycle-actions";
 import {
+  MAX_LIFECYCLE_SELECTION,
   studentStatusLabels,
   type LifecycleList,
   type LifecycleStudent,
@@ -96,6 +97,7 @@ export default function AdminStudentLifecycle({
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [error, setError] = useState("");
+  const [selectError, setSelectError] = useState("");
   const [notice, setNotice] = useState("");
   const [notGraduated, setNotGraduated] = useState<
     LifecycleChangeResult["notGraduated"]
@@ -111,6 +113,17 @@ export default function AdminStudentLifecycle({
   const selectedRows = Object.values(selected);
   const pages = Math.max(1, Math.ceil(data.total / 50));
   const disabled = busy || review;
+  const allPageSelected =
+    data.items.length > 0 && data.items.every((row) => !!selected[row.id]);
+  const togglePage = (checked: boolean) =>
+    setSelected((current) => {
+      const next = { ...current };
+      for (const row of data.items) {
+        if (checked) next[row.id] = row;
+        else delete next[row.id];
+      }
+      return next;
+    });
 
   function filterChanged() {
     setPage(1);
@@ -118,6 +131,7 @@ export default function AdminStudentLifecycle({
     setReview(false);
     setLoading(true);
     setError("");
+    setSelectError("");
     setNotice("");
     setNotGraduated([]);
   }
@@ -211,31 +225,33 @@ export default function AdminStudentLifecycle({
     if (lock.current || disabled || loading) return;
     lock.current = true;
     setBusy(true);
-    setError("");
+    setSelectError("");
     try {
       const result = demo
-        ? { data: demoList(2000, 1) }
+        ? { data: demoList(MAX_LIFECYCLE_SELECTION, 1) }
         : await listStudentLifecycle({
             search,
             status,
             level: level ? Number(level) : null,
             classroom: classroom || null,
             page: 1,
-            pageSize: 2000,
+            pageSize: MAX_LIFECYCLE_SELECTION,
           });
       if (result.error || !result.data) {
-        setError(result.error ?? "เลือกรายชื่อไม่สำเร็จ");
+        setSelectError(result.error ?? "เลือกรายชื่อไม่สำเร็จ");
         return;
       }
-      if (result.data.total > 2000) {
-        setError("เลือกได้ครั้งละ 2,000 คน กรุณากรองระดับชั้นหรือห้องให้แคบลง");
+      if (result.data.total > MAX_LIFECYCLE_SELECTION) {
+        setSelectError(
+          `ตัวกรองนี้พบ ${result.data.total.toLocaleString("th-TH")} คน แต่เลือกได้ครั้งละไม่เกิน ${MAX_LIFECYCLE_SELECTION.toLocaleString("th-TH")} คน กรุณาเลือกระดับชั้นหรือห้องให้แคบลง`,
+        );
         return;
       }
       setSelected(
         Object.fromEntries(result.data.items.map((row) => [row.id, row])),
       );
     } catch {
-      setError("เลือกรายชื่อไม่สำเร็จ กรุณาลองใหม่");
+      setSelectError("เลือกรายชื่อไม่สำเร็จ กรุณาลองใหม่");
     } finally {
       lock.current = false;
       setBusy(false);
@@ -249,8 +265,8 @@ export default function AdminStudentLifecycle({
       setError("กรุณาเลือกนักเรียนอย่างน้อย 1 คน");
       return;
     }
-    if (selectedRows.length > 2000) {
-      setError("เลือกได้ครั้งละ 2,000 คน");
+    if (selectedRows.length > MAX_LIFECYCLE_SELECTION) {
+      setError(`เลือกได้ครั้งละ ${MAX_LIFECYCLE_SELECTION.toLocaleString("th-TH")} คน`);
       return;
     }
     if (
@@ -501,7 +517,10 @@ export default function AdminStudentLifecycle({
               type="button"
               className={buttonClass}
               disabled={disabled || !selectedRows.length}
-              onClick={() => setSelected({})}
+              onClick={() => {
+                setSelected({});
+                setSelectError("");
+              }}
             >
               ยกเลิกการเลือก
             </button>
@@ -514,12 +533,18 @@ export default function AdminStudentLifecycle({
                 setLoading(true);
                 setRefresh((v) => v + 1);
                 setError("");
+                setSelectError("");
               }}
             >
               <RefreshCw size={15} />
               โหลดใหม่
             </button>
           </div>
+          {selectError && (
+            <p role="alert" className="basis-full text-sm text-red-700">
+              {selectError}
+            </p>
+          )}
         </div>
         {loadError ? (
           <p role="alert" className="p-5 text-sm text-red-700">
@@ -527,6 +552,22 @@ export default function AdminStudentLifecycle({
           </p>
         ) : (
           <div className="overflow-x-auto" aria-busy={loading}>
+            {/* The header checkbox is hidden with the table head on phones. */}
+            <label className="mx-4 mt-3 flex min-h-11 cursor-pointer items-center gap-3 border border-line bg-canvas px-3 text-sm font-medium desk:hidden">
+              <input
+                type="checkbox"
+                className="size-4"
+                disabled={disabled || loading || !data.items.length}
+                checked={allPageSelected}
+                onChange={(e) => togglePage(e.target.checked)}
+              />
+              เลือกทุกคนในหน้านี้
+              {selectedRows.length > 0 && (
+                <span className="ml-auto text-xs font-normal text-secondary">
+                  เลือกแล้ว {selectedRows.length} คน
+                </span>
+              )}
+            </label>
             <table className="mobile-cards w-full text-left text-sm">
               <thead className="bg-[#f8f6fc] text-secondary">
                 <tr>
@@ -535,21 +576,8 @@ export default function AdminStudentLifecycle({
                       type="checkbox"
                       aria-label="เลือกทุกคนในหน้านี้"
                       disabled={disabled || loading || !data.items.length}
-                      checked={
-                        data.items.length > 0 &&
-                        data.items.every((row) => !!selected[row.id])
-                      }
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-                        setSelected((current) => {
-                          const next = { ...current };
-                          for (const row of data.items) {
-                            if (checked) next[row.id] = row;
-                            else delete next[row.id];
-                          }
-                          return next;
-                        });
-                      }}
+                      checked={allPageSelected}
+                      onChange={(e) => togglePage(e.target.checked)}
                     />
                   </th>
                   {[
