@@ -13,6 +13,9 @@ export const usernameSchema = z
   .string()
   .trim()
   .regex(/^[A-Za-z][A-Za-z0-9_.-]{2,39}$/);
+// Spreadsheets often spell แ as two เ; both sides must agree before matching.
+export const normalizeThaiName = (value: string) =>
+  value.replace(/เเ/gu, "แ");
 
 export const loginSchema = z.discriminatedUnion("role", [
   z.object({
@@ -39,8 +42,18 @@ export const teacherRegistrationSchema = z
   .object({
     citizen_id: citizenIdSchema,
     name_prefix: z.string().trim().min(1, "กรุณากรอกคำนำหน้า").max(40),
-    first_name: z.string().trim().min(1, "กรุณากรอกชื่อ").max(80),
-    last_name: z.string().trim().min(1, "กรุณากรอกนามสกุล").max(80),
+    first_name: z
+      .string()
+      .trim()
+      .min(1, "กรุณากรอกชื่อ")
+      .max(80)
+      .transform(normalizeThaiName),
+    last_name: z
+      .string()
+      .trim()
+      .min(1, "กรุณากรอกนามสกุล")
+      .max(80)
+      .transform(normalizeThaiName),
     password: passwordSchema,
   })
   .strict()

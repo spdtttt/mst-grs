@@ -20,6 +20,7 @@ import {
   type RegisteredTeacherStore,
 } from "../src/lib/registered-teacher";
 import { staffLoginEmails } from "../src/lib/role-login";
+import { teacherRegistrationSchema } from "../src/lib/auth-input";
 
 const secret = "test-only-secret-at-least-thirty-two-characters";
 const uuid = (n: number) =>
@@ -809,4 +810,24 @@ test("registry matches legacy accounts by identity only, rejects ambiguity and p
   } finally {
     await db.close();
   }
+});
+
+test("registry import and registration both collapse เเ into แ", async () => {
+  const book = new ExcelJS.Workbook();
+  const sheet = book.addWorksheet("ครู");
+  sheet.addRow([...teacherColumns]);
+  sheet.addRow(["0000000000003", "นางเเพรว ทองเเพรว", "ภาษาไทย"]);
+  const { rows, errors } = readTeacherWorkbook(book);
+  assert.deepEqual(errors, []);
+  assert.equal(rows[0].first_name, "แพรว");
+  assert.equal(rows[0].last_name, "ทองแพรว");
+  const registration = teacherRegistrationSchema.parse({
+    citizen_id: "0000000000003",
+    name_prefix: "นาง",
+    first_name: "เเพรว",
+    last_name: "ทองเเพรว",
+    password: "secret123",
+  });
+  assert.equal(registration.first_name, "แพรว");
+  assert.equal(registration.last_name, "ทองแพรว");
 });

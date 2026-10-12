@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { Workbook } from "exceljs";
-import { citizenIdSchema } from "./auth-input";
+import { citizenIdSchema, normalizeThaiName } from "./auth-input";
 import { accountFullName, accountNameFields } from "./admin-accounts";
 import { worksheetRows } from "./import-excel";
 
@@ -14,6 +14,8 @@ export const teacherRegistrySchema = z
   .object({
     citizen_id: citizenIdSchema,
     ...accountNameFields,
+    first_name: accountNameFields.first_name.transform(normalizeThaiName),
+    last_name: accountNameFields.last_name.transform(normalizeThaiName),
     learning_subject_group: z
       .string()
       .trim()
