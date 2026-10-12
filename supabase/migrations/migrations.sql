@@ -5979,3 +5979,15 @@ grant execute on function public.admin_set_student_status(jsonb,text,integer) to
 
 notify pgrst, 'reload schema';
 commit;
+
+-- Evaluate RLS helper functions once per statement (InitPlan) instead of once per row.
+begin;
+alter policy records_read on public.grade_records
+using (
+  (select public.site_is_open()) and (
+    ((select public.my_role()) = 'student' and student_id = (select auth.uid())) or
+    ((select public.my_role()) = 'teacher' and teacher_id @> array[(select auth.uid())]) or
+    (select public.my_role()) = 'academic'
+  )
+);
+commit;

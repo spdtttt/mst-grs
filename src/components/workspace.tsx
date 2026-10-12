@@ -97,7 +97,7 @@ type View = "overview" | "outstanding" | "history" | "export" | "import" | "sche
 const statsViews: readonly View[] = ["stats", "incomplete-students", "completed-students"];
 const emptyHistory: ArchivedGradeRecord[] = [];
 const emptyCorrections: GradeCorrection[] = [];
-const validFinalGrades = ["0", "ร", "มผ", "1", "1.5", "2", "2.5", "3", "3.5", "4", "ผ"];
+const validFinalGrades = ["0", "ร", "มผ", "ผ", "1", "1.5", "2", "2.5", "3", "3.5", "4"];
 const navTitles: Record<View, string> = {
   overview: "ภาพรวมผลการเรียน",
   outstanding: "รายการคงค้าง",
