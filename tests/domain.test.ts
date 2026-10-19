@@ -8,6 +8,7 @@ import {
   isRole,
   roles,
   resetForNewPeriod,
+  sortHistory,
 } from "../src/lib/domain";
 import { columns, parseRows, parseDelimited } from "../src/lib/import";
 import { loginEmail, identityPassword } from "../src/lib/identity";
@@ -296,4 +297,20 @@ test("post-login return paths stay inside the authenticated dashboard", () => {
   assert.equal(roleReturnPath("academic", "/dashboard/admin"), "/dashboard");
   assert.equal(roleReturnPath("teacher", "/dashboard/assignments/00000000-0000-4000-8000-000000000001"),
     "/dashboard/assignments/00000000-0000-4000-8000-000000000001");
+});
+
+test("history sorts newest archive minute, then newest approval; by-student groups by newest row", () => {
+  const row = (id: string, student_id: string, archived_at: string, completed_at: string) =>
+    ({ ...demoRecords[5], id, student_id, archived_at, completed_at, archived_closes_at: archived_at });
+  // Same archive minute (microseconds apart): approval time decides.
+  const rows = [
+    row("old-archive", "s1", "2026-03-01T10:00:00+07:00", "2026-02-28T09:00:00+07:00"),
+    row("a-early-approval", "s2", "2026-09-17T16:00:10.000001+07:00", "2026-09-10T09:00:00+07:00"),
+    row("a-late-approval", "s1", "2026-09-17T16:00:10+07:00", "2026-09-15T09:00:00+07:00"),
+    row("b-mid-approval", "s2", "2026-09-17T16:00:10.000002+07:00", "2026-09-12T09:00:00+07:00"),
+  ];
+  assert.deepEqual(sortHistory([...rows], false).map((r) => r.id),
+    ["a-late-approval", "b-mid-approval", "a-early-approval", "old-archive"]);
+  assert.deepEqual(sortHistory([...rows], true).map((r) => r.id),
+    ["a-late-approval", "old-archive", "b-mid-approval", "a-early-approval"]);
 });

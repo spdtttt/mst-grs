@@ -164,6 +164,25 @@ export function safeCell(value: unknown) {
   const s = String(value ?? "");
   return /^[\s]*[=+@\-]/.test(s) ? "'" + s : s;
 }
+/** Newest archive first, then newest academic approval. byStudent groups each
+ * student's rows together, students ordered by their newest row. Sorts in place. */
+export function sortHistory(rows: ArchivedGradeRecord[], byStudent: boolean) {
+  // Archiving stamps rows microseconds apart, so compare at the minute shown on
+  // screen; otherwise approval time could never break a tie.
+  const minute = (v: string) => Math.floor((Date.parse(v) || 0) / 60000);
+  const time = (v: string | null) => Date.parse(v ?? "") || 0;
+  rows.sort((a, b) =>
+    minute(b.archived_at) - minute(a.archived_at) ||
+    time(b.completed_at) - time(a.completed_at),
+  );
+  if (byStudent) {
+    const first = new Map<string, number>();
+    rows.forEach((r, i) => first.has(r.student_id) || first.set(r.student_id, i));
+    rows.sort((a, b) => first.get(a.student_id)! - first.get(b.student_id)!); // stable
+  }
+  return rows;
+}
+
 export function thaiDate(value: string | null, withTime = false) {
   return value
     ? new Intl.DateTimeFormat("th-TH", {

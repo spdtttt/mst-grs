@@ -1,7 +1,7 @@
 "use client";
 import { SkeletonCard } from "@/components/skeleton";
 import { twMerge } from "tailwind-merge";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
@@ -56,6 +56,7 @@ import {
   nextStatus,
   isOpen,
   resetForNewPeriod,
+  sortHistory,
   thaiDate,
 } from "@/lib/domain";
 import { saveCsv } from "@/lib/save-csv";
@@ -216,6 +217,7 @@ export default function Workspace({
   const [filter, setFilter] = useState("all");
   const [year, setYear] = useState("all");
   const [semester, setSemester] = useState("all");
+  const [historyByStudent, setHistoryByStudent] = useState(false);
   const [page, setPage] = useState(1);
   const {
     open: mobile,
@@ -318,7 +320,7 @@ export default function Workspace({
   }, [toast]);
   useEffect(() => {
     setPage(1);
-  }, [query, filter, year, semester, view]);
+  }, [query, filter, year, semester, view, historyByStudent]);
   useEffect(() => {
     if (selected) {
       dialog.current?.showModal();
@@ -438,8 +440,11 @@ export default function Workspace({
       }
     }
 
+    if (view === "history")
+      sortHistory(rows as ArchivedGradeRecord[], historyByStudent);
+
     return rows;
-  }, [visibleScope, view, role, filter, year, semester, query]);
+  }, [visibleScope, view, role, filter, year, semester, query, historyByStudent]);
   const pages = Math.max(1, Math.ceil(filtered.length / 8));
   const shown = filtered.slice(
     (Math.min(page, pages) - 1) * 8,
@@ -1338,6 +1343,24 @@ export default function Workspace({
                             />
                           </div>
                         )}
+                        {role === "academic" && view === "history" && (
+                          <div className="relative max-w-full">
+                            <select
+                              className="min-w-[153px] max-w-full appearance-none border border-[#e1dce9] bg-white py-[9px] pr-10 pl-[13px] text-sm text-[#796788] outline-none focus:border-brand focus:shadow-[0_0_0_3px_#713cd115] max-desk:min-w-0 max-desk:py-2 max-desk:text-[13px]"
+                              aria-label="รูปแบบการแสดงผล"
+                              value={historyByStudent ? "student" : "list"}
+                              onChange={(e) => setHistoryByStudent(e.target.value === "student")}
+                            >
+                              <option value="list">แสดงเป็นรายการ</option>
+                              <option value="student">แสดงเป็นรายนักเรียน</option>
+                            </select>
+                            <ChevronDown
+                              className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[#796788]"
+                              size={15}
+                              aria-hidden="true"
+                            />
+                          </div>
+                        )}
                       </div>
                       <div
                         className={`overflow-x-auto [&_tbody_tr]:hover:bg-[#fdfbff] max-desk:[&_table]:min-w-[800px]`}
@@ -1369,8 +1392,13 @@ export default function Workspace({
                             </tr>
                           </thead>
                           <tbody>
-                            {shown.map((r) => {
+                            {shown.map((r, i) => {
                               const s = statuses[r.status];
+                              const studentHeader =
+                                historyByStudent &&
+                                view === "history" &&
+                                role === "academic" &&
+                                shown[i - 1]?.student_id !== r.student_id;
                               const disabled =
                                 role === "student"
                                   ? !["pending", "assigned"].includes(r.status)
@@ -1384,7 +1412,21 @@ export default function Workspace({
                                       ].includes(r.status)
                                     );
                               return (
-                                <tr key={r.id}>
+                                <Fragment key={r.id}>
+                                {studentHeader && (
+                                  <tr>
+                                    <td
+                                      colSpan={5}
+                                      className="border-b border-[#f0edf5] bg-[#faf9fc] px-6 py-3 text-sm font-semibold text-[#4b3a5b]"
+                                    >
+                                      {r.student_name}{" "}
+                                      <small className="text-xs font-normal text-secondary">
+                                        {r.student_code} · ชั้น {r.classroom}
+                                      </small>
+                                    </td>
+                                  </tr>
+                                )}
+                                <tr>
                                   <td
                                     data-label="รายวิชา"
                                     className="border-b border-[#f0edf5] px-[22px] py-[21px] align-middle text-sm text-[#796b89] first:pl-6 last:pr-6 last:text-right large:py-[23px]"
@@ -1557,6 +1599,7 @@ export default function Workspace({
                                     )}
                                   </td>
                                 </tr>
+                                </Fragment>
                               );
                             })}
                           </tbody>
