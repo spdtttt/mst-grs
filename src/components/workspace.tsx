@@ -445,11 +445,17 @@ export default function Workspace({
 
     return rows;
   }, [visibleScope, view, role, filter, year, semester, query, historyByStudent]);
-  const pages = Math.max(1, Math.ceil(filtered.length / 8));
-  const shown = filtered.slice(
-    (Math.min(page, pages) - 1) * 8,
-    Math.min(page, pages) * 8,
-  );
+  const byStudent = historyByStudent && view === "history" && role === "academic";
+  // By student, count and page students (8 per page) instead of records.
+  const students = byStudent ? [...new Set(filtered.map((r) => r.student_id))] : [];
+  const total = byStudent ? students.length : filtered.length;
+  const unit = byStudent ? "คน" : "รายการ";
+  const pages = Math.max(1, Math.ceil(total / 8));
+  const pageStart = (Math.min(page, pages) - 1) * 8;
+  const pageStudents = new Set(students.slice(pageStart, pageStart + 8));
+  const shown = byStudent
+    ? filtered.filter((r) => pageStudents.has(r.student_id))
+    : filtered.slice(pageStart, pageStart + 8);
   function navigate(v: View) {
     setView(v);
     setFilter("all");
@@ -1281,7 +1287,7 @@ export default function Workspace({
                                       ? "คำร้องที่ต้องติดตาม"
                                       : "รอตรวจสอบและอนุมัติ"}{" "}
                             <span className="ml-2 px-2 min-w-6 items-center font-[650] justify-center rounded-md bg-brand-soft font-medium text-[#8a5fc7]">
-                              {filtered.length} รายการ
+                              {total} {unit}
                             </span>
                           </h2>
                           <p>
@@ -1395,9 +1401,7 @@ export default function Workspace({
                             {shown.map((r, i) => {
                               const s = statuses[r.status];
                               const studentHeader =
-                                historyByStudent &&
-                                view === "history" &&
-                                role === "academic" &&
+                                byStudent &&
                                 shown[i - 1]?.student_id !== r.student_id;
                               const disabled =
                                 role === "student"
@@ -1627,12 +1631,8 @@ export default function Workspace({
                       <div className="flex items-center justify-between px-[23px] py-[13px] text-xs text-secondary [&>div]:flex [&>div]:items-center [&>div]:gap-2 max-desk:px-4 max-desk:py-3 max-desk:text-[11px]">
                         <span>
                           แสดง{" "}
-                          {filtered.length
-                            ? (Math.min(page, pages) - 1) * 8 + 1
-                            : 0}
-                          –
-                          {Math.min(Math.min(page, pages) * 8, filtered.length)}{" "}
-                          จาก {filtered.length} รายการ
+                          {total ? pageStart + 1 : 0}–
+                          {Math.min(pageStart + 8, total)} จาก {total} {unit}
                         </span>
                         <div className="flex gap-2">
                           <button
