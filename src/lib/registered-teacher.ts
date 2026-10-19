@@ -21,7 +21,7 @@ export type RegisteredTeacherStore = {
     last: string,
     token: string,
     emails: string[],
-  ): Promise<{ id: string; token: string; pending: boolean }>;
+  ): Promise<{ id: string; token: string; pending: boolean; existing?: boolean }>;
   create(
     id: string,
     email: string,
@@ -102,6 +102,8 @@ export async function provisionRegisteredTeacher(
       randomUUID(),
       staffLoginEmails(value.citizen_id, secret),
     );
+    // The role was added to an account that already signs in (an Admin adding themself).
+    if (claim.existing) return { status: 200, body: { success: true } };
     if (claim.pending) {
       const token = await store.authToken(claim.id);
       if (token === claim.token)

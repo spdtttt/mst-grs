@@ -199,7 +199,8 @@ test("deletion removes only the chosen role, including primary roles; manager ed
           [id(2), id(5)],
         )
       ).rows.length,
-      2,
+      0,
+      "unreferenced identities are deleted with the profile",
     );
   } finally {
     await db.close();
@@ -448,6 +449,16 @@ test("completed grades, history, attachments and audits survive deletion of the 
       (await db.query("select * from assignment_files")).rows.length,
       1,
     );
+    assert.equal(
+      (
+        await db.query(
+          "select id from profile_identities where id in ($1,$2)",
+          [id(2), id(4)],
+        )
+      ).rows.length,
+      2,
+      "identities referenced by files and grades are kept",
+    );
     const audit = (
       await db.query(
         "select actor_id,deleted_actor_id,deleted_actor_name from audit_log where action='historical-event'",
@@ -676,4 +687,73 @@ test("reset orchestration retains files, bounds work and never repeats an ambigu
     () => completeStaffAuthReset(operation, { ...store, async preserve() {} }),
     /ownership change could not be verified/,
   );
+});
+
+test("an Admin can add themself as teacher and academic; other Admins stay protected", async () => {
+  const db = await fixture();
+  try {
+    const citizen = "1000000000009",
+      hash = staffCitizenHash(citizen, secret),
+      emails = staffLoginEmails(citizen, secret);
+    await db.query("update auth.users set email=$1 where id=$2", [emails[2], id(1)]);
+    await db.query("insert into auth.users(id,email) values($1,'other-admin@example.test')", [id(7)]);
+    await db.query("insert into profiles(id,role,full_name) values($1,'admin','Other Admin')", [id(7)]);
+    await db.exec("set role service_role");
+    const row = {
+      id: id(1),
+      expected_revision: await (async () => {
+        const preview = (await db.query<{ result: { id: string; expected_revision: number }[] }>(
+          "select preview_teacher_registry($1,$2) result", [id(1), [{ hash, emails }]])).rows[0].result;
+        assert.equal(preview[0].id, id(1));
+        return preview[0].expected_revision;
+      })(),
+      hash,
+      emails,
+      name_prefix: "นาย",
+      first_name: "Self",
+      last_name: "Admin",
+      learning_subject_group: "กลุ่มสาระการเรียนรู้คณิตศาสตร์",
+      citizen_id_encrypted: encryptStaffCitizenId(citizen, id(1), secret),
+    };
+    const saved = (await db.query<{ result: { status: string } }>(
+      "select save_teacher_registry($1,$2) result", [id(1), row])).rows[0].result;
+    assert.equal(saved.status, "updated");
+    await assert.rejects(
+      () => db.query("select save_teacher_registry($1,$2)", [id(7), row]),
+      /ACCOUNT_PROTECTED/,
+    );
+
+    const academic = {
+      id: id(51), hash, emails, name_prefix: "นาย", first_name: "Self", last_name: "Admin",
+      citizen_id_encrypted: encryptStaffCitizenId(citizen, id(51), secret),
+    };
+    const claim = (actor: string) =>
+      db.query<{ result: { id: string; existing?: boolean } }>(
+        "select claim_academic_registration($1,$2,$3) result", [actor, academic, id(82)]);
+    const claimed = (await claim(id(1))).rows[0].result;
+    assert.deepEqual([claimed.id, claimed.existing], [id(1), true]);
+    assert.equal((await claim(id(1))).rows[0].result.existing, true, "retry is idempotent");
+
+    await db.exec("reset role");
+    for (const role of ["admin", "teacher", "academic"])
+      assert.equal((await db.query<{ ok: boolean }>("select profile_has_role($1,$2) ok", [id(1), role])).rows[0].ok, true);
+    assert.equal((await db.query("select 1 from profiles where staff_citizen_hash=$1", [hash])).rows.length, 1);
+    await db.exec("set role service_role");
+    assert.equal((await db.query<{ email: string }>(
+      "select resolve_staff_login($1,'teacher') email", [emails])).rows[0].email, emails[2]);
+
+    // Another Admin's identity is still protected.
+    await db.exec("reset role");
+    await db.query("update auth.users set email=$1 where id=$2", [emails[2], id(7)]);
+    await db.query("update auth.users set email='self@example.test' where id=$1", [id(1)]);
+    await db.query("update profiles set staff_citizen_hash=null where id=$1", [id(1)]);
+    await db.exec("set role service_role");
+    await assert.rejects(
+      () => db.query("select save_teacher_registry($1,$2)", [id(1), { ...row, id: id(7), expected_revision: 0 }]),
+      /ACCOUNT_PROTECTED/,
+    );
+    await assert.rejects(() => claim(id(1)), /REGISTRATION_EXISTS/);
+  } finally {
+    await db.close();
+  }
 });

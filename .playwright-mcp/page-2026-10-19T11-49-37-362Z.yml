@@ -1,0 +1,276 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e86]:
+    - complementary [ref=e87]:
+      - link "โรงเรียนเมืองสุราษฎร์ธานี MST GRS GRADE RECOVERY SYSTEM" [ref=e88] [cursor=pointer]:
+        - /url: /demo
+        - img "โรงเรียนเมืองสุราษฎร์ธานี" [ref=e89]
+        - generic [ref=e90]:
+          - text: MST GRS
+          - generic [ref=e91]: GRADE RECOVERY SYSTEM
+      - generic [ref=e92]: ระบบแก้ไขผลการเรียน
+      - generic [ref=e93]: ครูประจำวิชา
+      - navigation "เมนูหลัก" [ref=e94]:
+        - button "คำร้องของนักเรียน 3" [ref=e95] [cursor=pointer]:
+          - generic [ref=e101]: คำร้องของนักเรียน
+          - generic [ref=e102]: "3"
+        - button "ประวัติแก้ไขผลการเรียน" [ref=e103] [cursor=pointer]
+        - button "ส่งออกข้อมูล" [ref=e109] [cursor=pointer]
+      - generic [ref=e114]:
+        - generic [ref=e115]: ส
+        - generic [ref=e116]:
+          - strong [ref=e117]: สุภาวดี ศรีสุข
+          - text: ครูประจำวิชา
+        - button "ออกจากระบบ" [ref=e118] [cursor=pointer]
+    - generic [ref=e122]:
+      - banner [ref=e123]:
+        - generic [ref=e124]:
+          - generic [ref=e125]: ครูประจำวิชา
+          - strong [ref=e128]: ภาพรวมผลการเรียน
+        - generic [ref=e129]: ระบบเปิดให้บริการ
+      - generic [ref=e133]:
+        - generic [ref=e136]: โหมดทดลอง · ข้อมูลสมมติ ไม่บันทึกลงฐานข้อมูล
+        - generic [ref=e137]:
+          - text: ทดลองบทบาท
+          - combobox "ทดลองบทบาท" [ref=e138]:
+            - option "นักเรียน"
+            - option "ครูประจำวิชา" [selected]
+            - option "ฝ่ายวัดผล"
+            - option "ผู้บริหาร"
+            - option "ผู้ดูแลระบบ"
+        - link "เข้าสู่ระบบจริง" [ref=e139] [cursor=pointer]:
+          - /url: /
+      - main [ref=e142]:
+        - generic [ref=e143]:
+          - heading "คำร้องของนักเรียน" [level=1] [ref=e145]
+          - generic [ref=e146]:
+            - generic [ref=e147]:
+              - generic [ref=e150]: ทุกปีการศึกษา
+              - combobox "ปีการศึกษา" [ref=e153]:
+                - option "ทุกปีการศึกษา" [selected]
+                - option "ปีการศึกษา 2569"
+            - generic [ref=e154]:
+              - generic [ref=e155]: ทุกภาคเรียน
+              - combobox "ภาคเรียน" [ref=e158]:
+                - option "ทุกภาคเรียน" [selected]
+                - option "ภาคเรียนที่ 1"
+                - option "ภาคเรียนที่ 2"
+        - generic [ref=e159]:
+          - generic [ref=e160]:
+            - generic [ref=e162]:
+              - heading "สวัสดี สุภาวดี ศรีสุข" [level=2] [ref=e163]
+              - paragraph [ref=e164]: แสดงเฉพาะคำร้องที่นักเรียนยื่นแล้วในรายวิชาของคุณ
+            - region "ภาพรวมผลการเรียน" [ref=e165]:
+              - generic [ref=e166]:
+                - generic [ref=e167]: รายการคงค้างทั้งหมด
+                - generic [ref=e172]: 6รายการ
+                - paragraph [ref=e173]: รายการในระบบ
+              - generic [ref=e174]:
+                - generic [ref=e175]: ต้องดำเนินการ
+                - generic [ref=e181]: 3รายวิชา
+                - paragraph [ref=e182]: รอการดำเนินการจากคุณ
+              - generic [ref=e183]:
+                - generic [ref=e184]: อยู่ระหว่างดำเนินการ
+                - generic [ref=e190]: 4รายวิชา
+                - paragraph [ref=e191]: ยื่นคำร้องและกำลังแก้ไข
+              - generic [ref=e192]:
+                - generic [ref=e193]: แก้ไขสำเร็จแล้ว
+                - generic [ref=e200]: 1รายวิชา
+                - paragraph [ref=e201]: ฝ่ายวัดผลอนุมัติแล้ว
+            - generic [ref=e202]:
+              - generic [ref=e204]:
+                - heading "คำร้องที่ต้องติดตาม 6 รายการ" [level=2] [ref=e205]:
+                  - text: คำร้องที่ต้องติดตาม
+                  - generic [ref=e206]: 6 รายการ
+                - paragraph [ref=e207]: ตรวจสอบรายละเอียดและดำเนินการตามสถานะของแต่ละรายวิชา
+              - generic [ref=e208]:
+                - textbox "ค้นหารายการ" [ref=e213]:
+                  - /placeholder: ค้นหาชื่อนักเรียน รหัสนักเรียน หรือรายวิชา…
+                - combobox "กรองสถานะ" [ref=e215]:
+                  - option "สถานะทั้งหมด" [selected]
+                  - option "ยังไม่ยื่นคำร้อง"
+                  - option "รอมอบหมายงาน"
+                  - option "อยู่ระหว่างดำเนินการ"
+                  - option "ครูรับงานแล้ว รอพิจารณา"
+                  - option "รอฝ่ายวัดผลอนุมัติ"
+                  - option "แก้ไขสำเร็จ"
+              - table [ref=e217]:
+                - rowgroup [ref=e218]:
+                  - row [ref=e219]:
+                    - columnheader "นักเรียน / รายวิชา" [ref=e220]
+                    - columnheader "ชั้น/ห้อง" [ref=e221]
+                    - columnheader "ผลการเรียนเดิม" [ref=e222]
+                    - columnheader "ความคืบหน้า" [ref=e223]
+                    - columnheader "การดำเนินการ" [ref=e224]
+                - rowgroup [ref=e225]:
+                  - row [ref=e226]:
+                    - cell "กิตติพัฒน์ ใจดี 12345 คณิตศาสตร์พื้นฐาน ค31101 · 1.5 หน่วยกิต · 1/2569" [ref=e227]:
+                      - generic [ref=e229]:
+                        - strong [ref=e230]: กิตติพัฒน์ ใจดี 12345
+                        - strong [ref=e231]: คณิตศาสตร์พื้นฐาน
+                        - generic [ref=e232]: ค31101 · 1.5 หน่วยกิต · 1/2569
+                    - cell "ม.4/2" [ref=e233]
+                    - cell "0" [ref=e234]
+                    - cell "ยังไม่ยื่นคำร้อง 0% 0" [ref=e236]:
+                      - generic [ref=e237]:
+                        - generic [ref=e238]: ยังไม่ยื่นคำร้อง
+                        - strong [ref=e239]: 0%
+                      - progressbar "ความคืบหน้า คณิตศาสตร์พื้นฐาน" [ref=e240]
+                    - cell [ref=e241]:
+                      - button "ดูรายละเอียด" [disabled] [ref=e242]
+                  - row [ref=e243]:
+                    - cell "กิตติพัฒน์ ใจดี 12345 วิทยาศาสตร์กายภาพ ว31101 · 1.5 หน่วยกิต · 1/2569" [ref=e244]:
+                      - generic [ref=e246]:
+                        - strong [ref=e247]: กิตติพัฒน์ ใจดี 12345
+                        - strong [ref=e248]: วิทยาศาสตร์กายภาพ
+                        - generic [ref=e249]: ว31101 · 1.5 หน่วยกิต · 1/2569
+                    - cell "ม.4/2" [ref=e250]
+                    - cell "ร" [ref=e251]
+                    - cell "รอมอบหมายงาน 25% 25" [ref=e253]:
+                      - generic [ref=e254]:
+                        - generic [ref=e255]: รอมอบหมายงาน
+                        - strong [ref=e256]: 25%
+                      - progressbar "ความคืบหน้า วิทยาศาสตร์กายภาพ" [ref=e257]
+                    - cell [ref=e259]:
+                      - button "มอบหมายงาน" [ref=e260] [cursor=pointer]
+                  - row [ref=e264]:
+                    - cell "กิตติพัฒน์ ใจดี 12345 ภาษาอังกฤษพื้นฐาน อ31101 · 1.0 หน่วยกิต · 1/2569" [ref=e265]:
+                      - generic [ref=e267]:
+                        - strong [ref=e268]: กิตติพัฒน์ ใจดี 12345
+                        - strong [ref=e269]: ภาษาอังกฤษพื้นฐาน
+                        - generic [ref=e270]: อ31101 · 1.0 หน่วยกิต · 1/2569
+                    - cell "ม.4/2" [ref=e271]
+                    - cell "0" [ref=e272]
+                    - cell "อยู่ระหว่างดำเนินการ 50% 50" [ref=e274]:
+                      - generic [ref=e275]:
+                        - generic [ref=e276]: อยู่ระหว่างดำเนินการ
+                        - strong [ref=e277]: 50%
+                      - progressbar "ความคืบหน้า ภาษาอังกฤษพื้นฐาน" [ref=e278]
+                    - cell [ref=e280]:
+                      - button "ยืนยันรับงาน" [ref=e281] [cursor=pointer]
+                  - row [ref=e285]:
+                    - cell "กิตติพัฒน์ ใจดี 12345 ภาษาไทยพื้นฐาน ท31101 · 1.0 หน่วยกิต · 1/2569" [ref=e286]:
+                      - generic [ref=e288]:
+                        - strong [ref=e289]: กิตติพัฒน์ ใจดี 12345
+                        - strong [ref=e290]: ภาษาไทยพื้นฐาน
+                        - generic [ref=e291]: ท31101 · 1.0 หน่วยกิต · 1/2569
+                    - cell "ม.4/2" [ref=e292]
+                    - cell "ร" [ref=e293]
+                    - cell "ครูรับงานแล้ว รอพิจารณา 50% 50" [ref=e295]:
+                      - generic [ref=e296]:
+                        - generic [ref=e297]: ครูรับงานแล้ว รอพิจารณา
+                        - strong [ref=e298]: 50%
+                      - progressbar "ความคืบหน้า ภาษาไทยพื้นฐาน" [ref=e299]
+                    - cell [ref=e301]:
+                      - button "อนุมัติหรือมอบหมายงานเพิ่ม" [ref=e302] [cursor=pointer]
+                  - row [ref=e306]:
+                    - cell "กิตติพัฒน์ ใจดี 12345 สังคมศึกษา ส31101 · 1.0 หน่วยกิต · 1/2569" [ref=e307]:
+                      - generic [ref=e309]:
+                        - strong [ref=e310]: กิตติพัฒน์ ใจดี 12345
+                        - strong [ref=e311]: สังคมศึกษา
+                        - generic [ref=e312]: ส31101 · 1.0 หน่วยกิต · 1/2569
+                    - cell "ม.4/2" [ref=e313]
+                    - cell "มส" [ref=e314]
+                    - cell "รอฝ่ายวัดผลอนุมัติ 75% 75" [ref=e316]:
+                      - generic [ref=e317]:
+                        - generic [ref=e318]: รอฝ่ายวัดผลอนุมัติ
+                        - strong [ref=e319]: 75%
+                      - progressbar "ความคืบหน้า สังคมศึกษา" [ref=e320]
+                    - cell [ref=e322]:
+                      - button "ดู/แก้ไขผลการเรียน" [ref=e323] [cursor=pointer]
+                  - row [ref=e327]:
+                    - cell "กิตติพัฒน์ ใจดี 12345 สุขศึกษาและพลศึกษา พ31101 · 0.5 หน่วยกิต · 1/2569" [ref=e328]:
+                      - generic [ref=e330]:
+                        - strong [ref=e331]: กิตติพัฒน์ ใจดี 12345
+                        - strong [ref=e332]: สุขศึกษาและพลศึกษา
+                        - generic [ref=e333]: พ31101 · 0.5 หน่วยกิต · 1/2569
+                    - cell "ม.4/2" [ref=e334]
+                    - cell "0 ผลใหม่ 1" [ref=e335]:
+                      - generic [ref=e336]: "0"
+                      - generic [ref=e337]: ผลใหม่ 1
+                    - cell "แก้ไขสำเร็จ 100% 100" [ref=e338]:
+                      - generic [ref=e339]:
+                        - generic [ref=e340]: แก้ไขสำเร็จ
+                        - strong [ref=e341]: 100%
+                      - progressbar "ความคืบหน้า สุขศึกษาและพลศึกษา" [ref=e342]
+                    - cell [ref=e344]:
+                      - button "ดูรายละเอียด" [ref=e345] [cursor=pointer]
+              - generic [ref=e351]:
+                - generic [ref=e352]: แสดง 1–6 จาก 6 รายการ
+                - generic [ref=e353]:
+                  - button "ก่อนหน้า" [disabled] [ref=e354]
+                  - button "ถัดไป" [disabled] [ref=e355]
+            - generic [ref=e356]:
+              - generic [ref=e357]:
+                - heading "ขั้นตอนการแก้ไขผลการเรียน" [level=2] [ref=e358]
+                - generic [ref=e359]: ติดตามได้ตั้งแต่เริ่มต้นจนสำเร็จ
+              - generic [ref=e360]:
+                - generic [ref=e361]:
+                  - generic [ref=e362]: "1"
+                  - generic [ref=e363]: 0%
+                  - strong [ref=e364]: ยื่นคำร้อง
+                  - generic [ref=e365]: เลือกวิชาที่ต้องการแก้ไข
+                - generic [ref=e366]:
+                  - generic [ref=e367]: "2"
+                  - generic [ref=e368]: 25%
+                  - strong [ref=e369]: รอมอบหมายงาน
+                  - generic [ref=e370]: ครูประจำวิชากำหนดภาระงาน
+                - generic [ref=e371]:
+                  - generic [ref=e372]: "3"
+                  - generic [ref=e373]: 50%
+                  - strong [ref=e374]: ดำเนินการแก้ไข
+                  - generic [ref=e375]: ทำงาน ส่งงาน และครูตรวจรับ
+                - generic [ref=e376]:
+                  - generic [ref=e377]: "4"
+                  - generic [ref=e378]: 75%
+                  - strong [ref=e379]: ครูอนุมัติแล้ว
+                  - generic [ref=e380]: รอฝ่ายวัดผลอนุมัติผลการเรียน
+                - generic [ref=e381]:
+                  - generic [ref=e385]: 100%
+                  - strong [ref=e386]: แก้ไขสำเร็จ
+                  - generic [ref=e387]: ฝ่ายวัดผลยืนยันผลการเรียน
+            - generic [ref=e388]:
+              - generic [ref=e389]:
+                - generic [ref=e390]: MST GRS ระบบจัดการผลการเรียนคงค้าง
+                - text: "ติดต่อ : gpa@mst.ac.th"
+              - generic [ref=e391]: ข้อมูลตามสิทธิ์ของผู้ใช้งาน
+          - complementary "สรุปสถานะและกำหนดการแก้ไข" [ref=e395]:
+            - generic [ref=e396]:
+              - heading "สถานะการแก้ไข" [level=2] [ref=e397]
+              - generic [ref=e398]:
+                - img "แก้ไขสำเร็จ 17%" [ref=e399]:
+                  - strong [ref=e403]: 17%
+                - generic [ref=e404]:
+                  - generic [ref=e405]: แก้ไขสำเร็จแล้ว
+                  - paragraph [ref=e406]: 1 จาก 6 รายการ
+              - generic [ref=e407]:
+                - generic [ref=e408]:
+                  - term [ref=e410]: ยังไม่ยื่นคำร้อง
+                  - definition [ref=e411]: "1"
+                - generic [ref=e412]:
+                  - term [ref=e414]: รอมอบหมายงาน
+                  - definition [ref=e415]: "1"
+                - generic [ref=e416]:
+                  - term [ref=e418]: อยู่ระหว่างดำเนินการ
+                  - definition [ref=e419]: "1"
+                - generic [ref=e420]:
+                  - term [ref=e422]: ครูรับงานแล้ว รอพิจารณา
+                  - definition [ref=e423]: "1"
+                - generic [ref=e424]:
+                  - term [ref=e426]: รอฝ่ายวัดผลอนุมัติ
+                  - definition [ref=e427]: "1"
+                - generic [ref=e428]:
+                  - term [ref=e430]: แก้ไขสำเร็จ
+                  - definition [ref=e431]: "1"
+            - generic [ref=e432]:
+              - heading "กำหนดการแก้ไข" [level=2] [ref=e433]
+              - generic [ref=e436]:
+                - generic [ref=e437]:
+                  - term [ref=e438]: เปิดรับดำเนินการ
+                  - definition [ref=e439]: 1 ม.ค. 2569
+                - generic [ref=e440]:
+                  - term [ref=e441]: ปิดรับดำเนินการ
+                  - definition [ref=e442]: 31 ธ.ค. 2570
+              - paragraph [ref=e443]: ระบบเปิดให้ดำเนินการแก้ไขผลการเรียน
+              - paragraph [ref=e444]: กรุณาส่งภาระงานภายในกำหนด และติดต่อครูประจำวิชาหากมีข้อสงสัย
+  - button "Open Next.js Dev Tools" [ref=e81] [cursor=pointer]
+  - alert [ref=e85]

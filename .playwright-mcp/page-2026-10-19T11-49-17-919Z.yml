@@ -1,0 +1,9 @@
+- generic [active] [ref=e1]:
+  - status [ref=e2]:
+    - generic [ref=e3]: กำลังโหลด
+    - complementary [ref=e4]
+    - generic [ref=e13]:
+      - banner [ref=e14]
+      - main [ref=e17]
+  - button "Open Next.js Dev Tools" [ref=e81] [cursor=pointer]
+  - alert [ref=e85]
