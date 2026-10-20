@@ -4,7 +4,6 @@ import { configured, supabase } from "@/lib/supabase";
 import type { AssignmentFile, GradeAssignment, GradeRecord, Profile } from "@/lib/domain";
 import { currentProfile } from "@/lib/current-profile";
 import { roleHomePath } from "@/lib/navigation";
-import { hiddenRecordIds, hidesRecords } from "@/lib/hidden-records";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +32,6 @@ export default async function AssignmentPage({
   if (!profile) redirect("/");
   if (profile.role === "admin" || profile.role === "manager")
     redirect(roleHomePath(profile.role));
-  if (hidesRecords(profile.role) && hiddenRecordIds.has(id)) notFound();
   const activeResult = await db.from("grade_records").select("*").eq("id", id).maybeSingle();
   if (activeResult.error)
     throw new Error("ไม่สามารถโหลดผลการเรียนได้");
