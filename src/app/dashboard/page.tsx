@@ -4,6 +4,7 @@ import Workspace from "@/components/workspace";
 import type { ArchivedGradeRecord, GradeCorrection, GradeRecord, Profile, Schedule } from "@/lib/domain";
 import type { ManagerStats } from "@/lib/manager-stats";
 import { currentProfile } from "@/lib/current-profile";
+import { hiddenRecordIds, hidesRecords } from "@/lib/hidden-records";
 export const dynamic = "force-dynamic";
 export default async function Dashboard({ searchParams }: {
   searchParams: Promise<{ view?: string }>;
@@ -38,7 +39,8 @@ export default async function Dashboard({ searchParams }: {
         ? "ไม่สามารถโหลดประวัติได้ กรุณาตรวจสอบการติดตั้งฐานข้อมูลประวัติ"
         : "ไม่สามารถโหลดผลการเรียนได้");
       rows.push(...data);
-      if (data.length < 1000) return rows;
+      if (data.length < 1000)
+        return hidesRecords(profile!.role) ? rows.filter((r) => !hiddenRecordIds.has(r.id)) : rows;
     }
   }
   async function loadCorrections() {
@@ -49,7 +51,7 @@ export default async function Dashboard({ searchParams }: {
         .range(offset, offset + 999);
       if (error) throw new Error("ไม่สามารถโหลดประวัติการแก้ไขผลการเรียนได้ กรุณาตรวจสอบการติดตั้งฐานข้อมูล");
       rows.push(...data);
-      if (data.length < 1000) return rows;
+      if (data.length < 1000) return rows.filter((r) => !hiddenRecordIds.has(r.record_id));
     }
   }
   async function loadManagerStats() {
